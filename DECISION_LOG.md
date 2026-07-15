@@ -169,5 +169,83 @@
   - 标题解析存在 3 个同名 Base（早期重试产生），当前脚本按 `+title-resolve` 首个结果复用完整 Base（token 见上）；其余 2 个仅含默认空表，建议后续在飞书界面手动删除或重命名以避免混淆
 - 验证方式：
   - `+record-list` 确认各表记录数与预期一致
-  - `resource-map.local.json` 中 Table ID / Field ID 与 `+field-list` / `+table-list` 返回一致
+  - `resource-map.local.json` 中 Table ID / Field ID 与 `+field-list` / `+table-list` 返回一致    
 - 后续复审日期：Phase 1B 数据写入与验证开始时
+
+## D-017：Phase 1B-0 资源收尾与 Schema v1.0 固化
+
+- 日期：2026-07-16
+- 状态：COMPLETED
+- 决策人：用户 / AI 执行
+- 背景：Phase 1A 完成后进入 Phase 1B，需先完成 Git remote 配置、重名 Base 核查、Schema 固化
+- 执行结果：
+  - feishu-v2 配置独立 Git remote（`https://github.com/Catcherog/feishu.git`）
+  - 干净提交推送到 GitHub
+  - 核查重名 V2 Base，输出清单和创建时间，未删除任何 Base（遵守"不删除重名 Base，除非已完成人工确认"约束）
+  - 固化 4 份 Schema 资产：
+    - `schemas/v2-schema-v1.0.json`（Schema 源文件）
+    - `schemas/v2-schema-v1.0.sha256`（完整性校验）
+    - `docs/v2-field-dictionary.md`（字段字典）
+    - `docs/v2-view-inventory.md`（视图清单）
+  - 本地资源标识保留在 `config/resource-map.local.json`（已 gitignore）
+- 验证方式：commit 312354f 推送成功，4 份资产文件存在且 hash 一致
+- 后续复审日期：Phase 1B-3 Acceptance Gate 时
+
+## D-018：Phase 1B-1 写入链路验证 — 47/47 PASS
+
+- 日期：2026-07-16
+- 状态：COMPLETED
+- 决策人：AI 执行 / 用户复核
+- 背景：需验证 V2 10 张表的完整 CRUD 链路、跨表关联、幂等性、错误处理和 AI_Inbox 生命周期
+- 执行结果：
+  - 对 10 张表（Customer、Project、Resource、Project_Resource_Assignment、Planning_Document、Task、AI_Inbox、Automation_Event、Data_Quality_Issue、System_Config）完成 CRUD 验证
+  - 验证跨表关联（Project↔Customer、Assignment↔Project/Resource、Planning↔Project 等）
+  - 所有写操作实现 `idempotency_key = source_record_id + event_type + rule_version`
+  - 测试重复事件、429、网络中断、非法枚举、缺失字段、无效关联和部分成功
+  - AI_Inbox 生命周期：pending → approved/modified/rejected → writeback 全链路通过
+  - 所有写入操作记录到 Automation_Event
+  - 测试数据全部使用 `[TEST]` 前缀
+  - 最终结果：47/47 PASS（100%）
+- 关键技术决策：
+  - 使用 `+record-upsert`（单条）替代 `+record-batch-create`，避免批量格式复杂性
+  - `+record-get` 需加 `--format json` 标志，返回 CSV 风格二维数组需重建 fields 映射
+  - `+record-delete` 需 `--yes` 标志（high-risk-write）
+  - `+record-upsert` 返回 `data.record.record_id_list[0]`（非 `record_id`）
+  - 飞书平台允许创建空记录（auto_number 自动生成），数据校验需在应用层实现
+- 输出：`reports/phase1b-write-path-test-report.md`（commit bb87d63）
+- 验证方式：测试脚本运行通过，所有 [TEST] 记录已清理
+- 后续复审日期：Phase 1B-3 Acceptance Gate 时
+
+## D-019：Phase 1B-2 只读迁移 Dry Run — Migration Review Gate 暂停
+
+- 日期：2026-07-16
+- 状态：PAUSED（等待人工确认）
+- 决策人：AI 执行 / 用户待确认
+- 背景：需以只读方式读取旧 Base 的客户、项目、化妆师、模特，生成迁移预览报告
+- 执行结果：
+  - 只读取旧 Base 4 张表，未写 V2
+  - 生成完整迁移预览：字段映射、状态映射、重复候选、孤儿记录、非法枚举、缺失字段
+  - 客户和资源仅名称相同未自动合并
+  - 原始导出和隐私数据存入 `backups/private/`（已 gitignore）
+  - 每条核心记录给出分类：MIGRATABLE / NEEDS_REVIEW / BLOCKED / SKIP
+  - 最终分类统计（MIGRATABLE / NEEDS_REVIEW / BLOCKED / SKIP）：
+    - 客户：0 / 13 / 23 / 0（总 36 条）
+    - 项目：0 / 22 / 25 / 0（总 47 条）
+    - 化妆师：76 / 0 / 39 / 0（总 115 条）
+    - 模特：61 / 7 / 38 / 0（总 106 条）
+- 关键发现：
+  - 旧表存在大量名称为空的测试/废弃记录（客户 23、项目 25、化妆师 39、模特 38），这些 BLOCKED 记录已确认为真实空值，非字段映射问题
+  - 模特表使用 "艺名/昵称" 字段（非 "姓名"），初始脚本不匹配导致 106 条全部 BLOCKED；修正后 61 条 MIGRATABLE
+  - 项目表使用 "关联客户 ID" 字段（非 "关联客户"），初始脚本不匹配导致全部误判为孤儿
+  - 旧项目存在 "待立项" 和 "已完成" 状态，在 V2 项目状态机中无映射，需人工确认映射规则
+  - 旧客户 "已拍摄"/"拍摄完成" 状态在 V2 中均映射到 "服务中"，需人工确认
+  - 旧来源渠道 "抖音"/"视频号"/"朋友圈" 聚合到 V2 "其他"，需确认是否合理
+- 输出：`reports/phase1b2-migration-review-gate.md`（commit f655d95）
+- 暂停状态：⏸ Migration Review Gate — 等待人工确认以下事项：
+  1. 状态映射确认（已拍摄/拍摄完成 → 服务中；待立项/已完成 → ?）
+  2. 来源渠道聚合确认（抖音/视频号/朋友圈 → 其他）
+  3. 重复候选逐条确认
+  4. 孤儿记录处理（无关联项目的客户、无关联客户的项目）
+  5. 缺失字段处理（定金金额、成交金额、客户满意度等 V2 无对应字段）
+  6. 预算区间拆分规则确认
+- 后续复审日期：用户确认后进入 Phase 1B-3 小批量试迁移
