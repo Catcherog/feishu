@@ -2,8 +2,9 @@
 config/resource-map.local.json
 config/git-remote.local.txt
 
-# 备份与私有数据（不提交 Git）
+# 备份与私有数据（不提交 Git，含迁移原始导出、隐私数据、记录快照）
 backups/private/
+reports/private/
 
 # 环境变量
 .env
