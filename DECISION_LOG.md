@@ -136,3 +136,38 @@
 - 影响的表、代码和自动化：将在飞书新建 10 张 V2 表，不触碰 V1 旧表
 - 验证方式：Base 创建后生成 `resource-map.local.json` 并核对 Table ID / Field ID
 - 后续复审日期：Phase 1B 数据写入与验证完成后
+
+## D-016：Phase 1A V2 Pilot Base 创建与 [TEST] 数据写入完成
+
+- 日期：2026-07-15
+- 状态：COMPLETED
+- 决策人：用户 / AI 执行
+- 背景：D-015 已批准按 Schema 创建 V2 Pilot Base，需实际建表、建字段、写入 [TEST] 合成数据并生成资源映射
+- 执行结果：
+  - 飞书 Base：`泽怀影像_业务中台_V2_PILOT`
+  - Base token：`TARGET_V2_BASE_ALIAS`
+  - 创建 10 张业务表：Customer、Project、Resource、Project_Resource_Assignment、Planning_Document、Task、AI_Inbox、Automation_Event、Data_Quality_Issue、System_Config
+  - 写入 [TEST] 合成数据：
+    - Customer：3 条
+    - Project：3 条
+    - Resource：4 条
+    - Project_Resource_Assignment：2 条
+    - Planning_Document：2 条
+    - Task：3 条
+    - AI_Inbox：1 条
+    - Automation_Event：1 条
+    - Data_Quality_Issue：1 条
+    - System_Config：9 条
+  - 生成 `config/resource-map.local.json`（含 Base token、Table ID、Field ID 映射）
+- 限制条件遵守情况：
+  - 所有记录名称/手机号/摘要均带 `[TEST]` 标记
+  - 未迁移真实客户和资源
+  - 未修改 APP
+  - 未部署正式自动化
+  - 未自动进入下一阶段
+- 已知遗留问题：
+  - 标题解析存在 3 个同名 Base（早期重试产生），当前脚本按 `+title-resolve` 首个结果复用完整 Base（token 见上）；其余 2 个仅含默认空表，建议后续在飞书界面手动删除或重命名以避免混淆
+- 验证方式：
+  - `+record-list` 确认各表记录数与预期一致
+  - `resource-map.local.json` 中 Table ID / Field ID 与 `+field-list` / `+table-list` 返回一致
+- 后续复审日期：Phase 1B 数据写入与验证开始时
