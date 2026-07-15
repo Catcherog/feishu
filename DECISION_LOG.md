@@ -67,3 +67,50 @@
 - 影响的表、代码和自动化：暂不创建任何 V2 表，不写入真实或合成数据
 - 验证方式：Schema 文档通过 Secret 扫描和结构检查
 - 后续复审日期：Schema Review Gate 用户确认后
+
+## D-013：Phase 0.5 执行历史补全与验证结论
+
+- 日期：2026-07-15
+- 状态：APPROVED
+- 决策人：用户
+- 背景：用户完成 `lark-cli auth login` 后，使用 user 身份读取了 V1 Base 的 12 条工作流定义、核心表记录、视图配置，并生成 Phase 0.5 执行历史报告
+- 可选方案：
+  1. 继续等待飞书暴露 workflow execution history API 后再补全
+  2. 基于当前可获取的规则定义和记录快照生成推断报告，承认 API 限制
+- 最终决策：方案 2 — 生成推断报告并公开关键结论
+- 原因：
+  - `lark-cli` 未提供 workflow execution history 命令（`+workflow-execution-list` 不存在）
+  - 规则 #5 真实触发字段已验证为「客户状态」=「已付定金」，纠正了旧文档错误
+  - 规则 #12 已验证配置存在但数据条件未命中，未触发
+- 代价与风险：无法给出精确执行次数，只能给出潜在触发数和条件验证结论
+- 影响的表、代码和自动化：
+  - 旧自动化保持启用，未修改
+  - 旧 Base 未修改
+  - 完整数据备份存放于 `backups/private/`，不提交 Git
+- 验证方式：
+  - 12 条 workflow 配置备份完整
+  - 核心表记录备份完整
+  - 视图配置备份完整
+  - `docs/phase05-execution-report.md` 公开版无敏感信息
+- 后续复审日期：V2 迁移 Serverless 自动化设计时
+
+## D-014：Phase 0.5 临时脚本处理
+
+- 日期：2026-07-15
+- 状态：PENDING
+- 决策人：用户
+- 背景：Phase 0.5 数据分析过程中产生了多个一次性调试脚本，已按 `_temp_script.md` 规则存放到 `src/scripts/temp/` 并添加 TEMP 标记
+- 当前保留的临时脚本：
+  - `src/scripts/temp/phase05_execution_report.py`：生成 Phase 0.5 报告
+  - `src/scripts/temp/fix_json_v5.py`：修复备份 JSON 编码损坏
+  - `src/scripts/temp/compute_counts.py`：计算工作流潜在触发数
+- 已清理的脚本：多个中间调试版本（fix_json_v2/v3/v4.py、debug_*.py、inspect_*.py、test_*.py、decode_*.py 等）
+- 可选方案：
+  1. 删除全部临时脚本（Phase 0.5 已完成）
+  2. 迁移到 `src/scripts/` 并移除 TEMP 标记，作为 V2 数据分析工具保留
+- 最终决策：待用户确认
+- 原因：脚本的未来价值取决于是否还需要对 V1 Base 进行类似分析
+- 代价与风险：删除后若需复现报告需重新编写；保留会增加仓库体积
+- 影响的表、代码和自动化：无
+- 验证方式：用户确认后执行
+- 后续复审日期：用户回复后
