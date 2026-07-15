@@ -1,0 +1,2403 @@
+{
+  "schema_version": "v1.0",
+  "fixed_at": "2026-07-16",
+  "base_name": "泽怀影像_业务中台_V2_PILOT",
+  "source_document": "docs/v2-base-schema.md",
+  "tables": {
+    "customer": {
+      "display_name": "Customer 客户表",
+      "purpose": "保存客户的权威身份、需求和关系状态。一个客户可关联多个项目。客户状态描述商业关系阶段，不复制项目具体交付状态。",
+      "fields": [
+        {
+          "field_key": "customer_id",
+          "display_name": "客户编号",
+          "feishu_type": "auto_number",
+          "required": true,
+          "description": "稳定业务 ID，不使用 record_id",
+          "constraints": { "format": "CUST-{YYYYMMDD}-{###}" },
+          "options": null
+        },
+        {
+          "field_key": "customer_name",
+          "display_name": "客户姓名",
+          "feishu_type": "text",
+          "required": true,
+          "description": "正式姓名，昵称存入备注",
+          "constraints": { "max_length": 20, "non_empty": true },
+          "options": null
+        },
+        {
+          "field_key": "phone",
+          "display_name": "手机号",
+          "feishu_type": "text",
+          "required": true,
+          "description": "统一格式，中国大陆或国际标准",
+          "constraints": { "validation": "需标准化校验", "purpose": "用于去重匹配" },
+          "options": null
+        },
+        {
+          "field_key": "wechat_name",
+          "display_name": "微信号",
+          "feishu_type": "text",
+          "required": false,
+          "description": "不作为唯一匹配键",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "source_channel",
+          "display_name": "来源渠道",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "客户来源",
+          "constraints": null,
+          "options": ["小红书", "微信", "官网", "小程序", "转介绍", "其他"]
+        },
+        {
+          "field_key": "relationship_status",
+          "display_name": "客户状态",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "商业关系状态，见客户状态机",
+          "constraints": { "state_machine": "customer_relationship_status", "ai_direct_edit": false },
+          "options": ["新线索", "跟进中", "已确认需求", "待定金", "已成交", "服务中", "已完成", "复购/转介绍", "已流失"]
+        },
+        {
+          "field_key": "intent_level",
+          "display_name": "意向等级",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "客户意向强度",
+          "constraints": null,
+          "options": ["高", "中", "低", "未知"]
+        },
+        {
+          "field_key": "service_type",
+          "display_name": "服务类型",
+          "feishu_type": "multi_select",
+          "required": false,
+          "description": "期望拍摄类型",
+          "constraints": null,
+          "options": ["个人", "双人", "品牌", "创作", "其他"]
+        },
+        {
+          "field_key": "preferred_style",
+          "display_name": "偏好风格",
+          "feishu_type": "multi_select",
+          "required": false,
+          "description": "结构化风格标签",
+          "constraints": null,
+          "options": ["新中式", "电影感", "复古", "日系", "清新", "暗黑", "商务", "国潮", "其他"]
+        },
+        {
+          "field_key": "budget_min",
+          "display_name": "预算下限",
+          "feishu_type": "number",
+          "required": false,
+          "description": "预算范围下限",
+          "constraints": { "min": 0, "integer": true, "unit": "元" },
+          "options": null
+        },
+        {
+          "field_key": "budget_max",
+          "display_name": "预算上限",
+          "feishu_type": "number",
+          "required": false,
+          "description": "预算范围上限",
+          "constraints": { "min": "budget_min", "nullable": true, "unit": "元" },
+          "options": null
+        },
+        {
+          "field_key": "preferred_date_start",
+          "display_name": "期望档期起",
+          "feishu_type": "date",
+          "required": false,
+          "description": "期望拍摄时间范围起点",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "preferred_date_end",
+          "display_name": "期望档期止",
+          "feishu_type": "date",
+          "required": false,
+          "description": "期望拍摄时间范围终点",
+          "constraints": { "min": "preferred_date_start" },
+          "options": null
+        },
+        {
+          "field_key": "owner",
+          "display_name": "跟进负责人",
+          "feishu_type": "person",
+          "required": true,
+          "description": "当前跟进负责人",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "last_contact_at",
+          "display_name": "最后跟进时间",
+          "feishu_type": "datetime",
+          "required": false,
+          "description": "由真实跟进动作更新",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "next_action_at",
+          "display_name": "下次跟进时间",
+          "feishu_type": "datetime",
+          "required": false,
+          "description": "下一次应跟进时间",
+          "constraints": { "used_by_automation": "F1" },
+          "options": null
+        },
+        {
+          "field_key": "latest_summary",
+          "display_name": "最新跟进摘要",
+          "feishu_type": "multiline_text",
+          "required": false,
+          "description": "AI 可生成，人工确认后写入",
+          "constraints": { "max_length": 500 },
+          "options": null
+        },
+        {
+          "field_key": "privacy_level",
+          "display_name": "隐私级别",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "控制信息可见性",
+          "constraints": null,
+          "options": ["普通", "敏感", "高敏"]
+        },
+        {
+          "field_key": "created_at",
+          "display_name": "创建时间",
+          "feishu_type": "datetime",
+          "required": true,
+          "description": "审计字段，系统写入",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "updated_at",
+          "display_name": "更新时间",
+          "feishu_type": "datetime",
+          "required": true,
+          "description": "审计字段，系统写入",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "legacy_record_id",
+          "display_name": "旧记录ID",
+          "feishu_type": "text",
+          "required": false,
+          "description": "迁移对账用",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "legacy_source",
+          "display_name": "旧表来源",
+          "feishu_type": "text",
+          "required": false,
+          "description": "迁移对账用",
+          "constraints": null,
+          "options": null
+        }
+      ],
+      "views": [
+        {
+          "view_name": "全部客户",
+          "view_type": "表格",
+          "filter": "无",
+          "sort": "created_at 降序",
+          "description": "默认视图"
+        },
+        {
+          "view_name": "今日待跟进",
+          "view_type": "表格",
+          "filter": "next_action_at ≤ 今天 且 relationship_status ≠ 已完成 且 ≠ 已流失",
+          "sort": "next_action_at 升序",
+          "description": "F1 自动化数据源"
+        },
+        {
+          "view_name": "跟进中客户",
+          "view_type": "表格",
+          "filter": "relationship_status = 跟进中",
+          "sort": "next_action_at 升序",
+          "description": "活跃跟进池"
+        },
+        {
+          "view_name": "待定金客户",
+          "view_type": "表格",
+          "filter": "relationship_status = 待定金",
+          "sort": "updated_at 降序",
+          "description": "重点转化对象"
+        },
+        {
+          "view_name": "服务中客户",
+          "view_type": "表格",
+          "filter": "relationship_status = 服务中",
+          "sort": "owner 分组",
+          "description": "当前服务中"
+        },
+        {
+          "view_name": "已流失客户",
+          "view_type": "表格",
+          "filter": "relationship_status = 已流失",
+          "sort": "updated_at 降序",
+          "description": "回收站"
+        },
+        {
+          "view_name": "高意向客户",
+          "view_type": "看板",
+          "filter": "intent_level = 高 且 relationship_status ∈ {新线索, 跟进中, 已确认需求, 待定金}",
+          "sort": "—",
+          "description": "按状态分组看板"
+        },
+        {
+          "view_name": "按负责人分组",
+          "view_type": "看板",
+          "filter": "无",
+          "sort": "—",
+          "description": "owner 分组"
+        },
+        {
+          "view_name": "高敏客户",
+          "view_type": "表格",
+          "filter": "privacy_level = 高敏",
+          "sort": "created_at 降序",
+          "description": "隐私管控"
+        }
+      ]
+    },
+    "project": {
+      "display_name": "Project 项目表",
+      "purpose": "表示一次正式交付。客户付定金或负责人确认立项后创建。一个项目关联一个客户，可关联多个资源安排和策划案。",
+      "fields": [
+        {
+          "field_key": "project_id",
+          "display_name": "项目编号",
+          "feishu_type": "auto_number",
+          "required": true,
+          "description": "稳定业务 ID",
+          "constraints": { "format": "PRJ-{YYYYMMDD}-{###}" },
+          "options": null
+        },
+        {
+          "field_key": "customer_link",
+          "display_name": "关联客户",
+          "feishu_type": "link",
+          "required": true,
+          "description": "必须关联一个 Customer 记录",
+          "constraints": { "target_table": "customer", "relation": "single" },
+          "options": null
+        },
+        {
+          "field_key": "project_name",
+          "display_name": "项目名称",
+          "feishu_type": "text",
+          "required": true,
+          "description": "建议自动生成后允许人工修改",
+          "constraints": { "suggested_format": "{客户名}-{类型}-{日期}" },
+          "options": null
+        },
+        {
+          "field_key": "project_type",
+          "display_name": "项目类型",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "拍摄类型",
+          "constraints": null,
+          "options": ["客片", "创作", "品牌", "其他"]
+        },
+        {
+          "field_key": "project_status",
+          "display_name": "项目状态",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "见项目状态机",
+          "constraints": { "state_machine": "project_status", "ai_direct_edit": false },
+          "options": ["草稿", "策划中", "策划已批准", "资源确认中", "待拍摄", "拍摄完成", "后期制作", "客户确认", "已交付", "已归档"]
+        },
+        {
+          "field_key": "shoot_date_start",
+          "display_name": "拍摄开始时间",
+          "feishu_type": "datetime",
+          "required": false,
+          "description": "可为空",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "shoot_date_end",
+          "display_name": "拍摄结束时间",
+          "feishu_type": "datetime",
+          "required": false,
+          "description": "可为空",
+          "constraints": { "min": "shoot_date_start" },
+          "options": null
+        },
+        {
+          "field_key": "location_text",
+          "display_name": "拍摄地点",
+          "feishu_type": "text",
+          "required": false,
+          "description": "首期允许文本，后续可关联资源",
+          "constraints": { "max_length": 100 },
+          "options": null
+        },
+        {
+          "field_key": "project_owner",
+          "display_name": "项目负责人",
+          "feishu_type": "person",
+          "required": true,
+          "description": "项目总负责人",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "photographer",
+          "display_name": "摄影师",
+          "feishu_type": "person",
+          "required": false,
+          "description": "团队内人员可用人员字段",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "planning_status",
+          "display_name": "策划状态",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "策划案进度",
+          "constraints": null,
+          "options": ["未创建", "草稿", "待审核", "已批准", "需修改"]
+        },
+        {
+          "field_key": "planning_link",
+          "display_name": "关联策划案",
+          "feishu_type": "link",
+          "required": false,
+          "description": "关联 Planning_Document",
+          "constraints": { "target_table": "planning_document", "relation": "multi" },
+          "options": null
+        },
+        {
+          "field_key": "delivery_due_at",
+          "display_name": "交付截止日",
+          "feishu_type": "date",
+          "required": false,
+          "description": "交付 SLA",
+          "constraints": { "used_by_automation": "F2" },
+          "options": null
+        },
+        {
+          "field_key": "risk_level",
+          "display_name": "风险等级",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "项目风险",
+          "constraints": null,
+          "options": ["正常", "关注", "高风险"]
+        },
+        {
+          "field_key": "risk_reason",
+          "display_name": "风险原因",
+          "feishu_type": "multiline_text",
+          "required": false,
+          "description": "风险触发依据",
+          "constraints": { "recommended_when": "risk_level ≠ 正常" },
+          "options": null
+        },
+        {
+          "field_key": "folder_url",
+          "display_name": "项目文件夹",
+          "feishu_type": "url",
+          "required": false,
+          "description": "项目云盘/素材库链接",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "created_at",
+          "display_name": "创建时间",
+          "feishu_type": "datetime",
+          "required": true,
+          "description": "审计字段，系统写入",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "updated_at",
+          "display_name": "更新时间",
+          "feishu_type": "datetime",
+          "required": true,
+          "description": "审计字段，系统写入",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "legacy_record_id",
+          "display_name": "旧记录ID",
+          "feishu_type": "text",
+          "required": false,
+          "description": "迁移对账用",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "legacy_source",
+          "display_name": "旧表来源",
+          "feishu_type": "text",
+          "required": false,
+          "description": "迁移对账用",
+          "constraints": null,
+          "options": null
+        }
+      ],
+      "views": [
+        {
+          "view_name": "全部项目",
+          "view_type": "表格",
+          "filter": "无",
+          "sort": "created_at 降序",
+          "description": "默认视图"
+        },
+        {
+          "view_name": "未来3天拍摄",
+          "view_type": "表格",
+          "filter": "project_status = 待拍摄 且 shoot_date_start ≤ 今天+3天 且 shoot_date_start ≥ 今天",
+          "sort": "shoot_date_start 升序",
+          "description": "F2 自动化数据源"
+        },
+        {
+          "view_name": "交付超期",
+          "view_type": "表格",
+          "filter": "project_status ∈ {后期制作, 客户确认} 且 delivery_due_at < 今天",
+          "sort": "delivery_due_at 升序",
+          "description": "F2 自动化数据源"
+        },
+        {
+          "view_name": "待客户确认",
+          "view_type": "表格",
+          "filter": "project_status = 客户确认",
+          "sort": "updated_at 降序",
+          "description": "F2 自动化数据源"
+        },
+        {
+          "view_name": "策划中",
+          "view_type": "表格",
+          "filter": "project_status = 策划中 且 planning_status ∈ {草稿, 待审核, 需修改}",
+          "sort": "updated_at 降序",
+          "description": "策划跟进"
+        },
+        {
+          "view_name": "资源确认中",
+          "view_type": "表格",
+          "filter": "project_status = 资源确认中",
+          "sort": "updated_at 降序",
+          "description": "资源安排跟进"
+        },
+        {
+          "view_name": "高风险项目",
+          "view_type": "表格",
+          "filter": "risk_level = 高风险",
+          "sort": "delivery_due_at 升序",
+          "description": "风险管控"
+        },
+        {
+          "view_name": "进行中看板",
+          "view_type": "看板",
+          "filter": "project_status ∉ {草稿, 已归档}",
+          "sort": "—",
+          "description": "按状态分组"
+        },
+        {
+          "view_name": "按负责人分组",
+          "view_type": "看板",
+          "filter": "无",
+          "sort": "—",
+          "description": "project_owner 分组"
+        },
+        {
+          "view_name": "近期交付",
+          "view_type": "画册",
+          "filter": "project_status = 已交付",
+          "sort": "delivery_due_at 降序",
+          "description": "已交付项目展示"
+        }
+      ]
+    },
+    "resource": {
+      "display_name": "Resource 统一资源表",
+      "purpose": "合并模特、化妆师、场地、服装、修图师、摄影师等资源的公共信息，以\"资源类型 + 视图\"替代多张重复子表。通过 resource_type 区分资源类别。",
+      "fields": [
+        {
+          "field_key": "resource_id",
+          "display_name": "资源编号",
+          "feishu_type": "auto_number",
+          "required": true,
+          "description": "稳定业务 ID",
+          "constraints": { "format": "RES-{YYYYMMDD}-{###}" },
+          "options": null
+        },
+        {
+          "field_key": "resource_type",
+          "display_name": "资源类型",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "资源类别，视图分组核心",
+          "constraints": null,
+          "options": ["模特", "化妆师", "场地", "服装", "修图师", "摄影师", "其他"]
+        },
+        {
+          "field_key": "resource_name",
+          "display_name": "资源名称",
+          "feishu_type": "text",
+          "required": true,
+          "description": "名称或称呼",
+          "constraints": { "max_length": 30, "non_empty": true },
+          "options": null
+        },
+        {
+          "field_key": "contact",
+          "display_name": "联系方式",
+          "feishu_type": "text",
+          "required": false,
+          "description": "按隐私级别控制可见性",
+          "constraints": { "format": "手机号/微信/邮箱" },
+          "options": null
+        },
+        {
+          "field_key": "city",
+          "display_name": "城市",
+          "feishu_type": "single_select",
+          "required": false,
+          "description": "统一城市字典",
+          "constraints": null,
+          "options": ["杭州", "上海", "北京", "深圳", "广州", "成都", "武汉", "其他"]
+        },
+        {
+          "field_key": "style_tags",
+          "display_name": "风格标签",
+          "feishu_type": "multi_select",
+          "required": false,
+          "description": "擅长风格",
+          "constraints": null,
+          "options": ["新中式", "电影感", "复古", "日系", "清新", "暗黑", "商务", "国潮", "其他"]
+        },
+        {
+          "field_key": "capability_tags",
+          "display_name": "能力标签",
+          "feishu_type": "multi_select",
+          "required": false,
+          "description": "能力/属性标签",
+          "constraints": null,
+          "options": ["发型", "妆面", "尺码", "设备", "场地类型", "服装类别", "其他"]
+        },
+        {
+          "field_key": "priority",
+          "display_name": "优先级",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "资源优先级",
+          "constraints": null,
+          "options": ["S", "A", "B", "待评估"]
+        },
+        {
+          "field_key": "cooperation_status",
+          "display_name": "合作状态",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "当前合作状态",
+          "constraints": null,
+          "options": ["未联系", "沟通中", "已合作", "暂停", "黑名单"]
+        },
+        {
+          "field_key": "availability_note",
+          "display_name": "档期备注",
+          "feishu_type": "text",
+          "required": false,
+          "description": "首期不做完整排期系统",
+          "constraints": { "max_length": 200 },
+          "options": null
+        },
+        {
+          "field_key": "portfolio_url",
+          "display_name": "作品链接",
+          "feishu_type": "url",
+          "required": false,
+          "description": "作品集链接",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "price_min",
+          "display_name": "报价下限",
+          "feishu_type": "number",
+          "required": false,
+          "description": "报价范围下限",
+          "constraints": { "min": 0, "unit": "元" },
+          "options": null
+        },
+        {
+          "field_key": "price_max",
+          "display_name": "报价上限",
+          "feishu_type": "number",
+          "required": false,
+          "description": "报价范围上限",
+          "constraints": { "min": "price_min", "unit": "元" },
+          "options": null
+        },
+        {
+          "field_key": "rating_quality",
+          "display_name": "质量评分",
+          "feishu_type": "rating",
+          "required": false,
+          "description": "质量评价",
+          "constraints": { "min": 1, "max": 5 },
+          "options": null
+        },
+        {
+          "field_key": "rating_reliability",
+          "display_name": "可靠性评分",
+          "feishu_type": "rating",
+          "required": false,
+          "description": "合作可靠性",
+          "constraints": { "min": 1, "max": 5 },
+          "options": null
+        },
+        {
+          "field_key": "last_cooperation_at",
+          "display_name": "最近合作日期",
+          "feishu_type": "date",
+          "required": false,
+          "description": "最近一次合作时间",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "notes",
+          "display_name": "备注",
+          "feishu_type": "multiline_text",
+          "required": false,
+          "description": "补充信息，不得代替结构化字段",
+          "constraints": { "max_length": 500 },
+          "options": null
+        },
+        {
+          "field_key": "resource_profile_json",
+          "display_name": "资源档案JSON",
+          "feishu_type": "multiline_text",
+          "required": false,
+          "description": "类型特有信息，供 Agent 和 API 使用",
+          "constraints": { "format": "合法 JSON 字符串" },
+          "options": null
+        },
+        {
+          "field_key": "created_at",
+          "display_name": "创建时间",
+          "feishu_type": "datetime",
+          "required": true,
+          "description": "审计字段，系统写入",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "updated_at",
+          "display_name": "更新时间",
+          "feishu_type": "datetime",
+          "required": true,
+          "description": "审计字段，系统写入",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "legacy_record_id",
+          "display_name": "旧记录ID",
+          "feishu_type": "text",
+          "required": false,
+          "description": "迁移对账用",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "legacy_source",
+          "display_name": "旧表来源",
+          "feishu_type": "text",
+          "required": false,
+          "description": "迁移对账用，旧子表名（如\"模特资源库\"）",
+          "constraints": null,
+          "options": null
+        }
+      ],
+      "views": [
+        {
+          "view_name": "全部资源",
+          "view_type": "表格",
+          "filter": "无",
+          "sort": "created_at 降序",
+          "description": "默认视图"
+        },
+        {
+          "view_name": "模特库",
+          "view_type": "表格",
+          "filter": "resource_type = 模特",
+          "sort": "priority 升序 → rating_quality 降序",
+          "description": "模特视图"
+        },
+        {
+          "view_name": "化妆师库",
+          "view_type": "表格",
+          "filter": "resource_type = 化妆师",
+          "sort": "priority 升序 → rating_quality 降序",
+          "description": "化妆师视图"
+        },
+        {
+          "view_name": "场地库",
+          "view_type": "表格",
+          "filter": "resource_type = 场地",
+          "sort": "priority 升序",
+          "description": "场地视图"
+        },
+        {
+          "view_name": "服装库",
+          "view_type": "表格",
+          "filter": "resource_type = 服装",
+          "sort": "created_at 降序",
+          "description": "服装视图"
+        },
+        {
+          "view_name": "修图师库",
+          "view_type": "表格",
+          "filter": "resource_type = 修图师",
+          "sort": "priority 升序 → rating_reliability 降序",
+          "description": "修图师视图"
+        },
+        {
+          "view_name": "摄影师库",
+          "view_type": "表格",
+          "filter": "resource_type = 摄影师",
+          "sort": "priority 升序",
+          "description": "摄影师视图"
+        },
+        {
+          "view_name": "S级资源",
+          "view_type": "表格",
+          "filter": "priority = S",
+          "sort": "resource_type 分组",
+          "description": "顶级资源池"
+        },
+        {
+          "view_name": "待评估资源",
+          "view_type": "表格",
+          "filter": "priority = 待评估",
+          "sort": "created_at 降序",
+          "description": "新资源待评估"
+        },
+        {
+          "view_name": "杭州可用资源",
+          "view_type": "表格",
+          "filter": "city = 杭州 且 cooperation_status ∈ {已合作, 沟通中}",
+          "sort": "priority 升序",
+          "description": "地区可用资源"
+        },
+        {
+          "view_name": "可合作资源",
+          "view_type": "看板",
+          "filter": "cooperation_status ∈ {已合作, 沟通中, 未联系} 且 ≠ 黑名单",
+          "sort": "—",
+          "description": "按合作状态分组"
+        },
+        {
+          "view_name": "按类型分组",
+          "view_type": "看板",
+          "filter": "无",
+          "sort": "—",
+          "description": "resource_type 分组"
+        }
+      ]
+    },
+    "project_resource_assignment": {
+      "display_name": "Project_Resource_Assignment 项目资源安排表",
+      "purpose": "解决\"一个项目使用多个资源、一个资源参与多个项目\"的多对多关系。是资源推荐、档期冲突检测和策划案资源清单的关键中间层。",
+      "fields": [
+        {
+          "field_key": "assignment_id",
+          "display_name": "安排编号",
+          "feishu_type": "auto_number",
+          "required": true,
+          "description": "唯一编号",
+          "constraints": { "format": "ASG-{YYYYMMDD}-{###}" },
+          "options": null
+        },
+        {
+          "field_key": "project_link",
+          "display_name": "关联项目",
+          "feishu_type": "link",
+          "required": true,
+          "description": "必填",
+          "constraints": { "target_table": "project", "relation": "single" },
+          "options": null
+        },
+        {
+          "field_key": "resource_link",
+          "display_name": "关联资源",
+          "feishu_type": "link",
+          "required": true,
+          "description": "必填",
+          "constraints": { "target_table": "resource", "relation": "single" },
+          "options": null
+        },
+        {
+          "field_key": "role_in_project",
+          "display_name": "项目角色",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "资源在项目中的角色",
+          "constraints": null,
+          "options": ["主模特", "备选模特", "主化妆", "备选化妆", "主摄影", "助理摄影", "场地", "服装", "修图师", "道具", "其他"]
+        },
+        {
+          "field_key": "booking_status",
+          "display_name": "预约状态",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "资源预约进度",
+          "constraints": null,
+          "options": ["候选", "询价中", "待确认", "已确认", "已取消"]
+        },
+        {
+          "field_key": "quoted_price",
+          "display_name": "报价",
+          "feishu_type": "number",
+          "required": false,
+          "description": "资源报价",
+          "constraints": { "min": 0, "unit": "元" },
+          "options": null
+        },
+        {
+          "field_key": "confirmed_price",
+          "display_name": "确认价格",
+          "feishu_type": "number",
+          "required": false,
+          "description": "最终确认价格",
+          "constraints": { "min": 0, "unit": "元" },
+          "options": null
+        },
+        {
+          "field_key": "start_at",
+          "display_name": "档期开始",
+          "feishu_type": "datetime",
+          "required": false,
+          "description": "预约档期起点",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "end_at",
+          "display_name": "档期结束",
+          "feishu_type": "datetime",
+          "required": false,
+          "description": "预约档期终点",
+          "constraints": { "min": "start_at" },
+          "options": null
+        },
+        {
+          "field_key": "conflict_status",
+          "display_name": "冲突状态",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "档期冲突检测结果，由 S4 自动化更新",
+          "constraints": { "updated_by_automation": "S4" },
+          "options": ["无冲突", "疑似冲突", "已冲突"]
+        },
+        {
+          "field_key": "owner",
+          "display_name": "跟进人",
+          "feishu_type": "person",
+          "required": false,
+          "description": "资源安排跟进负责人",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "notes",
+          "display_name": "备注",
+          "feishu_type": "text",
+          "required": false,
+          "description": "补充信息",
+          "constraints": { "max_length": 200 },
+          "options": null
+        },
+        {
+          "field_key": "created_at",
+          "display_name": "创建时间",
+          "feishu_type": "datetime",
+          "required": true,
+          "description": "审计字段，系统写入",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "updated_at",
+          "display_name": "更新时间",
+          "feishu_type": "datetime",
+          "required": true,
+          "description": "审计字段，系统写入",
+          "constraints": null,
+          "options": null
+        }
+      ],
+      "views": [
+        {
+          "view_name": "全部安排",
+          "view_type": "表格",
+          "filter": "无",
+          "sort": "created_at 降序",
+          "description": "默认视图"
+        },
+        {
+          "view_name": "待确认安排",
+          "view_type": "表格",
+          "filter": "booking_status = 待确认",
+          "sort": "start_at 升序",
+          "description": "需跟进确认"
+        },
+        {
+          "view_name": "已确认安排",
+          "view_type": "表格",
+          "filter": "booking_status = 已确认",
+          "sort": "start_at 升序",
+          "description": "已确认档期"
+        },
+        {
+          "view_name": "冲突安排",
+          "view_type": "表格",
+          "filter": "conflict_status ∈ {疑似冲突, 已冲突}",
+          "sort": "start_at 升序",
+          "description": "S4 自动化产出"
+        },
+        {
+          "view_name": "按项目分组",
+          "view_type": "看板",
+          "filter": "无",
+          "sort": "—",
+          "description": "project_link 分组"
+        },
+        {
+          "view_name": "按资源分组",
+          "view_type": "看板",
+          "filter": "booking_status ≠ 已取消",
+          "sort": "—",
+          "description": "resource_link 分组"
+        },
+        {
+          "view_name": "近期档期",
+          "view_type": "表格",
+          "filter": "start_at ≥ 今天 且 booking_status = 已确认 且 start_at ≤ 今天+7天",
+          "sort": "start_at 升序",
+          "description": "本周档期"
+        }
+      ]
+    },
+    "planning_document": {
+      "display_name": "Planning_Document 策划案表",
+      "purpose": "保存策划案的元数据、版本和审批状态。完整策划案正文存储在飞书文档或 Wiki 中，多维表只保存摘要和结构化字段。",
+      "fields": [
+        {
+          "field_key": "planning_id",
+          "display_name": "策划编号",
+          "feishu_type": "auto_number",
+          "required": true,
+          "description": "策划案 ID",
+          "constraints": { "format": "PLN-{YYYYMMDD}-{###}" },
+          "options": null
+        },
+        {
+          "field_key": "project_link",
+          "display_name": "关联项目",
+          "feishu_type": "link",
+          "required": true,
+          "description": "必填",
+          "constraints": { "target_table": "project", "relation": "single" },
+          "options": null
+        },
+        {
+          "field_key": "version",
+          "display_name": "版本号",
+          "feishu_type": "text",
+          "required": true,
+          "description": "版本标识",
+          "constraints": { "format": "v1, v2, ..." },
+          "options": null
+        },
+        {
+          "field_key": "status",
+          "display_name": "策划状态",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "策划案审批状态",
+          "constraints": { "flow": "AI草稿 → 人工编辑 → 待客户确认 → 已批准（或 已废弃）" },
+          "options": ["AI草稿", "人工编辑", "待客户确认", "已批准", "已废弃"]
+        },
+        {
+          "field_key": "document_url",
+          "display_name": "策划文档链接",
+          "feishu_type": "url",
+          "required": false,
+          "description": "飞书文档链接，完整正文存储位置",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "template_version",
+          "display_name": "模板版本",
+          "feishu_type": "text",
+          "required": false,
+          "description": "策划模板版本",
+          "constraints": { "format": "v1.0, v1.1, ..." },
+          "options": null
+        },
+        {
+          "field_key": "ai_job_link",
+          "display_name": "AI来源任务",
+          "feishu_type": "link",
+          "required": false,
+          "description": "生成来源",
+          "constraints": { "target_table": "ai_inbox", "relation": "single" },
+          "options": null
+        },
+        {
+          "field_key": "summary",
+          "display_name": "策划摘要",
+          "feishu_type": "multiline_text",
+          "required": false,
+          "description": "策划案整体摘要",
+          "constraints": { "max_length": 1000 },
+          "options": null
+        },
+        {
+          "field_key": "theme",
+          "display_name": "主题",
+          "feishu_type": "text",
+          "required": false,
+          "description": "拍摄主题",
+          "constraints": { "max_length": 50 },
+          "options": null
+        },
+        {
+          "field_key": "style_tags",
+          "display_name": "风格标签",
+          "feishu_type": "multi_select",
+          "required": false,
+          "description": "策划风格",
+          "constraints": null,
+          "options": ["新中式", "电影感", "复古", "日系", "清新", "暗黑", "商务", "国潮", "其他"]
+        },
+        {
+          "field_key": "scene_plan",
+          "display_name": "场景摘要",
+          "feishu_type": "multiline_text",
+          "required": false,
+          "description": "场景安排摘要，不保存完整正文",
+          "constraints": { "max_length": 500 },
+          "options": null
+        },
+        {
+          "field_key": "wardrobe_plan",
+          "display_name": "服装摘要",
+          "feishu_type": "multiline_text",
+          "required": false,
+          "description": "服装方案摘要，不保存完整正文",
+          "constraints": { "max_length": 500 },
+          "options": null
+        },
+        {
+          "field_key": "makeup_plan",
+          "display_name": "妆造摘要",
+          "feishu_type": "multiline_text",
+          "required": false,
+          "description": "妆造方案摘要，不保存完整正文",
+          "constraints": { "max_length": 500 },
+          "options": null
+        },
+        {
+          "field_key": "shot_list_summary",
+          "display_name": "分镜摘要",
+          "feishu_type": "multiline_text",
+          "required": false,
+          "description": "分镜列表摘要，不保存完整正文",
+          "constraints": { "max_length": 500 },
+          "options": null
+        },
+        {
+          "field_key": "risk_notes",
+          "display_name": "风险与待确认",
+          "feishu_type": "multiline_text",
+          "required": false,
+          "description": "风险提示与待确认问题",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "approved_by",
+          "display_name": "批准人",
+          "feishu_type": "person",
+          "required": false,
+          "description": "内部批准人",
+          "constraints": { "required_when": "status=已批准" },
+          "options": null
+        },
+        {
+          "field_key": "approved_at",
+          "display_name": "批准时间",
+          "feishu_type": "datetime",
+          "required": false,
+          "description": "内部批准时间",
+          "constraints": { "required_when": "status=已批准" },
+          "options": null
+        },
+        {
+          "field_key": "created_at",
+          "display_name": "创建时间",
+          "feishu_type": "datetime",
+          "required": true,
+          "description": "审计字段，系统写入",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "updated_at",
+          "display_name": "更新时间",
+          "feishu_type": "datetime",
+          "required": true,
+          "description": "审计字段，系统写入",
+          "constraints": null,
+          "options": null
+        }
+      ],
+      "views": [
+        {
+          "view_name": "全部策划",
+          "view_type": "表格",
+          "filter": "无",
+          "sort": "created_at 降序",
+          "description": "默认视图"
+        },
+        {
+          "view_name": "AI草稿待审核",
+          "view_type": "表格",
+          "filter": "status = AI草稿",
+          "sort": "created_at 升序",
+          "description": "待人工编辑"
+        },
+        {
+          "view_name": "待客户确认",
+          "view_type": "表格",
+          "filter": "status = 待客户确认",
+          "sort": "updated_at 降序",
+          "description": "等待客户反馈"
+        },
+        {
+          "view_name": "已批准策划",
+          "view_type": "表格",
+          "filter": "status = 已批准",
+          "sort": "approved_at 降序",
+          "description": "已批准策划案"
+        },
+        {
+          "view_name": "最新版本",
+          "view_type": "表格",
+          "filter": "每个 project_link 仅显示最新 version",
+          "sort": "version 降序",
+          "description": "按项目显示最新策划"
+        },
+        {
+          "view_name": "按项目分组",
+          "view_type": "看板",
+          "filter": "无",
+          "sort": "—",
+          "description": "project_link 分组"
+        },
+        {
+          "view_name": "按状态看板",
+          "view_type": "看板",
+          "filter": "status ≠ 已废弃",
+          "sort": "—",
+          "description": "status 分组"
+        }
+      ]
+    },
+    "task": {
+      "display_name": "Task 任务表",
+      "purpose": "保存跨角色、需要 SLA 或需要证据的任务。首期不保存所有待办，只保存关键流程节点任务。",
+      "fields": [
+        {
+          "field_key": "task_id",
+          "display_name": "任务编号",
+          "feishu_type": "auto_number",
+          "required": true,
+          "description": "唯一 ID",
+          "constraints": { "format": "TSK-{YYYYMMDD}-{###}" },
+          "options": null
+        },
+        {
+          "field_key": "project_link",
+          "display_name": "关联项目",
+          "feishu_type": "link",
+          "required": false,
+          "description": "可为空（跨项目任务）",
+          "constraints": { "target_table": "project", "relation": "single", "nullable": true },
+          "options": null
+        },
+        {
+          "field_key": "task_type",
+          "display_name": "任务类型",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "任务类别",
+          "constraints": null,
+          "options": ["跟进", "策划", "资源确认", "拍摄", "后期", "交付", "复盘"]
+        },
+        {
+          "field_key": "title",
+          "display_name": "任务标题",
+          "feishu_type": "text",
+          "required": true,
+          "description": "任务标题",
+          "constraints": { "max_length": 50 },
+          "options": null
+        },
+        {
+          "field_key": "status",
+          "display_name": "任务状态",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "任务执行状态",
+          "constraints": null,
+          "options": ["待处理", "处理中", "受阻", "已完成", "已取消"]
+        },
+        {
+          "field_key": "owner",
+          "display_name": "负责人",
+          "feishu_type": "person",
+          "required": true,
+          "description": "任务负责人",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "due_at",
+          "display_name": "截止时间",
+          "feishu_type": "datetime",
+          "required": false,
+          "description": "任务截止时间",
+          "constraints": { "used_for": "SLA 监控" },
+          "options": null
+        },
+        {
+          "field_key": "completed_at",
+          "display_name": "完成时间",
+          "feishu_type": "datetime",
+          "required": false,
+          "description": "实际完成时间",
+          "constraints": { "required_when": "status=已完成" },
+          "options": null
+        },
+        {
+          "field_key": "evidence_url",
+          "display_name": "完成证据",
+          "feishu_type": "url",
+          "required": false,
+          "description": "完成证据链接",
+          "constraints": { "format": "可为附件或 URL" },
+          "options": null
+        },
+        {
+          "field_key": "source_event_id",
+          "display_name": "来源事件ID",
+          "feishu_type": "text",
+          "required": false,
+          "description": "由哪个自动化创建",
+          "constraints": { "references": "Automation_Event.event_id" },
+          "options": null
+        },
+        {
+          "field_key": "notes",
+          "display_name": "备注",
+          "feishu_type": "text",
+          "required": false,
+          "description": "补充信息",
+          "constraints": { "max_length": 200 },
+          "options": null
+        },
+        {
+          "field_key": "created_at",
+          "display_name": "创建时间",
+          "feishu_type": "datetime",
+          "required": true,
+          "description": "审计字段，系统写入",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "updated_at",
+          "display_name": "更新时间",
+          "feishu_type": "datetime",
+          "required": true,
+          "description": "审计字段，系统写入",
+          "constraints": null,
+          "options": null
+        }
+      ],
+      "views": [
+        {
+          "view_name": "全部任务",
+          "view_type": "表格",
+          "filter": "无",
+          "sort": "created_at 降序",
+          "description": "默认视图"
+        },
+        {
+          "view_name": "待处理",
+          "view_type": "表格",
+          "filter": "status = 待处理",
+          "sort": "due_at 升序",
+          "description": "待领取任务"
+        },
+        {
+          "view_name": "处理中",
+          "view_type": "表格",
+          "filter": "status = 处理中",
+          "sort": "due_at 升序",
+          "description": "进行中任务"
+        },
+        {
+          "view_name": "受阻任务",
+          "view_type": "表格",
+          "filter": "status = 受阻",
+          "sort": "updated_at 降序",
+          "description": "需关注"
+        },
+        {
+          "view_name": "已超期",
+          "view_type": "表格",
+          "filter": "status ∈ {待处理, 处理中} 且 due_at < 今天 且 due_at ≠ 空",
+          "sort": "due_at 升序",
+          "description": "SLA 超期"
+        },
+        {
+          "view_name": "今日到期",
+          "view_type": "表格",
+          "filter": "due_at = 今天 且 status ∈ {待处理, 处理中}",
+          "sort": "due_at 升序",
+          "description": "今日截止"
+        },
+        {
+          "view_name": "按负责人分组",
+          "view_type": "看板",
+          "filter": "status ∈ {待处理, 处理中, 受阻}",
+          "sort": "—",
+          "description": "owner 分组"
+        },
+        {
+          "view_name": "按类型看板",
+          "view_type": "看板",
+          "filter": "status ∈ {待处理, 处理中}",
+          "sort": "—",
+          "description": "task_type 分组"
+        },
+        {
+          "view_name": "复盘任务",
+          "view_type": "表格",
+          "filter": "task_type = 复盘 且 status ≠ 已取消",
+          "sort": "due_at 升序",
+          "description": "S6 自动化产出"
+        }
+      ]
+    },
+    "ai_inbox": {
+      "display_name": "AI_Inbox AI审核队列",
+      "purpose": "所有 AI 生成的候选数据先进入此表，人工确认后才能写入核心事实表。是 AI 与核心数据之间的质量闸门。",
+      "fields": [
+        {
+          "field_key": "ai_job_id",
+          "display_name": "AI任务编号",
+          "feishu_type": "text",
+          "required": true,
+          "description": "UUID，由 Agent 生成，全局唯一",
+          "constraints": { "format": "UUID" },
+          "options": null
+        },
+        {
+          "field_key": "task_type",
+          "display_name": "任务类型",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "AI 处理类型",
+          "constraints": null,
+          "options": ["客户提取", "资源提取", "项目提取", "策划生成", "摘要", "质检"]
+        },
+        {
+          "field_key": "source_type",
+          "display_name": "输入来源",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "原始输入类型",
+          "constraints": null,
+          "options": ["文本", "截图", "语音", "表单", "聊天记录", "项目记录"]
+        },
+        {
+          "field_key": "source_url",
+          "display_name": "原始输入链接",
+          "feishu_type": "url",
+          "required": false,
+          "description": "原始输入文件链接",
+          "constraints": { "format": "附件或 URL" },
+          "options": null
+        },
+        {
+          "field_key": "source_text",
+          "display_name": "输入文本",
+          "feishu_type": "multiline_text",
+          "required": false,
+          "description": "OCR/ASR 后的文本",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "target_entity",
+          "display_name": "目标实体",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "写回目标表",
+          "constraints": null,
+          "options": ["Customer", "Resource", "Project", "Planning"]
+        },
+        {
+          "field_key": "candidate_record_id",
+          "display_name": "候选记录ID",
+          "feishu_type": "text",
+          "required": false,
+          "description": "可能匹配的已有业务 ID",
+          "constraints": { "purpose": "用于去重匹配" },
+          "options": null
+        },
+        {
+          "field_key": "output_json",
+          "display_name": "AI输出JSON",
+          "feishu_type": "multiline_text",
+          "required": true,
+          "description": "符合 JSON Schema 的输出",
+          "constraints": { "format": "合法 JSON，符合 ai_ingest_output.schema.json" },
+          "options": null
+        },
+        {
+          "field_key": "confidence",
+          "display_name": "置信度",
+          "feishu_type": "number",
+          "required": true,
+          "description": "AI 输出整体置信度",
+          "constraints": { "min": 0, "max": 1, "precision": 2 },
+          "options": null
+        },
+        {
+          "field_key": "risk_level",
+          "display_name": "风险等级",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "写回风险分级",
+          "constraints": {
+            "writeback_rules": {
+              "Low": "标签、摘要、非关键备注 → 可批量审核，允许自动写回",
+              "Medium": "客户需求、预算、日期、资源匹配 → 必须逐条人工审核",
+              "High": "价格、付款、合同、档期承诺、删除、合并 → 不允许自动写回"
+            }
+          },
+          "options": ["Low", "Medium", "High"]
+        },
+        {
+          "field_key": "validation_errors",
+          "display_name": "校验错误",
+          "feishu_type": "multiline_text",
+          "required": false,
+          "description": "字段校验错误信息",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "review_status",
+          "display_name": "审核状态",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "人工审核结果",
+          "constraints": { "writeback_rule": "仅 已采纳 或 已修改 状态才能执行 S7 写回" },
+          "options": ["待审核", "已采纳", "已修改", "已拒绝", "执行失败"]
+        },
+        {
+          "field_key": "reviewer",
+          "display_name": "审核人",
+          "feishu_type": "person",
+          "required": false,
+          "description": "人工审核人",
+          "constraints": { "required_when": "review_status ≠ 待审核" },
+          "options": null
+        },
+        {
+          "field_key": "human_revision_json",
+          "display_name": "人工修改JSON",
+          "feishu_type": "multiline_text",
+          "required": false,
+          "description": "人工修改后的输出",
+          "constraints": { "format": "合法 JSON" },
+          "options": null
+        },
+        {
+          "field_key": "writeback_target",
+          "display_name": "写回目标",
+          "feishu_type": "text",
+          "required": false,
+          "description": "目标表和字段描述",
+          "constraints": { "example": "Customer.phone, Customer.budget_min" },
+          "options": null
+        },
+        {
+          "field_key": "writeback_result",
+          "display_name": "写回结果",
+          "feishu_type": "multiline_text",
+          "required": false,
+          "description": "写回执行结果",
+          "constraints": { "format": "成功/失败/冲突详情" },
+          "options": null
+        },
+        {
+          "field_key": "model_name",
+          "display_name": "模型名称",
+          "feishu_type": "text",
+          "required": false,
+          "description": "使用的 AI 模型",
+          "constraints": { "example": "doubao-pro, gpt-4o" },
+          "options": null
+        },
+        {
+          "field_key": "prompt_version",
+          "display_name": "Prompt版本",
+          "feishu_type": "text",
+          "required": false,
+          "description": "使用的 Prompt 版本",
+          "constraints": { "format": "{task}-v{major}.{minor}" },
+          "options": null
+        },
+        {
+          "field_key": "latency_ms",
+          "display_name": "耗时(ms)",
+          "feishu_type": "number",
+          "required": false,
+          "description": "AI 处理耗时",
+          "constraints": { "unit": "毫秒" },
+          "options": null
+        },
+        {
+          "field_key": "cost_estimate",
+          "display_name": "成本估算",
+          "feishu_type": "number",
+          "required": false,
+          "description": "单次调用成本估算",
+          "constraints": { "unit": "元" },
+          "options": null
+        },
+        {
+          "field_key": "created_at",
+          "display_name": "创建时间",
+          "feishu_type": "datetime",
+          "required": true,
+          "description": "审计字段，系统写入",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "reviewed_at",
+          "display_name": "审核时间",
+          "feishu_type": "datetime",
+          "required": false,
+          "description": "人工审核时间",
+          "constraints": { "required_when": "review_status ≠ 待审核" },
+          "options": null
+        }
+      ],
+      "views": [
+        {
+          "view_name": "全部任务",
+          "view_type": "表格",
+          "filter": "无",
+          "sort": "created_at 降序",
+          "description": "默认视图"
+        },
+        {
+          "view_name": "待审核",
+          "view_type": "表格",
+          "filter": "review_status = 待审核",
+          "sort": "risk_level 升序 → created_at 升序",
+          "description": "F3 自动化数据源"
+        },
+        {
+          "view_name": "高风险待审",
+          "view_type": "表格",
+          "filter": "review_status = 待审核 且 risk_level = High",
+          "sort": "created_at 升序",
+          "description": "F3 即时提醒"
+        },
+        {
+          "view_name": "中风险待审",
+          "view_type": "表格",
+          "filter": "review_status = 待审核 且 risk_level = Medium",
+          "sort": "created_at 升序",
+          "description": "F3 汇总提醒"
+        },
+        {
+          "view_name": "已采纳",
+          "view_type": "表格",
+          "filter": "review_status = 已采纳",
+          "sort": "reviewed_at 降序",
+          "description": "已写回记录"
+        },
+        {
+          "view_name": "已拒绝",
+          "view_type": "表格",
+          "filter": "review_status = 已拒绝",
+          "sort": "reviewed_at 降序",
+          "description": "被拒绝记录"
+        },
+        {
+          "view_name": "执行失败",
+          "view_type": "表格",
+          "filter": "review_status = 执行失败",
+          "sort": "created_at 降序",
+          "description": "写回失败待处理"
+        },
+        {
+          "view_name": "按类型看板",
+          "view_type": "看板",
+          "filter": "review_status = 待审核",
+          "sort": "—",
+          "description": "task_type 分组"
+        },
+        {
+          "view_name": "按风险看板",
+          "view_type": "看板",
+          "filter": "review_status = 待审核",
+          "sort": "—",
+          "description": "risk_level 分组"
+        },
+        {
+          "view_name": "近期已审",
+          "view_type": "表格",
+          "filter": "review_status ∈ {已采纳, 已修改, 已拒绝} 且 reviewed_at ≥ 今天-7天",
+          "sort": "reviewed_at 降序",
+          "description": "近 7 天审核记录"
+        }
+      ]
+    },
+    "automation_event": {
+      "display_name": "Automation_Event 自动化事件日志",
+      "purpose": "所有 Serverless 自动化必须写日志。记录自动化触发、执行、结果和错误，用于监控、重试和人工补偿。",
+      "fields": [
+        {
+          "field_key": "event_id",
+          "display_name": "事件编号",
+          "feishu_type": "text",
+          "required": true,
+          "description": "UUID，全局唯一",
+          "constraints": { "format": "UUID" },
+          "options": null
+        },
+        {
+          "field_key": "event_type",
+          "display_name": "事件类型",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "自动化规则类型",
+          "constraints": null,
+          "options": ["S1定金创建项目", "S2策划草稿生成", "S3执行任务生成", "S4资源冲突检查", "S5客户状态同步", "S6复盘任务生成", "S7AI写回", "S8失败汇总", "手动补偿", "其他"]
+        },
+        {
+          "field_key": "source_table",
+          "display_name": "来源表",
+          "feishu_type": "single_select",
+          "required": false,
+          "description": "触发来源表",
+          "constraints": null,
+          "options": ["Customer", "Project", "Resource", "Assignment", "Planning_Document", "Task", "AI_Inbox"]
+        },
+        {
+          "field_key": "source_record_id",
+          "display_name": "来源记录ID",
+          "feishu_type": "text",
+          "required": false,
+          "description": "触发来源记录 ID",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "idempotency_key",
+          "display_name": "幂等键",
+          "feishu_type": "text",
+          "required": true,
+          "description": "幂等控制",
+          "constraints": { "format": "source_record_id + event_type + rule_version", "unique": true },
+          "options": null
+        },
+        {
+          "field_key": "rule_version",
+          "display_name": "规则版本",
+          "feishu_type": "text",
+          "required": true,
+          "description": "自动化规则版本",
+          "constraints": { "format": "v1.0, v1.1, ..." },
+          "options": null
+        },
+        {
+          "field_key": "input_snapshot",
+          "display_name": "输入快照",
+          "feishu_type": "multiline_text",
+          "required": false,
+          "description": "触发时的输入数据快照",
+          "constraints": { "format": "合法 JSON，脱敏后存储" },
+          "options": null
+        },
+        {
+          "field_key": "status",
+          "display_name": "执行状态",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "执行结果",
+          "constraints": { "flow": "received → running → success / failed / manual_action" },
+          "options": ["received", "running", "success", "failed", "manual_action"]
+        },
+        {
+          "field_key": "started_at",
+          "display_name": "开始时间",
+          "feishu_type": "datetime",
+          "required": true,
+          "description": "执行开始时间",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "completed_at",
+          "display_name": "完成时间",
+          "feishu_type": "datetime",
+          "required": false,
+          "description": "执行完成时间",
+          "constraints": { "required_when": "status ∈ {success, failed, manual_action}" },
+          "options": null
+        },
+        {
+          "field_key": "retry_count",
+          "display_name": "重试次数",
+          "feishu_type": "number",
+          "required": true,
+          "description": "自动重试次数",
+          "constraints": { "min": 0, "max": 3 },
+          "options": null
+        },
+        {
+          "field_key": "output_summary",
+          "display_name": "执行结果摘要",
+          "feishu_type": "multiline_text",
+          "required": false,
+          "description": "执行结果描述",
+          "constraints": { "max_length": 500 },
+          "options": null
+        },
+        {
+          "field_key": "error_code",
+          "display_name": "错误代码",
+          "feishu_type": "text",
+          "required": false,
+          "description": "错误标识",
+          "constraints": { "example": "FS_429, SCHEMA_ERROR" },
+          "options": null
+        },
+        {
+          "field_key": "error_message",
+          "display_name": "错误信息",
+          "feishu_type": "multiline_text",
+          "required": false,
+          "description": "错误详情",
+          "constraints": { "max_length": 500 },
+          "options": null
+        },
+        {
+          "field_key": "operator",
+          "display_name": "补偿操作人",
+          "feishu_type": "person",
+          "required": false,
+          "description": "人工补偿执行人",
+          "constraints": { "required_when": "status=manual_action" },
+          "options": null
+        },
+        {
+          "field_key": "created_at",
+          "display_name": "创建时间",
+          "feishu_type": "datetime",
+          "required": true,
+          "description": "审计字段，系统写入",
+          "constraints": null,
+          "options": null
+        }
+      ],
+      "views": [
+        {
+          "view_name": "全部事件",
+          "view_type": "表格",
+          "filter": "无",
+          "sort": "started_at 降序",
+          "description": "默认视图"
+        },
+        {
+          "view_name": "失败事件",
+          "view_type": "表格",
+          "filter": "status = failed",
+          "sort": "started_at 降序",
+          "description": "S8 自动化数据源"
+        },
+        {
+          "view_name": "待人工补偿",
+          "view_type": "表格",
+          "filter": "status = manual_action",
+          "sort": "started_at 升序",
+          "description": "需人工处理"
+        },
+        {
+          "view_name": "运行中",
+          "view_type": "表格",
+          "filter": "status ∈ {received, running}",
+          "sort": "started_at 降序",
+          "description": "正在执行"
+        },
+        {
+          "view_name": "今日事件",
+          "view_type": "表格",
+          "filter": "started_at ≥ 今天",
+          "sort": "started_at 降序",
+          "description": "今日所有事件"
+        },
+        {
+          "view_name": "按类型分组",
+          "view_type": "看板",
+          "filter": "无",
+          "sort": "—",
+          "description": "event_type 分组"
+        },
+        {
+          "view_name": "按状态看板",
+          "view_type": "看板",
+          "filter": "无",
+          "sort": "—",
+          "description": "status 分组"
+        },
+        {
+          "view_name": "高频错误",
+          "view_type": "表格",
+          "filter": "status = failed",
+          "sort": "error_code 分组 → started_at 降序",
+          "description": "S8 错误统计"
+        }
+      ]
+    },
+    "data_quality_issue": {
+      "display_name": "Data_Quality_Issue 数据质量问题表",
+      "purpose": "记录数据质量问题（重复客户、重复资源、无法匹配字段、日期冲突、非法状态、缺失关键字段、关联记录丢失、资源档期冲突、写回失败）。所有问题必须有状态、责任人和解决结果。",
+      "fields": [
+        {
+          "field_key": "issue_id",
+          "display_name": "问题编号",
+          "feishu_type": "auto_number",
+          "required": true,
+          "description": "唯一编号",
+          "constraints": { "format": "DQI-{YYYYMMDD}-{###}" },
+          "options": null
+        },
+        {
+          "field_key": "issue_type",
+          "display_name": "问题类型",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "数据问题类别",
+          "constraints": null,
+          "options": ["重复客户", "重复资源", "字段无法匹配", "日期冲突", "非法状态", "缺失关键字段", "关联记录丢失", "资源档期冲突", "写回失败", "其他"]
+        },
+        {
+          "field_key": "severity",
+          "display_name": "严重程度",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "问题严重级别",
+          "constraints": { "affects": "处理优先级" },
+          "options": ["低", "中", "高", "严重"]
+        },
+        {
+          "field_key": "source_table",
+          "display_name": "来源表",
+          "feishu_type": "single_select",
+          "required": false,
+          "description": "问题涉及的表",
+          "constraints": null,
+          "options": ["Customer", "Project", "Resource", "Assignment", "Planning_Document", "Task", "AI_Inbox", "Automation_Event"]
+        },
+        {
+          "field_key": "source_record_id",
+          "display_name": "来源记录ID",
+          "feishu_type": "text",
+          "required": false,
+          "description": "问题涉及的记录 ID",
+          "constraints": { "format": "可为多个，逗号分隔" },
+          "options": null
+        },
+        {
+          "field_key": "description",
+          "display_name": "问题描述",
+          "feishu_type": "multiline_text",
+          "required": true,
+          "description": "问题详细描述",
+          "constraints": { "max_length": 500 },
+          "options": null
+        },
+        {
+          "field_key": "detected_by",
+          "display_name": "发现方式",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "问题发现途径",
+          "constraints": null,
+          "options": ["自动化检测", "AI质检", "人工发现", "迁移对账"]
+        },
+        {
+          "field_key": "detected_at",
+          "display_name": "发现时间",
+          "feishu_type": "datetime",
+          "required": true,
+          "description": "问题发现时间，系统写入",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "status",
+          "display_name": "处理状态",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "问题处理进度",
+          "constraints": null,
+          "options": ["待处理", "处理中", "已解决", "已忽略", "无法解决"]
+        },
+        {
+          "field_key": "owner",
+          "display_name": "责任人",
+          "feishu_type": "person",
+          "required": false,
+          "description": "问题处理负责人",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "resolution",
+          "display_name": "解决方案",
+          "feishu_type": "multiline_text",
+          "required": false,
+          "description": "问题处理结果",
+          "constraints": { "required_when": "status ∈ {已解决, 已忽略}" },
+          "options": null
+        },
+        {
+          "field_key": "resolved_at",
+          "display_name": "解决时间",
+          "feishu_type": "datetime",
+          "required": false,
+          "description": "问题解决时间",
+          "constraints": { "required_when": "status=已解决" },
+          "options": null
+        },
+        {
+          "field_key": "related_event_id",
+          "display_name": "关联事件ID",
+          "feishu_type": "text",
+          "required": false,
+          "description": "关联的 Automation_Event.event_id",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "created_at",
+          "display_name": "创建时间",
+          "feishu_type": "datetime",
+          "required": true,
+          "description": "审计字段，系统写入",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "updated_at",
+          "display_name": "更新时间",
+          "feishu_type": "datetime",
+          "required": true,
+          "description": "审计字段，系统写入",
+          "constraints": null,
+          "options": null
+        }
+      ],
+      "views": [
+        {
+          "view_name": "全部问题",
+          "view_type": "表格",
+          "filter": "无",
+          "sort": "detected_at 降序",
+          "description": "默认视图"
+        },
+        {
+          "view_name": "待处理",
+          "view_type": "表格",
+          "filter": "status = 待处理",
+          "sort": "severity 升序 → detected_at 升序",
+          "description": "按严重程度排序"
+        },
+        {
+          "view_name": "处理中",
+          "view_type": "表格",
+          "filter": "status = 处理中",
+          "sort": "severity 升序 → detected_at 升序",
+          "description": "正在处理"
+        },
+        {
+          "view_name": "已解决",
+          "view_type": "表格",
+          "filter": "status = 已解决",
+          "sort": "resolved_at 降序",
+          "description": "已关闭问题"
+        },
+        {
+          "view_name": "严重问题",
+          "view_type": "表格",
+          "filter": "severity = 严重 且 status ∈ {待处理, 处理中}",
+          "sort": "detected_at 升序",
+          "description": "需立即处理"
+        },
+        {
+          "view_name": "迁移问题",
+          "view_type": "表格",
+          "filter": "detected_by = 迁移对账",
+          "sort": "detected_at 降序",
+          "description": "迁移过程中发现的问题"
+        },
+        {
+          "view_name": "按类型分组",
+          "view_type": "看板",
+          "filter": "status ∈ {待处理, 处理中}",
+          "sort": "—",
+          "description": "issue_type 分组"
+        },
+        {
+          "view_name": "按状态看板",
+          "view_type": "看板",
+          "filter": "无",
+          "sort": "—",
+          "description": "status 分组"
+        }
+      ]
+    },
+    "system_config": {
+      "display_name": "System_Config 配置表",
+      "purpose": "保存非敏感系统配置：状态机版本、Prompt 版本、自动化规则版本、风险阈值、枚举字典、策划模板版本。禁止保存 App Secret、Access Token、API Key 等敏感信息。",
+      "fields": [
+        {
+          "field_key": "config_id",
+          "display_name": "配置编号",
+          "feishu_type": "auto_number",
+          "required": true,
+          "description": "唯一编号",
+          "constraints": { "format": "CFG-{###}" },
+          "options": null
+        },
+        {
+          "field_key": "config_key",
+          "display_name": "配置键",
+          "feishu_type": "text",
+          "required": true,
+          "description": "配置标识符",
+          "constraints": { "unique": true, "naming": "snake_case" },
+          "options": null
+        },
+        {
+          "field_key": "config_category",
+          "display_name": "配置类别",
+          "feishu_type": "single_select",
+          "required": true,
+          "description": "配置分类",
+          "constraints": null,
+          "options": ["状态机", "Prompt", "自动化规则", "风险阈值", "枚举字典", "策划模板", "系统参数"]
+        },
+        {
+          "field_key": "config_value",
+          "display_name": "配置值",
+          "feishu_type": "multiline_text",
+          "required": true,
+          "description": "配置内容",
+          "constraints": { "format": "JSON 或文本" },
+          "options": null
+        },
+        {
+          "field_key": "config_description",
+          "display_name": "配置说明",
+          "feishu_type": "multiline_text",
+          "required": false,
+          "description": "配置用途描述",
+          "constraints": { "max_length": 200 },
+          "options": null
+        },
+        {
+          "field_key": "version",
+          "display_name": "版本号",
+          "feishu_type": "text",
+          "required": true,
+          "description": "配置版本",
+          "constraints": { "format": "v1.0, v1.1, ..." },
+          "options": null
+        },
+        {
+          "field_key": "is_active",
+          "display_name": "是否生效",
+          "feishu_type": "checkbox",
+          "required": true,
+          "description": "当前是否生效",
+          "constraints": { "rule": "同类别同 key 仅一条生效" },
+          "options": null
+        },
+        {
+          "field_key": "updated_by",
+          "display_name": "更新人",
+          "feishu_type": "person",
+          "required": false,
+          "description": "最后修改人",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "created_at",
+          "display_name": "创建时间",
+          "feishu_type": "datetime",
+          "required": true,
+          "description": "审计字段，系统写入",
+          "constraints": null,
+          "options": null
+        },
+        {
+          "field_key": "updated_at",
+          "display_name": "更新时间",
+          "feishu_type": "datetime",
+          "required": true,
+          "description": "审计字段，系统写入",
+          "constraints": null,
+          "options": null
+        }
+      ],
+      "views": [
+        {
+          "view_name": "全部配置",
+          "view_type": "表格",
+          "filter": "无",
+          "sort": "config_category 分组 → version 降序",
+          "description": "默认视图"
+        },
+        {
+          "view_name": "生效配置",
+          "view_type": "表格",
+          "filter": "is_active = true",
+          "sort": "config_category 分组",
+          "description": "当前生效的配置"
+        },
+        {
+          "view_name": "状态机配置",
+          "view_type": "表格",
+          "filter": "config_category = 状态机",
+          "sort": "version 降序",
+          "description": "状态机版本管理"
+        },
+        {
+          "view_name": "Prompt版本",
+          "view_type": "表格",
+          "filter": "config_category = Prompt",
+          "sort": "version 降序",
+          "description": "Prompt 版本管理"
+        },
+        {
+          "view_name": "自动化规则",
+          "view_type": "表格",
+          "filter": "config_category = 自动化规则",
+          "sort": "config_key 分组 → version 降序",
+          "description": "规则版本管理"
+        },
+        {
+          "view_name": "枚举字典",
+          "view_type": "表格",
+          "filter": "config_category = 枚举字典",
+          "sort": "config_key 分组",
+          "description": "枚举值管理"
+        },
+        {
+          "view_name": "按类别看板",
+          "view_type": "看板",
+          "filter": "无",
+          "sort": "—",
+          "description": "config_category 分组"
+        }
+      ]
+    }
+  },
+  "state_machines": {
+    "customer_relationship_status": {
+      "states": [
+        { "key": "new_lead", "display_name": "新线索", "color": "灰", "description": "刚录入，尚未跟进" },
+        { "key": "contacting", "display_name": "跟进中", "color": "蓝", "description": "正在沟通" },
+        { "key": "qualified", "display_name": "已确认需求", "color": "青", "description": "需求已明确" },
+        { "key": "deposit_pending", "display_name": "待定金", "color": "黄", "description": "已报价，等待定金" },
+        { "key": "converted", "display_name": "已成交", "color": "绿", "description": "定金已确认" },
+        { "key": "active_service", "display_name": "服务中", "color": "浅绿", "description": "有项目在服务中" },
+        { "key": "completed", "display_name": "已完成", "color": "深绿", "description": "所有项目已交付" },
+        { "key": "repeat_referral", "display_name": "复购/转介绍", "color": "紫", "description": "已完成客户产生新需求" },
+        { "key": "lost", "display_name": "已流失", "color": "红", "description": "任意阶段可进入" }
+      ],
+      "transitions": [
+        { "from": "新线索", "to": "跟进中", "trigger": "首次联系客户", "operator": "人工 / 自动化(S5)" },
+        { "from": "新线索", "to": "已流失", "trigger": "明确无意向", "operator": "人工" },
+        { "from": "跟进中", "to": "已确认需求", "trigger": "需求明确", "operator": "人工" },
+        { "from": "跟进中", "to": "新线索", "trigger": "退回重新跟进", "operator": "人工" },
+        { "from": "跟进中", "to": "已流失", "trigger": "明确无意向", "operator": "人工" },
+        { "from": "已确认需求", "to": "待定金", "trigger": "已报价", "operator": "人工" },
+        { "from": "已确认需求", "to": "跟进中", "trigger": "退回继续跟进", "operator": "人工" },
+        { "from": "已确认需求", "to": "已流失", "trigger": "明确无意向", "operator": "人工" },
+        { "from": "待定金", "to": "已成交", "trigger": "定金确认（S1 触发）", "operator": "人工 / 自动化(S1)" },
+        { "from": "待定金", "to": "已确认需求", "trigger": "退回重新沟通", "operator": "人工" },
+        { "from": "待定金", "to": "已流失", "trigger": "明确无意向", "operator": "人工" },
+        { "from": "已成交", "to": "服务中", "trigger": "首个项目进入待拍摄（S5 触发）", "operator": "自动化(S5)" },
+        { "from": "服务中", "to": "已完成", "trigger": "所有项目已交付（S5 触发）", "operator": "自动化(S5)" },
+        { "from": "已完成", "to": "复购/转介绍", "trigger": "新需求或转介绍产生", "operator": "人工 / 自动化" },
+        { "from": "复购/转介绍", "to": "新线索", "trigger": "产生新项目需求", "operator": "人工 / 自动化" },
+        { "from": "已流失", "to": "新线索", "trigger": "重新激活", "operator": "人工" }
+      ],
+      "rules": [
+        "不允许跨越关键状态直接更新，除非管理员填写例外原因（关键状态：待定金 → 已成交（需定金确认证据）；关键状态：已成交 → 服务中（需项目进入待拍摄状态））",
+        "AI 不得直接修改客户状态，仅可通过 AI_Inbox 提交候选",
+        "S5 自动化只允许单向、受控更新：第一个有效项目进入\"待拍摄\"后，客户可进入\"服务中\"；所有项目已交付后，客户可进入\"已完成\"；不允许项目状态直接覆盖\"复购/转介绍\"或\"已流失\"",
+        "所有状态变化写入 Automation_Event 或变更日志",
+        "公式字段不得作为关键自动化触发源"
+      ]
+    },
+    "project_status": {
+      "states": [
+        { "key": "draft", "display_name": "草稿", "color": "灰", "description": "项目刚创建，信息不完整" },
+        { "key": "planning", "display_name": "策划中", "color": "蓝", "description": "正在生成/编辑策划案" },
+        { "key": "planning_approved", "display_name": "策划已批准", "color": "青", "description": "策划案已内部批准" },
+        { "key": "resource_confirming", "display_name": "资源确认中", "color": "黄", "description": "正在确认资源安排" },
+        { "key": "ready_to_shoot", "display_name": "待拍摄", "color": "橙", "description": "资源确认完成，等待拍摄" },
+        { "key": "shooting_completed", "display_name": "拍摄完成", "color": "浅绿", "description": "拍摄结束，待后期" },
+        { "key": "post_production", "display_name": "后期制作", "color": "绿", "description": "正在后期处理" },
+        { "key": "client_review", "display_name": "客户确认", "color": "紫", "description": "交付客户确认中" },
+        { "key": "delivered", "display_name": "已交付", "color": "深绿", "description": "客户已确认，项目完成" },
+        { "key": "archived", "display_name": "已归档", "color": "深灰", "description": "归档存储" }
+      ],
+      "transitions": [
+        { "from": "草稿", "to": "策划中", "trigger": "项目信息补全，启动策划", "operator": "人工 / 自动化(S1)" },
+        { "from": "策划中", "to": "策划已批准", "trigger": "策划案内部批准（S3 触发前置）", "operator": "人工" },
+        { "from": "策划中", "to": "草稿", "trigger": "退回补充信息", "operator": "人工" },
+        { "from": "策划已批准", "to": "资源确认中", "trigger": "启动资源安排（S3 触发）", "operator": "人工 / 自动化(S3)" },
+        { "from": "策划已批准", "to": "策划中", "trigger": "策划需修改", "operator": "人工" },
+        { "from": "资源确认中", "to": "待拍摄", "trigger": "所有关键资源已确认", "operator": "人工" },
+        { "from": "资源确认中", "to": "策划已批准", "trigger": "资源不足需调整策划", "operator": "人工" },
+        { "from": "待拍摄", "to": "拍摄完成", "trigger": "拍摄结束", "operator": "人工" },
+        { "from": "待拍摄", "to": "资源确认中", "trigger": "退回重新确认资源", "operator": "人工" },
+        { "from": "拍摄完成", "to": "后期制作", "trigger": "进入后期处理", "operator": "人工" },
+        { "from": "拍摄完成", "to": "待拍摄", "trigger": "补拍", "operator": "人工" },
+        { "from": "后期制作", "to": "客户确认", "trigger": "后期完成，提交客户", "operator": "人工" },
+        { "from": "后期制作", "to": "拍摄完成", "trigger": "退回补拍", "operator": "人工" },
+        { "from": "客户确认", "to": "已交付", "trigger": "客户确认通过", "operator": "人工" },
+        { "from": "客户确认", "to": "后期制作", "trigger": "客户要求修改", "operator": "人工" },
+        { "from": "已交付", "to": "已归档", "trigger": "项目归档", "operator": "人工 / 自动化" },
+        { "from": "已归档", "to": "已交付", "trigger": "退回归档（例外）", "operator": "管理员（需填例外原因）" }
+      ],
+      "rules": [
+        "不允许跨越关键状态直接更新，除非管理员填写例外原因（关键状态：策划已批准 -> 资源确认中（需策划案批准证据）；关键状态：资源确认中 -> 待拍摄（需关键资源已确认）；关键状态：客户确认 -> 已交付（需客户确认证据））",
+        "AI 不得直接修改项目状态",
+        "公式字段不得作为关键自动化触发源",
+        "所有状态变化写入 Automation_Event 或变更日志",
+        "逆向回退允许相邻状态回退（如后期制作 -> 拍摄完成），但跨越多步回退需管理员例外原因",
+        "S5 自动化联动：项目进入\"待拍摄\"时，客户可进入\"服务中\"；项目进入\"已交付\"时，检查客户所有项目是否均已交付"
+      ]
+    }
+  },
+  "enums": {
+    "source_channel": ["小红书", "微信", "官网", "小程序", "转介绍", "其他"],
+    "service_type": ["个人", "双人", "品牌", "创作", "其他"],
+    "style_tags": ["新中式", "电影感", "复古", "日系", "清新", "暗黑", "商务", "国潮", "其他"],
+    "resource_type": ["模特", "化妆师", "场地", "服装", "修图师", "摄影师", "其他"],
+    "priority": ["S", "A", "B", "待评估"],
+    "cooperation_status": ["未联系", "沟通中", "已合作", "暂停", "黑名单"],
+    "project_type": ["客片", "创作", "品牌", "其他"],
+    "risk_level": ["正常", "关注", "高风险"],
+    "privacy_level": ["普通", "敏感", "高敏"]
+  },
+  "relationships": [
+    {
+      "source_table": "Project",
+      "source_field": "customer_link",
+      "target_table": "Customer",
+      "relation_type": "many_to_one",
+      "description": "一个客户可有多个项目"
+    },
+    {
+      "source_table": "Project",
+      "source_field": "planning_link",
+      "target_table": "Planning_Document",
+      "relation_type": "one_to_many",
+      "description": "一个项目可有多版策划案"
+    },
+    {
+      "source_table": "Planning_Document",
+      "source_field": "project_link",
+      "target_table": "Project",
+      "relation_type": "many_to_one",
+      "description": "策划案归属项目"
+    },
+    {
+      "source_table": "Planning_Document",
+      "source_field": "ai_job_link",
+      "target_table": "AI_Inbox",
+      "relation_type": "many_to_one",
+      "description": "策划案生成来源"
+    },
+    {
+      "source_table": "Project_Resource_Assignment",
+      "source_field": "project_link",
+      "target_table": "Project",
+      "relation_type": "many_to_one",
+      "description": "安排归属项目"
+    },
+    {
+      "source_table": "Project_Resource_Assignment",
+      "source_field": "resource_link",
+      "target_table": "Resource",
+      "relation_type": "many_to_one",
+      "description": "安排关联资源"
+    },
+    {
+      "source_table": "Task",
+      "source_field": "project_link",
+      "target_table": "Project",
+      "relation_type": "many_to_one",
+      "description": "任务归属项目（可空）"
+    }
+  ]
+}
