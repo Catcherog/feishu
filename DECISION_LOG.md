@@ -114,3 +114,25 @@
 - 影响的表、代码和自动化：无
 - 验证方式：用户确认后执行
 - 后续复审日期：用户回复后
+
+## D-015：Phase 1A Schema Review Gate 通过并批准创建 V2 Pilot Base
+
+- 日期：2026-07-15
+- 状态：APPROVED
+- 决策人：用户
+- 背景：Phase 1A Schema Review Gate 已生成 [`docs/v2-base-schema.md`](file:///D:/360Downloads/Trae%20项目/SOP/feishu-v2/docs/v2-base-schema.md)，包含 10 张 V2 表的字段字典、状态机和视图规范
+- 可选方案：
+  1. 继续修改 Schema 后再创建 Base
+  2. 按当前 Schema 创建飞书 Base `泽怀影像_业务中台_V2_PILOT`
+- 最终决策：方案 2 — 按当前 Schema 创建 V2 Pilot Base
+- 原因：用户已明确批准 Schema；PROJECT_GUIDE.md 和 Phase 1A 要求 Schema 确认后再创建 Base
+- 限制条件：
+  - 仅写入明确标记为 `[TEST]` 的合成数据
+  - 不迁移真实客户和资源
+  - 不修改 APP
+  - 不部署正式自动化
+  - 不自动进入下一阶段
+- 代价与风险：创建 Base 后若 Schema 需要大幅调整，需重新建表或迁移字段
+- 影响的表、代码和自动化：将在飞书新建 10 张 V2 表，不触碰 V1 旧表
+- 验证方式：Base 创建后生成 `resource-map.local.json` 并核对 Table ID / Field ID
+- 后续复审日期：Phase 1B 数据写入与验证完成后
