@@ -1,0 +1,32 @@
+# 本地资源映射配置（含真实 token，不提交）
+config/resource-map.local.json
+config/git-remote.local.txt
+
+# 备份与私有数据（不提交 Git）
+backups/private/
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# 依赖
+node_modules/
+
+# 构建产物
+dist/
+build/
+*.jsbundle
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 临时脚本
+src/scripts/temp/

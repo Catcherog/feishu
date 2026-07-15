@@ -1,0 +1,178 @@
+{
+  "_comment": "资源标识映射示例配置。复制为 resource-map.local.json 并填入真实值后使用。local 版本不提交到 Git。",
+  "_version": "v1.0-example",
+  "_generated_at": "2026-07-15",
+
+  "base": {
+    "_comment": "飞书多维表格 Base 标识",
+    "v1_base_token": "<V1_BASE_TOKEN>",
+    "v2_base_token": "<V2_BASE_TOKEN>"
+  },
+
+  "v1_tables": {
+    "_comment": "V1 旧表 ID 映射（来自 Phase 0 审计）",
+    "clients": "V1_CLIENTS_TABLE_ALIAS",
+    "projects": "V1_PROJECTS_TABLE_ALIAS",
+    "publishTasks": "V1_PUBLISHTASKS_TABLE_ALIAS",
+    "publishDashboard": "V1_PUBLISHDASHBOARD_TABLE_ALIAS",
+    "venue": "V1_VENUE_TABLE_ALIAS",
+    "makeup": "V1_MAKEUP_TABLE_ALIAS",
+    "model": "V1_MODEL_TABLE_ALIAS",
+    "costume": "V1_COSTUME_TABLE_ALIAS",
+    "retouch": "V1_RETOUCH_TABLE_ALIAS",
+    "emergency": "V1_EMERGENCY_TABLE_ALIAS",
+    "materialLibrary": "V1_MATERIALLIBRARY_TABLE_ALIAS",
+    "resourceMaster": "V1_RESOURCEMASTER_TABLE_ALIAS",
+    "knowledgeBase": "V1_KNOWLEDGEBASE_TABLE_ALIAS",
+    "trendingResearch": "V1_TRENDINGRESEARCH_TABLE_ALIAS",
+    "scripts": "V1_SCRIPTS_TABLE_ALIAS",
+    "sopRules": "V1_SOPRULES_TABLE_ALIAS",
+    "sopManagement": "V1_SOPMANAGEMENT_TABLE_ALIAS"
+  },
+
+  "v2_tables": {
+    "_comment": "V2 新表 ID 映射（Phase 1 创建后填入）",
+    "customer": "<V2_CUSTOMER_TABLE_ID>",
+    "project": "<V2_PROJECT_TABLE_ID>",
+    "resource": "<V2_RESOURCE_TABLE_ID>",
+    "project_resource_assignment": "<V2_ASSIGNMENT_TABLE_ID>",
+    "planning_document": "<V2_PLANNING_TABLE_ID>",
+    "task": "<V2_TASK_TABLE_ID>",
+    "ai_inbox": "<V2_AI_INBOX_TABLE_ID>",
+    "automation_event": "<V2_AUTOMATION_EVENT_TABLE_ID>",
+    "data_quality_issue": "<V2_DATA_QUALITY_TABLE_ID>",
+    "system_config": "<V2_SYSTEM_CONFIG_TABLE_ID>"
+  },
+
+  "v1_fields": {
+    "_comment": "V1 关键字段 ID（按需填入，用于迁移脚本引用）",
+    "clients": {
+      "customer_name": "<FIELD_ID>",
+      "phone": "<FIELD_ID>",
+      "wechat_name": "<FIELD_ID>",
+      "customer_status": "<FIELD_ID>",
+      "source_channel": "<FIELD_ID>",
+      "last_contact_at": "<FIELD_ID>",
+      "owner": "<FIELD_ID>"
+    },
+    "projects": {
+      "project_name": "<FIELD_ID>",
+      "project_status": "<FIELD_ID>",
+      "customer_name": "<FIELD_ID>",
+      "shoot_date": "<FIELD_ID>",
+      "project_owner": "<FIELD_ID>",
+      "delivery_due_at": "<FIELD_ID>"
+    },
+    "makeup": {
+      "name": "<FIELD_ID>",
+      "contact": "<FIELD_ID>",
+      "priority": "<FIELD_ID>",
+      "cooperation_status": "<FIELD_ID>"
+    },
+    "model": {
+      "name": "<FIELD_ID>",
+      "contact": "<FIELD_ID>",
+      "priority": "<FIELD_ID>",
+      "cooperation_status": "<FIELD_ID>"
+    }
+  },
+
+  "v2_fields": {
+    "_comment": "V2 关键字段 ID（Phase 1 创建后填入）",
+    "customer": {
+      "customer_id": "<FIELD_ID>",
+      "customer_name": "<FIELD_ID>",
+      "phone": "<FIELD_ID>",
+      "relationship_status": "<FIELD_ID>",
+      "owner": "<FIELD_ID>"
+    },
+    "project": {
+      "project_id": "<FIELD_ID>",
+      "customer_link": "<FIELD_ID>",
+      "project_name": "<FIELD_ID>",
+      "project_status": "<FIELD_ID>",
+      "project_owner": "<FIELD_ID>"
+    },
+    "resource": {
+      "resource_id": "<FIELD_ID>",
+      "resource_type": "<FIELD_ID>",
+      "resource_name": "<FIELD_ID>",
+      "contact": "<FIELD_ID>",
+      "priority": "<FIELD_ID>",
+      "cooperation_status": "<FIELD_ID>",
+      "legacy_record_id": "<FIELD_ID>",
+      "legacy_source": "<FIELD_ID>"
+    }
+  },
+
+  "spreadsheets": {
+    "_comment": "电子表格 token（同步脚本数据源）",
+    "project_stats": "<PROJECT_STATS_SHEET_TOKEN>",
+    "publish_matrix": "<PUBLISH_MATRIX_SHEET_TOKEN>",
+    "guangguang_clients": "<SPREADSHEET_TOKEN>",
+    "makeup_resource": "<SPREADSHEET_TOKEN>",
+    "model_resource": "<SPREADSHEET_TOKEN>",
+    "costume_resource": "<SPREADSHEET_TOKEN>"
+  },
+
+  "automation_workflow_ids": {
+    "_comment": "V1 自动化 Workflow ID（来自 Phase 0 审计）",
+    "client_followup_warning": "V1_WF_CLIENT_FOLLOWUP_WARNING_ALIAS",
+    "project_schedule_reminder": "V1_WF_PROJECT_SCHEDULE_REMINDER_ALIAS",
+    "satisfaction_review_reminder": "V1_WF_SATISFACTION_REVIEW_REMINDER_ALIAS",
+    "project_status_sync_client": "V1_WF_PROJECT_STATUS_SYNC_CLIENT_ALIAS",
+    "deposit_auto_create_project": "V1_WF_DEPOSIT_AUTO_CREATE_PROJECT_ALIAS",
+    "retouch_delivery_overdue": "V1_WF_RETOUCH_DELIVERY_OVERDUE_ALIAS",
+    "new_project_init_reminder": "V1_WF_NEW_PROJECT_INIT_REMINDER_ALIAS",
+    "daily_publish_task_reminder": "V1_WF_DAILY_PUBLISH_TASK_REMINDER_ALIAS",
+    "adaptation_overdue_warning": "V1_WF_ADAPTATION_OVERDUE_WARNING_ALIAS",
+    "publish_sync_material_status": "V1_WF_PUBLISH_SYNC_MATERIAL_STATUS_ALIAS",
+    "material_archive_auto_create_publish": "V1_WF_MATERIAL_ARCHIVE_AUTO_CREATE_PUBLISH_ALIAS",
+    "quality_resource_sync_knowledge": "V1_WF_QUALITY_RESOURCE_SYNC_KNOWLEDGE_ALIAS"
+  },
+
+  "state_machines": {
+    "_comment": "V2 状态机枚举值",
+    "customer_relationship_status": [
+      "新线索",
+      "跟进中",
+      "已确认需求",
+      "待定金",
+      "已成交",
+      "服务中",
+      "已完成",
+      "复购/转介绍",
+      "已流失"
+    ],
+    "project_status": [
+      "草稿",
+      "策划中",
+      "策划已批准",
+      "资源确认中",
+      "待拍摄",
+      "拍摄完成",
+      "后期制作",
+      "客户确认",
+      "已交付",
+      "已归档"
+    ],
+    "resource_type": [
+      "模特",
+      "化妆师",
+      "场地",
+      "服装",
+      "修图师",
+      "道具",
+      "摄影师",
+      "其他"
+    ],
+    "resource_priority": ["S", "A", "B", "待评估"],
+    "resource_cooperation_status": [
+      "未联系",
+      "沟通中",
+      "已合作",
+      "暂停",
+      "黑名单"
+    ]
+  }
+}

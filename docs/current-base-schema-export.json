@@ -1,0 +1,2166 @@
+[
+  {
+    "table_id": "V1_PUBLISHDASHBOARD_TABLE_ALIAS",
+    "field_count": 16,
+    "record_count": 1,
+    "has_more": false,
+    "fields": [
+      {
+        "id": "fldurubBxx",
+        "name": "矩阵号名称",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldt9GRTEK",
+        "name": "本月引流客户数",
+        "type": "number",
+        "description": ""
+      },
+      {
+        "id": "fldbAfxhbp",
+        "name": "总曝光量",
+        "type": "number",
+        "description": "当日该组合的总曝光量"
+      },
+      {
+        "id": "fldQ6lUzbC",
+        "name": "本月互动总量",
+        "type": "number",
+        "description": ""
+      },
+      {
+        "id": "fldw1dm7wv",
+        "name": "矩阵号",
+        "type": "select",
+        "description": "发布账号矩阵号"
+      },
+      {
+        "id": "fld1ZmGZZV",
+        "name": "备注说明",
+        "type": "text",
+        "description": "特殊说明或异常记录"
+      },
+      {
+        "id": "fldCTIO3f6",
+        "name": "更新时间",
+        "type": "datetime",
+        "description": ""
+      },
+      {
+        "id": "fld0CsCoeV",
+        "name": "本月发布数",
+        "type": "number",
+        "description": ""
+      },
+      {
+        "id": "fld9nDkLk5",
+        "name": "平台",
+        "type": "select",
+        "description": "发布平台"
+      },
+      {
+        "id": "fldbRWRSSj",
+        "name": "ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldzJ7D9it",
+        "name": "素材类型",
+        "type": "select",
+        "description": "发布的素材类型"
+      },
+      {
+        "id": "fldPlNx6Q6",
+        "name": "上月对比",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldc6ALtgp",
+        "name": "平台名称",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldN4htlPR",
+        "name": "统计日期",
+        "type": "datetime",
+        "description": "数据统计的日期"
+      },
+      {
+        "id": "fldXkIRvcS",
+        "name": "发布数量",
+        "type": "number",
+        "description": "当日该平台×账号×素材类型的发布数量"
+      },
+      {
+        "id": "fld70SZ210",
+        "name": "总互动量",
+        "type": "number",
+        "description": "当日该组合的总互动量（点赞+评论+收藏+转发）"
+      }
+    ]
+  },
+  {
+    "table_id": "V1_SOPRULES_TABLE_ALIAS",
+    "field_count": 5,
+    "record_count": 26,
+    "has_more": false,
+    "fields": [
+      {
+        "id": "fldB61oehr",
+        "name": "规则名称",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldOP5Axmn",
+        "name": "规则详细内容",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldHqhqtWy",
+        "name": "示例",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fld9Vf9BpY",
+        "name": "ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldpAE7EhQ",
+        "name": "规则类别",
+        "type": "text",
+        "description": "核心规则的分类"
+      }
+    ]
+  },
+  {
+    "table_id": "V1_CLIENTS_TABLE_ALIAS",
+    "field_count": 38,
+    "record_count": 36,
+    "has_more": false,
+    "fields": [
+      {
+        "id": "fld4tlec2K",
+        "name": "意向档期",
+        "type": "datetime",
+        "description": ""
+      },
+      {
+        "id": "fldosGlrHr",
+        "name": "合同文件",
+        "type": "attachment",
+        "description": "客户签字版合同PDF"
+      },
+      {
+        "id": "fld528c82Q",
+        "name": "ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldfV9vHDe",
+        "name": "来源笔记链接",
+        "type": "text",
+        "description": "关联引流的平台笔记"
+      },
+      {
+        "id": "fldIzkddYr",
+        "name": "意向风格",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldtQOV7CG",
+        "name": "拍摄人数",
+        "type": "number",
+        "description": ""
+      },
+      {
+        "id": "flduPvCxn2",
+        "name": "客户 ID",
+        "type": "auto_number",
+        "description": "严格执行阶段1的ID规则，设为主键"
+      },
+      {
+        "id": "fldcgPfn7R",
+        "name": "预算区间",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldmYNhFxK",
+        "name": "交付时间",
+        "type": "datetime",
+        "description": "成片最终交付时间"
+      },
+      {
+        "id": "fldfxAKrja",
+        "name": "备注",
+        "type": "text",
+        "description": "客户特殊需求、禁忌等"
+      },
+      {
+        "id": "fldmnN7upx",
+        "name": "对应样片包",
+        "type": "text",
+        "description": "关联飞书云盘样片文件夹"
+      },
+      {
+        "id": "fldu2eBCO8",
+        "name": "地区",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldyor0jtc",
+        "name": "客户姓名",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldNVvDN4R",
+        "name": "喜好时间",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fld4dQTOTt",
+        "name": "创建时间",
+        "type": "created_at",
+        "description": ""
+      },
+      {
+        "id": "fldx212vV4",
+        "name": "定金金额",
+        "type": "number",
+        "description": "单位：元"
+      },
+      {
+        "id": "fldtEkUSXJ",
+        "name": "已拍摄次数",
+        "type": "number",
+        "description": ""
+      },
+      {
+        "id": "fldhuEpn7y",
+        "name": "创建人",
+        "type": "created_by",
+        "description": ""
+      },
+      {
+        "id": "fldnLY8TNh",
+        "name": "实际成交时间",
+        "type": "datetime",
+        "description": "客户实际支付成交金额的时间，用于支撑成交转化分析"
+      },
+      {
+        "id": "fld6LTaVr3",
+        "name": "拍摄类型",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fld7WNvhW9",
+        "name": "最后跟进时间",
+        "type": "datetime",
+        "description": "最近一次客户跟进沟通的时间，用于支撑跟进超时预警自动化"
+      },
+      {
+        "id": "fld12RzmnQ",
+        "name": "客户满意度",
+        "type": "number",
+        "description": "1-5分"
+      },
+      {
+        "id": "fldITOyHQw",
+        "name": "好评记录",
+        "type": "text",
+        "description": "客户返图/好评截图/平台笔记链接"
+      },
+      {
+        "id": "fldILLqe7h",
+        "name": "客户云盘文件夹",
+        "type": "text",
+        "description": "指向Drive中客户合同等文件的文件夹URL"
+      },
+      {
+        "id": "fldctwRADH",
+        "name": "来源渠道",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldcbKYb2K",
+        "name": "跟进人",
+        "type": "user",
+        "description": "私域对接人"
+      },
+      {
+        "id": "fldeqaolt6",
+        "name": "父记录",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "fldGzcRkwK",
+        "name": "关联项目 ID",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "fldI19ftg1",
+        "name": "最后更新人",
+        "type": "updated_by",
+        "description": ""
+      },
+      {
+        "id": "fldsYhSSAu",
+        "name": "最后更新时间",
+        "type": "updated_at",
+        "description": ""
+      },
+      {
+        "id": "fldIjRXXVQ",
+        "name": "成交金额",
+        "type": "number",
+        "description": "最终成交总额，单位：元"
+      },
+      {
+        "id": "fldWe5HzsK",
+        "name": "联系方式",
+        "type": "text",
+        "description": "微信/手机号"
+      },
+      {
+        "id": "fldbn404ws",
+        "name": "咨询时间",
+        "type": "datetime",
+        "description": "首次咨询时间"
+      },
+      {
+        "id": "fldhWJEdyt",
+        "name": "转介绍记录",
+        "type": "text",
+        "description": "转介绍客户信息、福利发放记录"
+      },
+      {
+        "id": "fldQCoSjkt",
+        "name": "关联成品记录",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "flduzRBGI0",
+        "name": "可用话术",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "fldz0Y0HnA",
+        "name": "跟进记录",
+        "type": "text",
+        "description": "每次沟通实时更新"
+      },
+      {
+        "id": "fldYFbJX85",
+        "name": "客户状态",
+        "type": "select",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "table_id": "V1_PROJECTS_TABLE_ALIAS",
+    "field_count": 37,
+    "record_count": 47,
+    "has_more": false,
+    "fields": [
+      {
+        "id": "fldaUfRC51",
+        "name": "项目 ID",
+        "type": "auto_number",
+        "description": "严格执行阶段1的ID规则，设为主键"
+      },
+      {
+        "id": "fldTLeO0nL",
+        "name": "备注",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldQcS58RK",
+        "name": "素材库超链接",
+        "type": "text",
+        "description": "关联飞书云盘对应项目素材文件夹"
+      },
+      {
+        "id": "fldbGpJjHy",
+        "name": "最后更新人",
+        "type": "updated_by",
+        "description": ""
+      },
+      {
+        "id": "fld5YncKzU",
+        "name": "风格定位",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldKlySZie",
+        "name": "素材初筛完成时间",
+        "type": "datetime",
+        "description": ""
+      },
+      {
+        "id": "fldDxPSobD",
+        "name": "项目进度百分比",
+        "type": "formula",
+        "description": "根据项目状态自动计算进度百分比"
+      },
+      {
+        "id": "fldkO0JV7y",
+        "name": "实际交付时间",
+        "type": "datetime",
+        "description": "项目实际完成交付的时间，用于支撑交付延迟计算"
+      },
+      {
+        "id": "flddoMT9nS",
+        "name": "创建人",
+        "type": "created_by",
+        "description": ""
+      },
+      {
+        "id": "fldmAdyvJ6",
+        "name": "关联成品 ID",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "fldgf1OLpt",
+        "name": "项目类型",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldwr4V4OB",
+        "name": "系列",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldLI7Dwkz",
+        "name": "客户名称",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldOTNcvAo",
+        "name": "拍摄地点",
+        "type": "text",
+        "description": "地理位置/单行文本"
+      },
+      {
+        "id": "fldCMpqIqb",
+        "name": "项目状态",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldnDqCulC",
+        "name": "可选模特",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldjHBLUeF",
+        "name": "化妆师",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldsKWSl1W",
+        "name": "主题",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldmoKZWzV",
+        "name": "精修交付时间",
+        "type": "datetime",
+        "description": ""
+      },
+      {
+        "id": "fld66qcIVK",
+        "name": "创建时间",
+        "type": "created_at",
+        "description": ""
+      },
+      {
+        "id": "fld9vEgTEf",
+        "name": "最后更新时间",
+        "type": "updated_at",
+        "description": ""
+      },
+      {
+        "id": "fldLReLcaN",
+        "name": "项目复盘记录",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldG1rQOO7",
+        "name": "策划案文件",
+        "type": "attachment",
+        "description": "PDF版策划案，关联飞书文档/云盘"
+      },
+      {
+        "id": "fldlZu8rKr",
+        "name": "关联资源 ID",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "fldVkfl0bi",
+        "name": "项目Wiki文档",
+        "type": "text",
+        "description": "指向Wiki中对应的项目文档页面URL，实现Base与知识库的联动"
+      },
+      {
+        "id": "fldAjbiu8T",
+        "name": "关联知识记录",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "fldu3EzGAS",
+        "name": "项目云盘文件夹",
+        "type": "text",
+        "description": "指向Drive中对应的项目文件夹URL，实现Base与云盘的联动"
+      },
+      {
+        "id": "fld1TNx7dj",
+        "name": "爆款参考来源",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "fldIwNi5xN",
+        "name": "项目名称",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldzMfn7I6",
+        "name": "拍摄档期",
+        "type": "datetime",
+        "description": ""
+      },
+      {
+        "id": "fldxw8qUF0",
+        "name": "项目负责人",
+        "type": "user",
+        "description": "主摄影师"
+      },
+      {
+        "id": "fld0zoLfbn",
+        "name": "策划案文件链接",
+        "type": "text",
+        "description": "指向飞书文档中策划案的URL链接"
+      },
+      {
+        "id": "fldpE1GRYR",
+        "name": "拍摄前 checklist",
+        "type": "checkbox",
+        "description": "选项：服装确认、妆造确认、场地锁定、设备检查、客户确认"
+      },
+      {
+        "id": "fldJeSf4KT",
+        "name": "关联客户 ID",
+        "type": "link",
+        "description": "关联【客户全生命周期管理表】，完成双向绑定，客片项目必填"
+      },
+      {
+        "id": "fldDe6e6kF",
+        "name": "关联素材记录",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "fldPM5EuXE",
+        "name": "ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fld7MXN8If",
+        "name": "参与人员",
+        "type": "user",
+        "description": "助理、妆造、修图师等"
+      }
+    ]
+  },
+  {
+    "table_id": "V1_RESOURCEMASTER_TABLE_ALIAS",
+    "field_count": 17,
+    "record_count": 2,
+    "has_more": false,
+    "fields": [
+      {
+        "id": "fldLlRj0VR",
+        "name": "合作评分",
+        "type": "number",
+        "description": "1-5分"
+      },
+      {
+        "id": "fldwmjOKog",
+        "name": "合作状态",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldEKdZLoy",
+        "name": "合作报价",
+        "type": "text",
+        "description": "基础报价区间"
+      },
+      {
+        "id": "fldv4DstaK",
+        "name": "创建时间",
+        "type": "created_at",
+        "description": ""
+      },
+      {
+        "id": "fldX6T3zNk",
+        "name": "联系方式",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldlgfOyGI",
+        "name": "创建人",
+        "type": "created_by",
+        "description": ""
+      },
+      {
+        "id": "fldvZDftJE",
+        "name": "资源名称",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fld77XpBi4",
+        "name": "资源 ID",
+        "type": "auto_number",
+        "description": "主键"
+      },
+      {
+        "id": "fldCBO5tIL",
+        "name": "最后更新人",
+        "type": "updated_by",
+        "description": ""
+      },
+      {
+        "id": "fldOtv8mf2",
+        "name": "ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldvq3pxEA",
+        "name": "作品/实景超链接",
+        "type": "text",
+        "description": "模卡/作品图/场地实景图"
+      },
+      {
+        "id": "fldJajNEVf",
+        "name": "关联项目记录",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "fld3PZHtjE",
+        "name": "备注",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldMw6JmWb",
+        "name": "联系人",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldsFGWj9j",
+        "name": "适用话术",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "fldPJHuzaB",
+        "name": "档期日历",
+        "type": "datetime",
+        "description": "可预约档期"
+      },
+      {
+        "id": "fldZWrT1Cg",
+        "name": "最后更新时间",
+        "type": "updated_at",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "table_id": "V1_VENUE_TABLE_ALIAS",
+    "field_count": 15,
+    "record_count": 49,
+    "has_more": false,
+    "fields": [
+      {
+        "id": "fld7UhjqC9",
+        "name": "实景图附件",
+        "type": "attachment",
+        "description": ""
+      },
+      {
+        "id": "fldOEhhq4U",
+        "name": "创建时间",
+        "type": "created_at",
+        "description": ""
+      },
+      {
+        "id": "fld06ziWiU",
+        "name": "场地ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldaegITwN",
+        "name": "容纳人数",
+        "type": "number",
+        "description": ""
+      },
+      {
+        "id": "fldGq36lOS",
+        "name": "最后更新人",
+        "type": "updated_by",
+        "description": ""
+      },
+      {
+        "id": "fldKEuor5a",
+        "name": "可拍风格",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fld8jOXF63",
+        "name": "注意事项",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldRAUhnYA",
+        "name": "停车信息",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fld4FMIJFF",
+        "name": "最后更新时间",
+        "type": "updated_at",
+        "description": ""
+      },
+      {
+        "id": "fldpOMF5eJ",
+        "name": "开灯费",
+        "type": "number",
+        "description": ""
+      },
+      {
+        "id": "fldaFSLafm",
+        "name": "地址",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldreXausE",
+        "name": "有无化妆间",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldRIMJRZc",
+        "name": "创建人",
+        "type": "created_by",
+        "description": ""
+      },
+      {
+        "id": "fld0ZjfeCE",
+        "name": "场地名称",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldJbM5yvu",
+        "name": "ID",
+        "type": "auto_number",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "table_id": "V1_MAKEUP_TABLE_ALIAS",
+    "field_count": 21,
+    "record_count": 115,
+    "has_more": false,
+    "fields": [
+      {
+        "id": "fldOufxVk6",
+        "name": "妆造师ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fld7ZztnuO",
+        "name": "ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldk8SNcbv",
+        "name": "小红书账号",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldpR1QVa4",
+        "name": "擅长风格",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldT9vXuxx",
+        "name": "微信号",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldVmwhe53",
+        "name": "小红书链接",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldoS5IkJ3",
+        "name": "详细地址",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldnCnmBTD",
+        "name": "化妆师档期",
+        "type": "datetime",
+        "description": ""
+      },
+      {
+        "id": "fldCgRlFaK",
+        "name": "备注",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldibUf5FD",
+        "name": "所在地",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldpLwVzps",
+        "name": "作品链接",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldNx2ut4S",
+        "name": "最后更新人",
+        "type": "updated_by",
+        "description": ""
+      },
+      {
+        "id": "fld9F8pF3i",
+        "name": "跟妆服务",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldu0C1yta",
+        "name": "姓名",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldzUhvEzh",
+        "name": "创建时间",
+        "type": "created_at",
+        "description": ""
+      },
+      {
+        "id": "fldr8I7WXx",
+        "name": "合作作品附件",
+        "type": "attachment",
+        "description": ""
+      },
+      {
+        "id": "fldGrsoOEO",
+        "name": "妆造报价",
+        "type": "number",
+        "description": ""
+      },
+      {
+        "id": "fldvLOxAYC",
+        "name": "创建人",
+        "type": "created_by",
+        "description": ""
+      },
+      {
+        "id": "fldhOwM1Tr",
+        "name": "合作状态",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fld2fUzdNm",
+        "name": "最后更新时间",
+        "type": "updated_at",
+        "description": ""
+      },
+      {
+        "id": "fldY0YsNgx",
+        "name": "优先级",
+        "type": "select",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "table_id": "V1_MODEL_TABLE_ALIAS",
+    "field_count": 21,
+    "record_count": 106,
+    "has_more": false,
+    "fields": [
+      {
+        "id": "fldlFiSawL",
+        "name": "作品链接",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldD3rmiGk",
+        "name": "优先级",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fld0HuFvJg",
+        "name": "三围",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fld0y1Od0m",
+        "name": "艺名/昵称",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldwFjTq2o",
+        "name": "身高体重",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldxla13if",
+        "name": "小红书账号",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldy3z0yf4",
+        "name": "小红书链接",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldzoInDpg",
+        "name": "所在地",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldIsbQCFh",
+        "name": "微信号",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldT3s6m4z",
+        "name": "服装尺码",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldrXI5tcP",
+        "name": "模特ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fld39A2lQA",
+        "name": "模卡附件",
+        "type": "attachment",
+        "description": ""
+      },
+      {
+        "id": "fldIyXj4ZL",
+        "name": "最后更新时间",
+        "type": "updated_at",
+        "description": ""
+      },
+      {
+        "id": "fldEOdTl07",
+        "name": "报价",
+        "type": "number",
+        "description": ""
+      },
+      {
+        "id": "fld0ycUudc",
+        "name": "ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldldItgnS",
+        "name": "最后更新人",
+        "type": "updated_by",
+        "description": ""
+      },
+      {
+        "id": "fldAFuPniA",
+        "name": "创建时间",
+        "type": "created_at",
+        "description": ""
+      },
+      {
+        "id": "fldYcsbnNh",
+        "name": "合作状态",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fld7FMXRtV",
+        "name": "创建人",
+        "type": "created_by",
+        "description": ""
+      },
+      {
+        "id": "fldb5MD7jT",
+        "name": "档期",
+        "type": "datetime",
+        "description": ""
+      },
+      {
+        "id": "fldVRMUOCW",
+        "name": "备注",
+        "type": "text",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "table_id": "V1_COSTUME_TABLE_ALIAS",
+    "field_count": 16,
+    "record_count": 21,
+    "has_more": false,
+    "fields": [
+      {
+        "id": "fldHtrpeCA",
+        "name": "地址",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldqcGqhku",
+        "name": "最后更新时间",
+        "type": "updated_at",
+        "description": ""
+      },
+      {
+        "id": "flds6qaEmS",
+        "name": "ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldBNcY9RQ",
+        "name": "创建人",
+        "type": "created_by",
+        "description": ""
+      },
+      {
+        "id": "fldXgr5h4r",
+        "name": "服装状态",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fld3UdaG3P",
+        "name": "服装ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldjneT8x6",
+        "name": "尺码",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldgVvfxLe",
+        "name": "服装图附件",
+        "type": "attachment",
+        "description": ""
+      },
+      {
+        "id": "fldNe9omtr",
+        "name": "租赁规则",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldHNV7JzP",
+        "name": "采购来源",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldHkOPkfS",
+        "name": "服装类别",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldmaY1vTt",
+        "name": "采购链接",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldhAGyzW0",
+        "name": "服装名称/品牌",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fld2whQ3Pt",
+        "name": "创建时间",
+        "type": "created_at",
+        "description": ""
+      },
+      {
+        "id": "fld1jp8KHB",
+        "name": "租赁价格",
+        "type": "number",
+        "description": ""
+      },
+      {
+        "id": "fldM4mYhgy",
+        "name": "最后更新人",
+        "type": "updated_by",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "table_id": "V1_RETOUCH_TABLE_ALIAS",
+    "field_count": 12,
+    "record_count": 13,
+    "has_more": false,
+    "fields": [
+      {
+        "id": "fldEZRq6nR",
+        "name": "修图师ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldduhriO0",
+        "name": "最后更新时间",
+        "type": "updated_at",
+        "description": ""
+      },
+      {
+        "id": "fldk7ko1Lz",
+        "name": "修图报价",
+        "type": "number",
+        "description": ""
+      },
+      {
+        "id": "fld5Z6aksy",
+        "name": "合作规则",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldL9hkXDf",
+        "name": "ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldlYC0qS9",
+        "name": "擅长风格",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldH7Xkt0O",
+        "name": "创建人",
+        "type": "created_by",
+        "description": ""
+      },
+      {
+        "id": "fldc8DvjfZ",
+        "name": "最后更新人",
+        "type": "updated_by",
+        "description": ""
+      },
+      {
+        "id": "fldlGdNJkx",
+        "name": "交付周期",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldhrEL42P",
+        "name": "创建时间",
+        "type": "created_at",
+        "description": ""
+      },
+      {
+        "id": "fldiLI2IGc",
+        "name": "作品附件",
+        "type": "attachment",
+        "description": ""
+      },
+      {
+        "id": "fld5ChVHQ1",
+        "name": "姓名/昵称",
+        "type": "text",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "table_id": "V1_EMERGENCY_TABLE_ALIAS",
+    "field_count": 14,
+    "record_count": 13,
+    "has_more": false,
+    "fields": [
+      {
+        "id": "fldYaEo3MW",
+        "name": "创建人",
+        "type": "created_by",
+        "description": ""
+      },
+      {
+        "id": "fldK9qDvkn",
+        "name": "最后更新人",
+        "type": "updated_by",
+        "description": ""
+      },
+      {
+        "id": "fldzebsE2D",
+        "name": "联系人",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldUP8oEZZ",
+        "name": "资源名称",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldTU3w1jR",
+        "name": "创建时间",
+        "type": "created_at",
+        "description": ""
+      },
+      {
+        "id": "fldr7v0MAh",
+        "name": "联系方式",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldvyiRGlx",
+        "name": "最后更新时间",
+        "type": "updated_at",
+        "description": ""
+      },
+      {
+        "id": "fldRRbhOzR",
+        "name": "24小时可联系",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldBrdrgKx",
+        "name": "资源用途",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldoYVcV8o",
+        "name": "应急资源ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldCeqWwUo",
+        "name": "服务范围",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fld9CC8qWo",
+        "name": "应急响应时间",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldZ5YnYbv",
+        "name": "ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldsL9fnW9",
+        "name": "备注",
+        "type": "text",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "table_id": "V1_TRENDINGRESEARCH_TABLE_ALIAS",
+    "field_count": 20,
+    "record_count": 19,
+    "has_more": false,
+    "fields": [
+      {
+        "id": "fldlGulXwO",
+        "name": "爆款标题",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fld7fbmOHg",
+        "name": "爆款笔记链接",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldWK9dtCx",
+        "name": "互动数据",
+        "type": "text",
+        "description": "赞藏评/播放量/完播率"
+      },
+      {
+        "id": "fldFLJkpEz",
+        "name": "ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldlDUvdWb",
+        "name": "最后更新人",
+        "type": "updated_by",
+        "description": ""
+      },
+      {
+        "id": "fldcjBHupL",
+        "name": "被引用的项目",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "fldHDboDx5",
+        "name": "创建人",
+        "type": "created_by",
+        "description": ""
+      },
+      {
+        "id": "fldZY1f3Lu",
+        "name": "热门标签/话题",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldTZRP1R8",
+        "name": "录入时间",
+        "type": "datetime",
+        "description": ""
+      },
+      {
+        "id": "fldTMU7Wgq",
+        "name": "所属平台",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fld2FrIDTI",
+        "name": "调研 ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fld9by83Tk",
+        "name": "录入人",
+        "type": "user",
+        "description": ""
+      },
+      {
+        "id": "fldGzKMDP2",
+        "name": "核心爆款元素",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldTDtVBTi",
+        "name": "可复用点",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldqbsiESd",
+        "name": "发布时间",
+        "type": "datetime",
+        "description": ""
+      },
+      {
+        "id": "fldJ30vTXd",
+        "name": "封面/视频截图",
+        "type": "attachment",
+        "description": ""
+      },
+      {
+        "id": "fldScbkjgF",
+        "name": "被引用的成品",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "fldXxHl546",
+        "name": "创建时间",
+        "type": "created_at",
+        "description": ""
+      },
+      {
+        "id": "fldXPk6WWG",
+        "name": "最后更新时间",
+        "type": "updated_at",
+        "description": ""
+      },
+      {
+        "id": "fldhvPbTZa",
+        "name": "全文文案",
+        "type": "text",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "table_id": "V1_PUBLISHTASKS_TABLE_ALIAS",
+    "field_count": 32,
+    "record_count": 95,
+    "has_more": false,
+    "fields": [
+      {
+        "id": "fldj0Lb7X2",
+        "name": "发布文案",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldd1tZN9d",
+        "name": "适配修改说明",
+        "type": "text",
+        "description": "记录针对该平台做的具体修改（如：小红书裁剪为3:4、抖音添加字幕、朋友圈压缩画质等）"
+      },
+      {
+        "id": "fldJd0Hd9W",
+        "name": "数据回采时间",
+        "type": "datetime",
+        "description": "成品发布后进行数据回采的时间，用于支撑数据回采提醒"
+      },
+      {
+        "id": "fldxm9DMc3",
+        "name": "成品文件链接",
+        "type": "text",
+        "description": "指向飞书云盘中成品文件夹的URL链接"
+      },
+      {
+        "id": "fldYVKIa4D",
+        "name": "核心数据",
+        "type": "text",
+        "description": "赞藏评、播放量、完播率、涨粉数、私信数、引流加微数"
+      },
+      {
+        "id": "fldYHhgqGJ",
+        "name": "计划发布时间",
+        "type": "datetime",
+        "description": ""
+      },
+      {
+        "id": "fldlLD2W7Z",
+        "name": "发布链接",
+        "type": "text",
+        "description": "成品在各平台实际发布的URL链接，用于追溯发布来源"
+      },
+      {
+        "id": "fld6bh7yqi",
+        "name": "发布优先级",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldfT4Gw22",
+        "name": "实际发布时间",
+        "type": "datetime",
+        "description": ""
+      },
+      {
+        "id": "fld3o0xkiN",
+        "name": "所属项目",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "fldhCxTtoc",
+        "name": "成品 ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldcEuOwYV",
+        "name": "引流客户 ID",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "fldMkPv0xM",
+        "name": "创建人",
+        "type": "created_by",
+        "description": ""
+      },
+      {
+        "id": "fldS8oCkml",
+        "name": "ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldaR5yft2",
+        "name": "所属平台",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldlq7D0yk",
+        "name": "最后更新人",
+        "type": "updated_by",
+        "description": ""
+      },
+      {
+        "id": "fld2MKsy4C",
+        "name": "备注",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "flduC5yaZH",
+        "name": "数据抓取时间",
+        "type": "datetime",
+        "description": ""
+      },
+      {
+        "id": "fldT968zGy",
+        "name": "爆款参考来源",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "fldX0o9v85",
+        "name": "素材库目录管理表",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "fldsXjqP3y",
+        "name": "标签/话题组合",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldqJp3eMq",
+        "name": "审核人",
+        "type": "user",
+        "description": ""
+      },
+      {
+        "id": "fld676fR9O",
+        "name": "发布状态",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldKeDuqJR",
+        "name": "创建时间",
+        "type": "created_at",
+        "description": ""
+      },
+      {
+        "id": "fldEuQJ7en",
+        "name": "素材适配版本",
+        "type": "attachment",
+        "description": "存储针对该平台/账号定制化修改后的成品素材，关联飞书云盘路径"
+      },
+      {
+        "id": "fldCU4SmSP",
+        "name": "Trae数据分析",
+        "type": "text",
+        "description": "自动生成数据表现分析、优化建议"
+      },
+      {
+        "id": "fldhZ7UC6X",
+        "name": "关联原始素材 ID",
+        "type": "link",
+        "description": "关联【素材库目录管理表】，实现一个成品关联多个原始素材"
+      },
+      {
+        "id": "fldoBuwTpG",
+        "name": "所属矩阵号",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldtfr8mTw",
+        "name": "漏发预警标记",
+        "type": "checkbox",
+        "description": "自动标记：当计划发布时间已过且发布状态≠已发布时自动勾选"
+      },
+      {
+        "id": "fldNphxLbE",
+        "name": "成品文件",
+        "type": "attachment",
+        "description": "封面图/成片视频"
+      },
+      {
+        "id": "fldJTZvyfK",
+        "name": "发布标题",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldCofmqyC",
+        "name": "最后更新时间",
+        "type": "updated_at",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "table_id": "V1_MATERIALLIBRARY_TABLE_ALIAS",
+    "field_count": 25,
+    "record_count": 30,
+    "has_more": false,
+    "fields": [
+      {
+        "id": "fldCzGxHHj",
+        "name": "拍摄时间",
+        "type": "datetime",
+        "description": ""
+      },
+      {
+        "id": "fldGcfM7yN",
+        "name": "调用记录",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fld3SES6vU",
+        "name": "项目名称",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldwwP0e3y",
+        "name": "ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldZBkMivb",
+        "name": "素材状态",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldQzYYut5",
+        "name": "跨平台适配状态",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldgmx1S8t",
+        "name": "素材数量",
+        "type": "number",
+        "description": ""
+      },
+      {
+        "id": "fldXm5vKJO",
+        "name": "素材类型",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldtOe7GNL",
+        "name": "适配负责人",
+        "type": "user",
+        "description": "负责该素材跨平台适配的运营人员"
+      },
+      {
+        "id": "fld7CBbx91",
+        "name": "成品发布与运营数据表",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "fldZ3r0UYR",
+        "name": "目标发布账号",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldYB38wvy",
+        "name": "摄影师",
+        "type": "user",
+        "description": ""
+      },
+      {
+        "id": "fldZO4fN0s",
+        "name": "最后更新时间",
+        "type": "updated_at",
+        "description": ""
+      },
+      {
+        "id": "fldyUONPK3",
+        "name": "创建时间",
+        "type": "created_at",
+        "description": ""
+      },
+      {
+        "id": "fldHbFQFVU",
+        "name": "最晚适配完成时间",
+        "type": "datetime",
+        "description": "自动计算：拍摄完成时间 + 3 个工作日"
+      },
+      {
+        "id": "fldc103zuv",
+        "name": "最后更新人",
+        "type": "updated_by",
+        "description": ""
+      },
+      {
+        "id": "fldwgcaA8I",
+        "name": "创建人",
+        "type": "created_by",
+        "description": ""
+      },
+      {
+        "id": "fldpJFdstN",
+        "name": "关联项目 ID",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "fldibg94tx",
+        "name": "素材目录ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldS9Cjtf6",
+        "name": "已适配完成账号",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldq0OjQgK",
+        "name": "关联成品 ID",
+        "type": "link",
+        "description": "关联【成品发布与运营数据表】，实现一个素材关联多个平台成品"
+      },
+      {
+        "id": "fldmdCLyQx",
+        "name": "测试字段",
+        "type": "text",
+        "description": "这是一个测试字段"
+      },
+      {
+        "id": "fld3oxvacS",
+        "name": "备注",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldpKFjK4t",
+        "name": "素材原始版本",
+        "type": "attachment",
+        "description": "存储未经过任何平台适配的原始素材文件，关联飞书云盘路径"
+      },
+      {
+        "id": "fldTLrsrvN",
+        "name": "素材存储路径",
+        "type": "text",
+        "description": "飞书云盘文件夹链接"
+      }
+    ]
+  },
+  {
+    "table_id": "V1_SCRIPTS_TABLE_ALIAS",
+    "field_count": 16,
+    "record_count": 36,
+    "has_more": false,
+    "fields": [
+      {
+        "id": "flduMUzjeU",
+        "name": "关联客户阶段",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "fldJLoQS4z",
+        "name": "话术 ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldYbaO7Yz",
+        "name": "话术全文",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fld11hprQP",
+        "name": "创建时间",
+        "type": "created_at",
+        "description": ""
+      },
+      {
+        "id": "fldFwRCVpT",
+        "name": "最后更新人",
+        "type": "updated_by",
+        "description": ""
+      },
+      {
+        "id": "fldm9F0NYe",
+        "name": "注意事项",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldI2DH5oh",
+        "name": "创建人",
+        "type": "created_by",
+        "description": ""
+      },
+      {
+        "id": "fldjT6bhvf",
+        "name": "关联资源类型",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "fldoYRMnzA",
+        "name": "话术核心目标",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldsTsuGLM",
+        "name": "备注",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldzUl4L1Z",
+        "name": "话术场景",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fld6fSz8Pj",
+        "name": "ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldcaDIaAk",
+        "name": "版本更新时间",
+        "type": "datetime",
+        "description": ""
+      },
+      {
+        "id": "fld9UTJYvS",
+        "name": "转化效果",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fld27QM1D6",
+        "name": "适用对象",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldnAWtKxD",
+        "name": "最后更新时间",
+        "type": "updated_at",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "table_id": "V1_KNOWLEDGEBASE_TABLE_ALIAS",
+    "field_count": 14,
+    "record_count": 0,
+    "has_more": false,
+    "fields": [
+      {
+        "id": "fldxTWdFLO",
+        "name": "最后更新人",
+        "type": "updated_by",
+        "description": ""
+      },
+      {
+        "id": "fldEFjGL7w",
+        "name": "创建时间",
+        "type": "created_at",
+        "description": ""
+      },
+      {
+        "id": "fld4NIiwUr",
+        "name": "录入时间",
+        "type": "datetime",
+        "description": ""
+      },
+      {
+        "id": "fldv94cMTU",
+        "name": "录入人",
+        "type": "user",
+        "description": ""
+      },
+      {
+        "id": "fld3RGll6g",
+        "name": "知识 ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "flds45HNRr",
+        "name": "知识详情",
+        "type": "text",
+        "description": "关联飞书文档、图文教程、视频教程"
+      },
+      {
+        "id": "fldw9OzWRI",
+        "name": "ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fld5agMhzn",
+        "name": "知识标题",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fld3HCnJ26",
+        "name": "适用场景",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fld0VDbe24",
+        "name": "创建人",
+        "type": "created_by",
+        "description": ""
+      },
+      {
+        "id": "fldON3qMbu",
+        "name": "核心关键词",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldM6gog7q",
+        "name": "关联项目 ID",
+        "type": "link",
+        "description": ""
+      },
+      {
+        "id": "fld9IWHGDv",
+        "name": "备注",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldU3LMo9R",
+        "name": "最后更新时间",
+        "type": "datetime",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "table_id": "V1_SOPMANAGEMENT_TABLE_ALIAS",
+    "field_count": 19,
+    "record_count": 1,
+    "has_more": false,
+    "fields": [
+      {
+        "id": "fld6Ck2Enp",
+        "name": "评审状态",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldcam4RXU",
+        "name": "落地状态",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldU3V2r0T",
+        "name": "涉及SOP模块",
+        "type": "select",
+        "description": ""
+      },
+      {
+        "id": "fldOyHbLie",
+        "name": "最后更新时间",
+        "type": "updated_at",
+        "description": ""
+      },
+      {
+        "id": "fld93d1Veo",
+        "name": "优化方案",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldQegxPxg",
+        "name": "评审意见",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldIXL8ahF",
+        "name": "计划完成时间",
+        "type": "datetime",
+        "description": ""
+      },
+      {
+        "id": "fldwjOlO7f",
+        "name": "创建人",
+        "type": "created_by",
+        "description": ""
+      },
+      {
+        "id": "fld2Kyi4mt",
+        "name": "优化 ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldIObG62F",
+        "name": "问题/优化建议描述",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldKeA2Ovr",
+        "name": "提出人",
+        "type": "user",
+        "description": ""
+      },
+      {
+        "id": "fldgKTJR5a",
+        "name": "责任人",
+        "type": "user",
+        "description": ""
+      },
+      {
+        "id": "fldQxkT1jJ",
+        "name": "创建时间",
+        "type": "created_at",
+        "description": ""
+      },
+      {
+        "id": "fldhxWjMMH",
+        "name": "ID",
+        "type": "auto_number",
+        "description": ""
+      },
+      {
+        "id": "fldn2d33dn",
+        "name": "提出时间",
+        "type": "datetime",
+        "description": ""
+      },
+      {
+        "id": "fldbZpJX1s",
+        "name": "最后更新人",
+        "type": "updated_by",
+        "description": ""
+      },
+      {
+        "id": "fldD1H5x4q",
+        "name": "备注",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldO8mv6w7",
+        "name": "SOP更新记录",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "id": "fldd9ZJ9KB",
+        "name": "优先级",
+        "type": "select",
+        "description": ""
+      }
+    ]
+  }
+]

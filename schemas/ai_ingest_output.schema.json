@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zehuai.local/schemas/ai_ingest_output.schema.json",
+  "title": "Zehuai AI Ingest Candidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_id",
+    "task_type",
+    "source",
+    "target_entity",
+    "candidate",
+    "field_evidence",
+    "unresolved_questions",
+    "overall_confidence",
+    "risk_level",
+    "recommended_action"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "job_id": { "type": "string", "minLength": 8 },
+    "task_type": {
+      "type": "string",
+      "enum": ["customer_extract", "resource_extract", "project_extract", "planning_draft"]
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_type", "source_hash"],
+      "properties": {
+        "source_type": { "type": "string", "enum": ["text", "image", "audio", "form", "record"] },
+        "source_hash": { "type": "string" },
+        "language": { "type": "string", "default": "zh-CN" },
+        "captured_at": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "target_entity": {
+      "type": "string",
+      "enum": ["Customer", "Resource", "Project", "PlanningDocument"]
+    },
+    "candidate_match": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "business_id": { "type": ["string", "null"] },
+        "match_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "match_reasons": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "description": "Only fields defined by the target entity's versioned field map are allowed at runtime."
+    },
+    "field_confidence": {
+      "type": "object",
+      "additionalProperties": { "type": "number", "minimum": 0, "maximum": 1 }
+    },
+    "field_evidence": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["quote"],
+          "properties": {
+            "quote": { "type": "string" },
+            "source_position": { "type": ["string", "null"] }
+          }
+        }
+      }
+    },
+    "validation_errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["field", "code", "message"],
+        "properties": {
+          "field": { "type": "string" },
+          "code": { "type": "string" },
+          "message": { "type": "string" }
+        }
+      }
+    },
+    "unresolved_questions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "overall_confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "risk_level": { "type": "string", "enum": ["Low", "Medium", "High"] },
+    "recommended_action": {
+      "type": "string",
+      "enum": ["review_and_create", "review_and_update", "manual_resolution", "reject"]
+    }
+  }
+}
