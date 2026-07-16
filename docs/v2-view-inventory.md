@@ -1,7 +1,7 @@
-# V2 View Inventory v1.0
+# V2 View Inventory v1.1
 
 > 固定日期：2026-07-16
-> 来源：docs/v2-base-schema.md
+> 来源：docs/v2-base-schema.md + phase1b3_migration_gate_decision.md
 > 用途：快速查找任意视图的筛选条件和排序
 
 ## 视图总览
@@ -17,7 +17,8 @@
 | 7 | Customer | 高意向客户 | 看板 | intent_level = 高 且 relationship_status ∈ {新线索, 跟进中, 已确认需求, 待定金} | — | 按状态分组看板 | - |
 | 8 | Customer | 按负责人分组 | 看板 | 无 | — | owner 分组 | - |
 | 9 | Customer | 高敏客户 | 表格 | privacy_level = 高敏 | created_at 降序 | 隐私管控 | - |
-| 10 | Project | 全部项目 | 表格 | 无 | created_at 降序 | 默认视图 | - |
+| 10 | Customer | 迁移记录 | 表格 | migration_batch_id 不为空 | migrated_at 降序 | 按迁移批次查看 | - |
+| 11 | Project | 全部项目 | 表格 | 无 | created_at 降序 | 默认视图 | - |
 | 11 | Project | 未来3天拍摄 | 表格 | project_status = 待拍摄 且 shoot_date_start ≤ 今天+3天 且 shoot_date_start ≥ 今天 | shoot_date_start 升序 | F2 自动化数据源 | F2 |
 | 12 | Project | 交付超期 | 表格 | project_status ∈ {后期制作, 客户确认} 且 delivery_due_at < 今天 | delivery_due_at 升序 | F2 自动化数据源 | F2 |
 | 13 | Project | 待客户确认 | 表格 | project_status = 客户确认 | updated_at 降序 | F2 自动化数据源 | F2 |
@@ -27,7 +28,9 @@
 | 17 | Project | 进行中看板 | 看板 | project_status ∉ {草稿, 已归档} | — | 按状态分组 | - |
 | 18 | Project | 按负责人分组 | 看板 | 无 | — | project_owner 分组 | - |
 | 19 | Project | 近期交付 | 画册 | project_status = 已交付 | delivery_due_at 降序 | 已交付项目展示 | - |
-| 20 | Resource | 全部资源 | 表格 | 无 | created_at 降序 | 默认视图 | - |
+| 20 | Project | 迁移记录 | 表格 | migration_batch_id 不为空 | migrated_at 降序 | 按迁移批次查看 | - |
+| 21 | Project | 按付款状态分组 | 看板 | 无 | — | payment_status 分组 | - |
+| 22 | Resource | 全部资源 | 表格 | 无 | created_at 降序 | 默认视图 | - |
 | 21 | Resource | 模特库 | 表格 | resource_type = 模特 | priority 升序 → rating_quality 降序 | 模特视图 | - |
 | 22 | Resource | 化妆师库 | 表格 | resource_type = 化妆师 | priority 升序 → rating_quality 降序 | 化妆师视图 | - |
 | 23 | Resource | 场地库 | 表格 | resource_type = 场地 | priority 升序 | 场地视图 | - |
@@ -39,7 +42,8 @@
 | 29 | Resource | 杭州可用资源 | 表格 | city = 杭州 且 cooperation_status ∈ {已合作, 沟通中} | priority 升序 | 地区可用资源 | - |
 | 30 | Resource | 可合作资源 | 看板 | cooperation_status ∈ {已合作, 沟通中, 未联系} 且 ≠ 黑名单 | — | 按合作状态分组 | - |
 | 31 | Resource | 按类型分组 | 看板 | 无 | — | resource_type 分组 | - |
-| 32 | Project_Resource_Assignment | 全部安排 | 表格 | 无 | created_at 降序 | 默认视图 | - |
+| 32 | Resource | 迁移记录 | 表格 | migration_batch_id 不为空 | migrated_at 降序 | 按迁移批次查看 | - |
+| 33 | Project_Resource_Assignment | 全部安排 | 表格 | 无 | created_at 降序 | 默认视图 | - |
 | 33 | Project_Resource_Assignment | 待确认安排 | 表格 | booking_status = 待确认 | start_at 升序 | 需跟进确认 | - |
 | 34 | Project_Resource_Assignment | 已确认安排 | 表格 | booking_status = 已确认 | start_at 升序 | 已确认档期 | - |
 | 35 | Project_Resource_Assignment | 冲突安排 | 表格 | conflict_status ∈ {疑似冲突, 已冲突} | start_at 升序 | S4 自动化产出 | - |
@@ -111,6 +115,7 @@
 | 高意向客户 | 看板 | intent_level = 高 且 relationship_status ∈ {新线索, 跟进中, 已确认需求, 待定金} | — | 按状态分组看板 |
 | 按负责人分组 | 看板 | 无 | — | owner 分组 |
 | 高敏客户 | 表格 | privacy_level = 高敏 | created_at 降序 | 隐私管控 |
+| 迁移记录 | 表格 | migration_batch_id 不为空 | migrated_at 降序 | 按迁移批次查看 |
 
 ### Project 项目表
 
@@ -126,6 +131,8 @@
 | 进行中看板 | 看板 | project_status ∉ {草稿, 已归档} | — | 按状态分组 |
 | 按负责人分组 | 看板 | 无 | — | project_owner 分组 |
 | 近期交付 | 画册 | project_status = 已交付 | delivery_due_at 降序 | 已交付项目展示 |
+| 迁移记录 | 表格 | migration_batch_id 不为空 | migrated_at 降序 | 按迁移批次查看 |
+| 按付款状态分组 | 看板 | 无 | — | payment_status 分组 |
 
 ### Resource 统一资源表
 
@@ -143,6 +150,7 @@
 | 杭州可用资源 | 表格 | city = 杭州 且 cooperation_status ∈ {已合作, 沟通中} | priority 升序 | 地区可用资源 |
 | 可合作资源 | 看板 | cooperation_status ∈ {已合作, 沟通中, 未联系} 且 ≠ 黑名单 | — | 按合作状态分组 |
 | 按类型分组 | 看板 | 无 | — | resource_type 分组 |
+| 迁移记录 | 表格 | migration_batch_id 不为空 | migrated_at 降序 | 按迁移批次查看 |
 
 ### Project_Resource_Assignment 项目资源安排表
 
@@ -251,18 +259,18 @@
 
 | 视图类型 | 数量 | 说明 |
 |---|---|---|
-| 表格 | 67 | 标准列表视图 |
-| 看板 | 19 | 分组看板视图 |
+| 表格 | 70 | 标准列表视图 |
+| 看板 | 20 | 分组看板视图 |
 | 画册 | 1 | 画册展示视图（Project 近期交付） |
-| **合计** | **87** | |
+| **合计** | **92** | |
 
 ## 各表视图数量统计
 
 | 表 | 视图数量 |
 |---|---|
-| Customer | 9 |
-| Project | 10 |
-| Resource | 12 |
+| Customer | 10 |
+| Project | 12 |
+| Resource | 13 |
 | Project_Resource_Assignment | 7 |
 | Planning_Document | 7 |
 | Task | 9 |
@@ -270,4 +278,4 @@
 | Automation_Event | 8 |
 | Data_Quality_Issue | 8 |
 | System_Config | 7 |
-| **合计** | **87** |
+| **合计** | **92** |

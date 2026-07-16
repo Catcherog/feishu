@@ -249,3 +249,210 @@
   5. 缺失字段处理（定金金额、成交金额、客户满意度等 V2 无对应字段）
   6. 预算区间拆分规则确认
 - 后续复审日期：用户确认后进入 Phase 1B-3 小批量试迁移
+
+## D-020：客户状态与项目状态映射规则 v1.0
+
+- 日期：2026-07-16
+- 状态：APPROVED
+- 决策人：用户
+- 背景：Phase 1B-2 Dry Run 发现旧客户 `已拍摄` / `拍摄完成` 以及旧项目 `待立项` / `已完成` 在 V2 状态机中无明确映射，需人工确认规则
+- 可选方案：
+  1. 旧客户 `已拍摄` / `拍摄完成` 无条件映射为 V2 `服务中`
+  2. 按关联项目交付/归档情况区分映射为 `服务中`、`已完成` 或 `NEEDS_REVIEW`
+- 最终决策：方案 2 — 按关联项目状态推断客户关系状态
+- 原因：客户关系状态不得简单复制项目状态，必须基于业务事实
+- 客户状态规则：
+  - 存在未交付或未归档的有效关联项目 → `服务中`
+  - 所有关联项目均已交付或已归档 → `已完成`
+  - 没有关联项目或项目状态无法判断 → `NEEDS_REVIEW`
+- 项目状态规则：
+  - 旧 `待立项` → V2 `草稿`
+  - 旧 `已完成`：
+    - 有交付日期、交付附件或明确交付证据 → `已交付`
+    - 同时存在归档或复盘完成证据 → `已归档`
+    - 无法证明交付 → `NEEDS_REVIEW`
+- 保留字段：`legacy_status_raw`、`status_mapping_rule_version = status-map-v1.0`
+- 代价与风险：需要读取并判断关联项目状态，Dry Run 复杂度提高；规则版本需在迁移记录中保留以便追溯
+- 影响的表、代码和自动化：Customer、Project 表迁移规则；Dry Run 脚本需增加关联分析逻辑
+- 验证方式：重新执行 Dry Run 后，检查 MIGRATABLE/NEEDS_REVIEW/BLOCKED 分布合理
+- 后续复审日期：Phase 1B-3 Acceptance Gate
+
+## D-021：来源渠道映射规则 source-map-v1.0
+
+- 日期：2026-07-16
+- 状态：APPROVED
+- 决策人：用户
+- 背景：旧来源渠道包含抖音、视频号、朋友圈等，Phase 1B-2 Dry Run 将其聚合为 `其他`，可能丢失渠道事实
+- 可选方案：
+  1. 抖音/视频号/朋友圈合并为 `其他`
+  2. 扩展 V2 `source_channel` 选项，保留所有历史来源
+- 最终决策：方案 2 — 扩展 source_channel 选项
+- 原因：不丢弃原始业务事实，同时保留原始文本便于追溯
+- V2 来源渠道选项：
+  - 小红书
+  - 抖音
+  - 视频号
+  - 朋友圈
+  - 微信公众号
+  - 微信私聊
+  - 官网
+  - 小程序
+  - 转介绍
+  - 线下活动
+  - 其他
+  - 未知
+- 保留字段：`source_channel_raw`、`source_channel_mapping_version = source-map-v1.0`
+- 代价与风险：V2 Schema 需更新 select 选项；无法识别的旧值映射为 `其他` 或 `未知`，需人工复核
+- 影响的表、代码和自动化：Customer 表 source_channel 字段；迁移规则脚本
+- 验证方式：Dry Run 统计各来源渠道映射分布，确认无丢失原始值
+- 后续复审日期：Phase 1B-3 Acceptance Gate
+
+## D-022：重复候选人工决策规则
+
+- 日期：2026-07-16
+- 状态：APPROVED
+- 决策人：用户
+- 背景：Phase 1B-2 Dry Run 发现客户和资源存在潜在重复，需明确是否合并及如何决策
+- 可选方案：
+  1. 按手机号/微信号/作品链接自动合并重复记录
+  2. 任何重复候选不得自动合并，仅生成人工审核清单
+- 最终决策：方案 2 — 禁止自动合并，采用人工决策值
+- 原因：避免误合并导致客户或资源历史丢失，保证数据所有权清晰
+- 新增决策值：
+  - `SAME_ENTITY`
+  - `DISTINCT_ENTITY`
+  - `UNRESOLVED`
+- 规则：
+  - 客户：手机号完全一致或微信号完全一致可标记为高概率候选，但仍需人工确认
+  - 资源：联系方式、社交账号或作品链接完全一致可标记为高概率候选，但仍需人工确认
+  - `UNRESOLVED` 记录不得进入 Pilot
+  - 不修改或删除旧 Base 中的重复记录
+  - V2 中保留全部 `legacy_record_id`，并记录 `canonical_business_id`
+- 代价与风险：增加人工审核工作量；Pilot 样本需排除未解决重复候选
+- 影响的表、代码和自动化：Customer、Resource 表迁移；需新增重复候选清单生成逻辑
+- 验证方式：输出重复候选清单，逐条给出证据和推荐决策，用户确认
+- 后续复审日期：Phase 1B-3 MIGRATION_PILOT_001 启动前
+
+## D-023：孤儿记录处理规则
+
+- 日期：2026-07-16
+- 状态：APPROVED
+- 决策人：用户
+- 背景：Phase 1B-2 Dry Run 存在无关联项目的客户和无关联客户的项目，需明确是否迁移
+- 可选方案：
+  1. 无关联项目的客户自动 BLOCKED；为无关联客户的项目创建 `未知客户` 占位
+  2. 客户可作为线索独立存在；无关联客户的项目必须确定客户后才能迁移
+- 最终决策：方案 2 — 客户允许线索态，项目必须有明确客户
+- 原因：客户和项目在业务模型中职责不同，不应为项目伪造客户
+- 客户规则：
+  - 有姓名或称呼，且至少有联系方式、来源、有效需求摘要之一 → 可迁移为 Customer
+  - 只有空壳字段、无有效身份和业务信息 → `BLOCKED`
+  - 不因“没有项目”自动阻止客户迁移
+- 项目规则：
+  - 可从项目字段确定客户，并经人工确认 → 先创建/匹配 Customer，再迁移 Project
+  - 无法确定客户 → `BLOCKED`
+  - 禁止创建 `未知客户` 占位记录
+  - Pilot 中排除所有未解决的孤儿项目
+- 代价与风险：部分历史项目可能因客户无法追溯而被 BLOCKED；需人工确认项目与客户关联
+- 影响的表、代码和自动化：Customer、Project 迁移规则；Dry Run 脚本需增加孤儿记录分析
+- 验证方式：Dry Run 输出孤儿记录清单，分类说明原因
+- 后续复审日期：Phase 1B-3 MIGRATION_PILOT_001 启动前
+
+## D-024：V2 Schema v1.1 最小扩展
+
+- 日期：2026-07-16
+- 状态：APPROVED
+- 决策人：用户
+- 背景：Phase 1B-2 Dry Run 发现旧记录包含定金金额、成交金额、客户满意度、预算区间等有效业务事实，V2 Schema v1.0 未提供对应字段，直接迁移会导致信息丢失
+- 可选方案：
+  1. 不扩展 Schema，将上述信息丢弃或暂存到备注
+  2. 最小化扩展 Schema，新增必要字段保留业务事实
+- 最终决策：方案 2 — Schema 从 v1.0 升级为 v1.1
+- 原因：避免历史有效业务事实丢失，但不扩展成完整财务/合同系统
+- Project 新增字段：
+  - `deposit_amount`：Number，人民币金额，可空
+  - `deal_amount`：Number，人民币金额，可空
+  - `currency`：SingleSelect，首期默认 `CNY`
+  - `payment_status`：SingleSelect，`未知 / 待定金 / 已付定金 / 已结清 / 已退款 / 部分退款`
+  - `satisfaction_score`：Number，建议 1—5，可空
+  - `satisfaction_note`：LongText，可空
+  - `feedback_collected_at`：DateTime，可空
+- Customer 后续如需历史平均满意度，使用只读汇总字段，不作为迁移目标字段
+- 需重新固化：
+  - `schemas/v2-schema-v1.1.json`
+  - `schemas/v2-schema-v1.1.sha256`
+  - `docs/v2-field-dictionary.md`
+  - `docs/v2-view-inventory.md`（若视图受影响）
+- 代价与风险：Schema 版本升级需同步更新 Pilot Base 字段；若字段类型选择不当可能影响后续查询
+- 影响的表、代码和自动化：Project 表结构、字段字典、视图清单、迁移脚本
+- 验证方式：Schema 文件通过结构校验，hash 一致，字段字典完整描述新增字段
+- 后续复审日期：Phase 1B-3 Acceptance Gate
+
+## D-025：预算区间拆分规则 budget-map-v1.0
+
+- 日期：2026-07-16
+- 状态：APPROVED
+- 决策人：用户
+- 背景：旧记录中预算字段为非结构化文本，如 `3000以下`、`5000-8000`、`面议` 等，需拆分为结构化上下界
+- 可选方案：
+  1. 原样复制为文本字段
+  2. 解析为 `budget_min` / `budget_max`，保留原始文本和解析状态
+- 最终决策：方案 2 — 采用 CNY 整数，保留原始值，不要求所有记录都解析成功
+- 新增/确认字段：
+  - `budget_min`
+  - `budget_max`
+  - `budget_range_raw`
+  - `budget_parse_status`：`parsed / ambiguous / unknown / invalid`
+  - `budget_parse_rule_version = budget-map-v1.0`
+- 解析规则：
+  - `3000以下` / `<3000` → min=0, max=3000, status=parsed
+  - `3000-5000` → min=3000, max=5000, status=parsed
+  - `5000以上` / `5000+` → min=5000, max=null, status=parsed
+  - `未确定` / `面议` / 空 → min=null, max=null, status=unknown
+  - 多个冲突区间或无法解释 → min=null, max=null, status=ambiguous
+- 说明：预算上下界是业务估算范围，不作为严格数学开闭区间；所有原始文本必须保留
+- 代价与风险：解析规则无法覆盖所有历史写法，ambiguous 记录需人工复核
+- 影响的表、代码和自动化：Customer 或 Project 表预算字段；迁移规则脚本
+- 验证方式：Dry Run 输出 budget_parse_status 分布，抽查解析结果
+- 后续复审日期：Phase 1B-3 Acceptance Gate
+
+## D-026：Phase 1B-3 启动前置条件与 MIGRATION_PILOT_001 样本规则
+
+- 日期：2026-07-16
+- 状态：APPROVED_WITH_CONDITIONS
+- 决策人：用户
+- 背景：D-019 Migration Review Gate 提出 6 项待确认事项，经 D-020—D-025 逐条决策后，需明确 Phase 1B-3 启动条件和 Pilot 样本规则
+- 可选方案：
+  1. 确认规则后立即执行真实数据迁移
+  2. 先更新 Schema 和迁移规则，重新 Dry Run，满足数量条件后再启动 Pilot
+- 最终决策：方案 2 — 不批准立即写入真实数据，必须先完成前置步骤
+- Phase 1B-3 启动前置条件：
+  1. 将 D-020—D-025 追加到 `DECISION_LOG.md` 和 `project_memory.md`
+  2. 更新并固化 Schema v1.1 与字段字典
+  3. 更新状态、来源、预算和缺失字段迁移规则
+  4. 创建重复候选人工审核清单
+  5. 创建孤儿记录处理清单
+  6. 重新执行全量只读 Dry Run
+  7. 输出更新后的 MIGRATABLE / NEEDS_REVIEW / BLOCKED 统计
+  8. 确认至少：5 个 Customer MIGRATABLE、5 个 Project MIGRATABLE 且关联上述 Customer、10 个 Model MIGRATABLE、10 个 Makeup MIGRATABLE
+  9. 若不足，停止在 Review Gate，不得从 NEEDS_REVIEW 中直接抽样写入
+- MIGRATION_PILOT_001 样本规则：
+  - 客户无未解决重复候选
+  - 项目客户关联明确
+  - 项目状态可确定映射
+  - 核心字段通过 Schema 校验
+  - 资源无未解决重复候选
+  - 关联策划案、任务、资源安排可确定性关联
+  - 不包含高敏客户原始聊天、照片或未脱敏附件
+  - 建议选择 5 个完整客户—项目组合，而非分别随机抽取
+- 回滚规则：
+  - 所有 Pilot 记录必须标记 `migration_batch_id = MIGRATION_PILOT_001`、`migration_source_record_id`、`migration_source_table`、`migration_rule_version`、`migrated_at`
+  - Dry-run rollback 只模拟，不实际删除
+  - Confirmed rollback 仅在 batch_id 完全匹配、记录未被修改、未被非 Pilot 数据引用、已保存前后快照、用户明确确认时才允许删除
+  - 若记录已被修改或产生后续关联，标记 `rollback_pending` 进入人工补偿清单
+  - 禁止修改或删除旧 Base 数据
+- Acceptance Gate 必须输出：迁移前后逐字段对账、源到目标记录映射、关联完整性检查、重复创建检查、Schema 校验结果、自动化事件日志、Dry-run rollback 结果、Confirmed rollback 演练结果、未解决问题、是否建议进入下一批次
+- 代价与风险：前置步骤增加执行时间；若不满足数量条件则 Pilot 延迟，但可避免低质量数据进入 V2
+- 影响的表、代码和自动化：V2 Pilot Base 结构更新、迁移脚本、Dry Run 报告、Pilot 写入脚本
+- 验证方式：Dry Run 报告和 Schema 资产通过校验；数量条件满足后用户再次批准 Pilot
+- 后续复审日期：Phase 1B-3 MIGRATION_PILOT_001 启动前
