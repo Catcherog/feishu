@@ -1,0 +1,12 @@
+{
+  "envId": "zeh-d7glqc07me2155c61",
+  "functionRoot": "cloudfunctions",
+  "functions": [
+    {
+      "name": "feishu-auth",
+      "runtime": "Nodejs18.15",
+      "timeout": 15,
+      "installDependency": true
+    }
+  ]
+}

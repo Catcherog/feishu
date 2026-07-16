@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "泽怀影像中台",
+    "slug": "zehuai-app",
+    "scheme": "zehuai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1A1A2E"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.zehuai.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1A1A2E"
+      },
+      "package": "com.zehuai.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-asset",
+      "expo-font",
+      "expo-notifications",
+      "expo-web-browser"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "ffd7e3b8-816e-4ac8-95b5-29d138bcf2b6"
+      }
+    }
+  }
+}

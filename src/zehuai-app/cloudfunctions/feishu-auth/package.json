@@ -1,0 +1,9 @@
+{
+  "name": "feishu-auth",
+  "version": "1.0.0",
+  "description": "飞书 OAuth 登录云函数（Polling-based 架构）",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "latest"
+  }
+}

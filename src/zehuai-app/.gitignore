@@ -1,0 +1,27 @@
+# 凭证加密存储（包含飞书 App Secret 和 Token）
+.credentials/
+
+# Expo
+.expo/
+.expo-test/
+
+# Node
+node_modules/
+
+# Build
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local

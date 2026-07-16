@@ -31,3 +31,23 @@ Thumbs.db
 
 # 临时脚本
 src/scripts/temp/
+
+# ============ zehuai-app (Expo React Native 小程序) ============
+# 真实配置文件（含飞书 App ID、Base Token、Table ID 等真实标识符，不入 Git）
+src/zehuai-app/src/constants/config.ts
+
+# 凭证加密存储（含飞书 App Secret 和 Token）
+src/zehuai-app/.credentials/
+
+# Expo 构建缓存
+src/zehuai-app/.expo/
+src/zehuai-app/.expo-test/
+
+# 原生构建目录（EAS Build 时生成，不入 Git）
+src/zehuai-app/android/
+src/zehuai-app/android.backup.*/
+
+# 本地环境配置
+src/zehuai-app/.env
+src/zehuai-app/.env.local
+src/zehuai-app/*.local

@@ -70,6 +70,8 @@ SECRET_PATTERNS: list[tuple[str, str, re.Pattern]] = [
 
 # S2: Internal Feishu resource identifiers
 # Real Feishu IDs contain mixed case and/or digits, not all-same-char placeholders
+# Negative lookahead excludes common English words starting with "rec" (recent, receive, record, etc.)
+# to avoid false positives on camelCase variable names like recentProjects, receiveIdType
 INTERNAL_ID_PATTERNS: list[tuple[str, str, re.Pattern]] = [
     ("base_token_assignment", "S2", re.compile(
         r"(?i)\b(?:base_token|baseId|app_token)\s*[:=]\s*['\"]?(?!SOURCE_BASE_ALIAS|TARGET_V2_BASE_ALIAS|<)[A-Za-z0-9]{20,}")),
@@ -81,11 +83,16 @@ INTERNAL_ID_PATTERNS: list[tuple[str, str, re.Pattern]] = [
 
 # S1: Privacy - record IDs and personal data
 # Real Feishu record IDs contain at least one uppercase letter or digit
+# Negative lookahead excludes common English words (recent, receive, record, recommend, etc.)
+# to avoid false positives on camelCase variable names like recentProjects, receiveIdType
 PRIVACY_PATTERNS: list[tuple[str, str, re.Pattern]] = [
-    ("record_id", "S1", re.compile(r"\brec(?=[A-Za-z0-9]*[A-Z0-9])[A-Za-z0-9]{10,}")),
+    ("record_id", "S1", re.compile(
+        r"\brec(?!ent|eive|ommend|over|ruit|ipe|eipt|ord|lam|ogniz|turf|ital)(?=[A-Za-z0-9]*[A-Z0-9])[A-Za-z0-9]{10,}")),
     ("phone_number", "S1", re.compile(r"(?<!\d)1[3-9]\d{9}(?!\d)")),
+    # Negative lookahead excludes common type annotations (string, undefined, unknown, any, null)
+    # and property accesses (client, options) to avoid false positives on TypeScript type annotations
     ("wechat_id_assignment", "S1", re.compile(
-        r"(?i)(?:微信|wechat|wx)\s*[:：]\s*([a-zA-Z][a-zA-Z0-9_-]{5,19})")),
+        r"(?i)(?:微信|wechat|wx)\s*[:：]\s*(?!string|undefined|unknown|any|null|void|never|Record|Partial|readonly|client|options|value|data)([a-zA-Z][a-zA-Z0-9_-]{5,19})")),
 ]
 
 # Known alias patterns - these are S3 (safe to publish)
