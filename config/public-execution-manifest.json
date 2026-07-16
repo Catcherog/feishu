@@ -1,0 +1,48 @@
+{
+  "manifest_version": "1.0.0",
+  "repository": "Catcherog/feishu",
+  "branch": "master",
+  "current_phase": "PHASE_1B3_REMEDIATION",
+  "audit_status": "FAIL_REMEDIATION_REQUIRED",
+  "migration_pilot_status": "NOT_APPROVED",
+  "entrypoint": "PUBLIC_EXECUTION_ENTRYPOINT.md",
+  "authoritative_files": [
+    "PROJECT_GUIDE.md",
+    "DECISION_LOG.md",
+    "docs/audit/PUBLIC_AUDIT_POLICY.md",
+    "docs/audit/phase1b3-independent-audit.md",
+    "docs/audit/phase1b3-remediation-plan.md"
+  ],
+  "approved_actions": [
+    "sanitize_public_reports",
+    "scan_git_history",
+    "prepare_history_cleanup_plan",
+    "generate_schema_diff",
+    "move_classifier_to_version_control",
+    "add_synthetic_fixtures",
+    "add_reason_code_accounting",
+    "apply_v1_1_delta_to_test_base",
+    "validate_v1_1_fields",
+    "run_read_only_dry_run",
+    "generate_gpt_audit_package"
+  ],
+  "prohibited_actions": [
+    "start_migration_pilot_001",
+    "write_needs_review_records",
+    "write_blocked_records",
+    "delete_old_base_records",
+    "switch_app_to_v2",
+    "enable_production_automation",
+    "commit_private_data",
+    "commit_real_feishu_identifiers",
+    "auto_continue_after_gate"
+  ],
+  "required_gate_order": ["R1", "R2", "R3", "R4", "R5", "R6"],
+  "private_only_patterns": [
+    "config/*.local.*",
+    "backups/private/**",
+    "reports/private/**",
+    ".env*"
+  ],
+  "stop_after_completion": true
+}
