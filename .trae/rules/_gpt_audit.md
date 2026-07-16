@@ -1,44 +1,144 @@
-# GPT Audit Package Rule
+# GPT 审计验证包规则
 
-## Trigger
+> **生效模式**：任务完成时生效
+> **触发信号**：Trae 完成一个 Phase、子任务或复杂任务后，需要向用户/GPT 交付结果时
+> **优先级**：在 `_experience.md` 之后执行（任务完成后输出）
 
-Generate an audit package whenever a Phase or remediation gate is completed, or whenever Schema, migration classification, write paths, security policy or automation behavior changes.
+---
 
-## Required eight-part package
+## 触发判定
 
-1. Work completed
-2. Key facts discovered
-3. Differences between documentation and real system
-4. Unresolved issues and blockers
-5. Files created or modified
-6. Commands, tests and exit codes
-7. Acceptance decision
-8. Next-step recommendation without automatic execution
+| 判定条件 | 是否触发 | 示例 |
+|---------|---------|------|
+| 完成 Phase 级任务 | **触发** | Phase 1B-3 Dry Run 完成 |
+| 完成涉及 3+ 工具调用的复杂任务 | **触发** | 迁移脚本编写并执行 |
+| 完成涉及配置/集成的任务 | **触发** | Schema 升级 + 字段字典更新 |
+| 用户要求"输出审计包"或"给 GPT 看结果" | **触发** | "把结果交给 GPT 审计" |
+| 简单的代码修改 | **不触发** | 修改一个变量名 |
+| 纯信息查询 | **不触发** | "这个函数做什么？" |
 
-## Evidence metadata
+## 执行逻辑
 
-For each evidence file include:
+```
+任务完成
+  ↓
+判定是否需要输出审计包 -> 是：继续 / 否：不触发
+  ↓
+按 8 点格式生成审计验证包
+  ↓
+保存到 reports/ 目录（如 phaseXbY-gpt-audit-package.md）
+  ↓
+在对话中输出摘要
+  ↓
+提醒用户可将其交给 GPT 审计
+```
 
-- repository-relative path
+## 审计包格式
+
+严格按以下 8 点结构输出，不得省略任何一项。无法验证的信息写"未验证"，禁止猜测。
+
+```markdown
+# [任务名称] GPT 审计验证包
+
+> **生成时间**：YYYY-MM-DD HH:mm
+> **执行者**：Trae (Kimi-K2.7-Code)
+> **审计目标**：供 GPT 或人工审计者验证任务执行的正确性和完整性
+
+## 1. 本次完成内容
+
+[列出本次任务实际完成的所有工作项，包括代码、配置、文档变更]
+
+## 2. 发现的关键事实
+
+[列出执行过程中发现的真实数据、系统状态、业务事实]
+
+## 3. 历史文档与真实系统的冲突
+
+[列出文档声称与真实 Base/系统不一致的地方，无冲突则写"无"]
+
+## 4. 未解决问题和阻塞项
+
+[列出当前未解决的问题、阻塞项和风险]
+
+## 5. 生成或修改的文件
+
+| 文件路径 | 操作 | 说明 | Git commit SHA | 文件 SHA256 | 证据分级 |
+|---|---|---|---|---|---|
+| ... | 新建/修改 | ... | ... | ... | ... |
+
+## 6. 执行的测试与验证结果
+
+[列出执行的测试命令、退出码、输出结果和验证证据]
+
+## 7. 是否满足验收条件
+
+[对照任务前置验收条件逐条判断，明确"满足"或"不满足"。
+
+不得仅凭文件存在或退出码为 0 推断成功。如关键证据缺失，对应项标记为 `未验证`。]
+
+## 8. 下一阶段建议
+
+[给出后续建议，但不自动执行]
+```
+
+## 证据元数据
+
+每个证据文件必须附带以下元数据（在第 5 点表格中体现）：
+
+- 仓库相对路径
 - Git commit SHA
-- Git blob SHA where available
-- generator command
-- command exit code
-- file SHA256
-- evidence classification
+- Git blob SHA（如可获取）
+- 生成命令
+- 命令退出码
+- 文件 SHA256
+- 证据分级
 
-Evidence classification must be one of:
+## 证据分级
 
-- `INDEPENDENTLY_VERIFIED`
-- `REPRODUCIBLE_FROM_PUBLIC_REPO`
-- `SELF_REPORTED`
-- `PRIVATE_EVIDENCE_NOT_PUBLIC`
-- `NOT_VERIFIED`
+每项证据必须标注以下分级之一，不得用"通过"代替分级：
 
-## Audit package safety
+| 分级 | 含义 |
+|------|------|
+| `INDEPENDENTLY_VERIFIED` | 已由独立方式验证（如第三方重现、真实系统复核） |
+| `REPRODUCIBLE_FROM_PUBLIC_REPO` | 可从公开仓库代码/配置重现 |
+| `SELF_REPORTED` | 仅为执行者自述，未经独立验证 |
+| `PRIVATE_EVIDENCE_NOT_PUBLIC` | 证据存在但属私密，未公开 |
+| `NOT_VERIFIED` | 未验证 |
 
-The package must not include real Feishu identifiers, customer information, raw exports or secrets. Use stable aliases and aggregate counts.
+仅 `SELF_REPORTED` 的项目不得标注为"通过"或"已验证"。
 
-## Gate behavior
+## 审计包安全
 
-If a mandatory item is missing, mark the relevant item `NOT_VERIFIED`. Do not infer success from the existence of a file or from a zero exit code alone.
+审计包不得包含以下内容，必须使用稳定别名（如 `SOURCE_BASE_ALIAS`）和聚合计数替代：
+
+- 真实飞书 Base / Table / Field / record 标识
+- App Secret、Token、API Key
+- 客户姓名、手机号、微信号
+- 原始聊天、照片、语音和附件
+- 真实数据全量导出
+- 基于真实记录的 record-level 分类矩阵
+
+仅允许存在于私密路径（不入 Git 或仅存本地）：`config/*.local.*`、`backups/private/**`、`reports/private/**`、`.env*`。
+
+## 门控行为
+
+- 若关键证据项缺失，对应项标记为 `未验证`，不得推断成功。
+- 不得仅凭文件存在或退出码为 0 推断任务成功。
+- 每个 Gate 完成后必须暂停，不得自动进入下一 Gate。
+- 审计包未通过时，明确输出"不满足"及原因，不得虚假报告。
+
+## 边界情况
+
+| 情况 | 处理方式 |
+|------|---------|
+| 任务部分完成 | 在第 1 点注明完成范围，第 4 点列出未完成项 |
+| 任务执行中遇到错误 | 在第 4 点详细描述错误和已尝试的解决方案 |
+| 验收条件不满足 | 在第 7 点明确写出"不满足"及原因，不得虚假报告 |
+| 涉及隐私数据 | 审计包中脱敏处理，不输出真实手机号、Token 等 |
+| 证据未经独立验证 | 标注为 `SELF_REPORTED`，不得标注为"通过" |
+| 关键证据文件缺失 | 对应项标注为 `未验证`，不得推断成功 |
+| GPT 审计后提出修改 | 记录到 DECISION_LOG.md，按修改建议执行后重新输出审计包 |
+
+## 来源
+
+本规则基于 `PROJECT_GUIDE.md` 第 13 节"T Rae 工作规则"、`TRAE_EXECUTION_PROMPT.md`"执行结束时的回复格式"以及 feishu-v2 公开仓库 `docs/audit/PUBLIC_AUDIT_POLICY.md` 证据分级体系制定。
