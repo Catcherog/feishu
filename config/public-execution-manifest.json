@@ -4,11 +4,11 @@
   "branch": "master",
   "current_phase": "PHASE_1B3_REMEDIATION",
   "current_gate": "R2",
-  "audit_status": "R2_REVIEW_PENDING",
+  "audit_status": "R2_INDEPENDENTLY_VERIFIED_PASS",
   "migration_pilot_status": "NOT_APPROVED",
   "gate_status": {
     "R1": "INDEPENDENTLY_VERIFIED_PASS",
-    "R2": "R2_REVIEW_PENDING",
+    "R2": "INDEPENDENTLY_VERIFIED_PASS",
     "R3": "NOT_STARTED",
     "R4": "NOT_STARTED",
     "R5": "NOT_STARTED",
