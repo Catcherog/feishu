@@ -1,0 +1,822 @@
+{
+  "schema_version": "classifier-fixture-v1.0",
+  "description": "Synthetic migration classifier fixtures. All names, phones, wechat IDs and URLs are fabricated and do not correspond to any real customer, project, model or makeup artist. Stable aliases (CUSTOMER_ALIAS_NNN etc.) are used as record_key values so no real Feishu record identifier is required to exercise the classifier.",
+  "cases": [
+    {
+      "record_key": "CUSTOMER_ALIAS_001",
+      "entity_type": "customer",
+      "fields": {
+        "name": "测试客户A",
+        "status_raw": "已成交",
+        "source_channel_raw": "抖音",
+        "budget_range_raw": "3000-5000",
+        "phone": "10000000001",
+        "wechat_id": "fixture_wechat_c001",
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": null,
+        "linked_project_keys": ["PROJECT_ALIAS_001"],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "CUSTOMER_ALIAS_002",
+      "entity_type": "customer",
+      "fields": {
+        "name": "",
+        "status_raw": "已拍摄",
+        "source_channel_raw": "",
+        "budget_range_raw": "",
+        "phone": "",
+        "wechat_id": "",
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": null,
+        "linked_project_keys": [],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "CUSTOMER_ALIAS_003",
+      "entity_type": "customer",
+      "fields": {
+        "name": "测试客户C",
+        "status_raw": "新线索",
+        "source_channel_raw": "",
+        "budget_range_raw": "",
+        "phone": "",
+        "wechat_id": "",
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": null,
+        "linked_project_keys": [],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "CUSTOMER_ALIAS_004",
+      "entity_type": "customer",
+      "fields": {
+        "name": "测试客户D",
+        "status_raw": "已成交",
+        "source_channel_raw": "微信私聊",
+        "budget_range_raw": "5000+",
+        "phone": "10000000004",
+        "wechat_id": "fixture_wechat_c004",
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": null,
+        "linked_project_keys": ["PROJECT_ALIAS_002"],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [
+          { "record_key": "CUSTOMER_ALIAS_005", "decision": "UNRESOLVED" }
+        ],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "CUSTOMER_ALIAS_005",
+      "entity_type": "customer",
+      "fields": {
+        "name": "测试客户E",
+        "status_raw": "已成交",
+        "source_channel_raw": "微信私聊",
+        "budget_range_raw": "5000+",
+        "phone": "10000000005",
+        "wechat_id": "fixture_wechat_c005",
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": null,
+        "linked_project_keys": [],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [
+          { "record_key": "CUSTOMER_ALIAS_004", "decision": "UNRESOLVED" }
+        ],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "CUSTOMER_ALIAS_006",
+      "entity_type": "customer",
+      "fields": {
+        "name": "测试客户F",
+        "status_raw": "已成交",
+        "source_channel_raw": "转介绍",
+        "budget_range_raw": "",
+        "phone": "10000000006",
+        "wechat_id": "fixture_wechat_c006",
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": null,
+        "linked_project_keys": ["PROJECT_ALIAS_003"],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [
+          { "record_key": "CUSTOMER_ALIAS_007", "decision": "SAME_ENTITY" }
+        ],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "CUSTOMER_ALIAS_007",
+      "entity_type": "customer",
+      "fields": {
+        "name": "测试客户G",
+        "status_raw": "已成交",
+        "source_channel_raw": "转介绍",
+        "budget_range_raw": "",
+        "phone": "10000000007",
+        "wechat_id": "fixture_wechat_c006",
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": null,
+        "linked_project_keys": ["PROJECT_ALIAS_003"],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [
+          { "record_key": "CUSTOMER_ALIAS_006", "decision": "SAME_ENTITY" }
+        ],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "CUSTOMER_ALIAS_008",
+      "entity_type": "customer",
+      "fields": {
+        "name": "测试客户H",
+        "status_raw": "已成交",
+        "source_channel_raw": "小红书",
+        "budget_range_raw": "",
+        "phone": "10000000008",
+        "wechat_id": "fixture_wechat_c008",
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": null,
+        "linked_project_keys": [],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "CUSTOMER_ALIAS_009",
+      "entity_type": "customer",
+      "fields": {
+        "name": "测试客户I",
+        "status_raw": "已拍摄",
+        "source_channel_raw": "抖音",
+        "budget_range_raw": "3000-5000",
+        "phone": "10000000009",
+        "wechat_id": "fixture_wechat_c009",
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": null,
+        "linked_project_keys": ["PROJECT_ALIAS_006"],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "CUSTOMER_ALIAS_010",
+      "entity_type": "customer",
+      "fields": {
+        "name": "测试客户J",
+        "status_raw": "已成交",
+        "source_channel_raw": "抖音广告投放",
+        "budget_range_raw": "3000-5000",
+        "phone": "10000000010",
+        "wechat_id": "fixture_wechat_c010",
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": null,
+        "linked_project_keys": ["PROJECT_ALIAS_001"],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "CUSTOMER_ALIAS_011",
+      "entity_type": "customer",
+      "fields": {
+        "name": "测试客户K",
+        "status_raw": "已成交",
+        "source_channel_raw": "小红书",
+        "budget_range_raw": "3000-5000 或 8000+",
+        "phone": "10000000011",
+        "wechat_id": "fixture_wechat_c011",
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": null,
+        "linked_project_keys": ["PROJECT_ALIAS_001"],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "CUSTOMER_ALIAS_012",
+      "entity_type": "customer",
+      "fields": {
+        "name": "测试客户L",
+        "status_raw": "已成交",
+        "source_channel_raw": "小红书",
+        "budget_range_raw": "3000-5000",
+        "phone": "10000000012",
+        "wechat_id": "fixture_wechat_c012",
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": null,
+        "linked_project_keys": ["PROJECT_ALIAS_001"],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [
+          { "record_key": "CUSTOMER_ALIAS_013", "decision": "UNRESOLVED" }
+        ],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "CUSTOMER_ALIAS_013",
+      "entity_type": "customer",
+      "fields": {
+        "name": "测试客户M",
+        "status_raw": "新线索",
+        "source_channel_raw": "小红书",
+        "budget_range_raw": "3000-5000",
+        "phone": "10000000013",
+        "wechat_id": "fixture_wechat_c013",
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": null,
+        "linked_project_keys": [],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [
+          { "record_key": "CUSTOMER_ALIAS_012", "decision": "UNRESOLVED" }
+        ],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "CUSTOMER_ALIAS_014",
+      "entity_type": "customer",
+      "fields": {
+        "name": "测试客户N",
+        "status_raw": "已成交",
+        "source_channel_raw": "小红书",
+        "budget_range_raw": "3000-5000",
+        "phone": "10000000014",
+        "wechat_id": "fixture_wechat_c014",
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": null,
+        "linked_project_keys": ["PROJECT_ALIAS_001"],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [
+          { "record_key": "CUSTOMER_ALIAS_015", "decision": "DISTINCT_ENTITY" }
+        ],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "CUSTOMER_ALIAS_015",
+      "entity_type": "customer",
+      "fields": {
+        "name": "测试客户O",
+        "status_raw": "已成交",
+        "source_channel_raw": "小红书",
+        "budget_range_raw": "3000-5000",
+        "phone": "10000000015",
+        "wechat_id": "fixture_wechat_c015",
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": null,
+        "linked_project_keys": ["PROJECT_ALIAS_001"],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [
+          { "record_key": "CUSTOMER_ALIAS_014", "decision": "DISTINCT_ENTITY" }
+        ],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "CUSTOMER_ALIAS_016",
+      "entity_type": "customer",
+      "fields": {
+        "name": "测试客户P",
+        "status_raw": "已成交",
+        "source_channel_raw": "小红书",
+        "budget_range_raw": "面议",
+        "phone": "10000000016",
+        "wechat_id": "fixture_wechat_c016",
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": null,
+        "linked_project_keys": ["PROJECT_ALIAS_001"],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "CUSTOMER_ALIAS_017",
+      "entity_type": "customer",
+      "fields": {
+        "name": "测试客户Q",
+        "status_raw": "已成交",
+        "source_channel_raw": "小红书",
+        "budget_range_raw": "3000以下",
+        "phone": "10000000017",
+        "wechat_id": "fixture_wechat_c017",
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": null,
+        "linked_project_keys": ["PROJECT_ALIAS_001"],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "CUSTOMER_ALIAS_018",
+      "entity_type": "customer",
+      "fields": {
+        "name": "测试客户R",
+        "status_raw": "已成交",
+        "source_channel_raw": "小红书",
+        "budget_range_raw": "",
+        "phone": "10000000018",
+        "wechat_id": "fixture_wechat_c018",
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": null,
+        "linked_project_keys": ["PROJECT_ALIAS_001"],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "PROJECT_ALIAS_001",
+      "entity_type": "project",
+      "fields": {
+        "name": "测试项目A",
+        "status_raw": "策划中",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": null,
+        "wechat_id": null,
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": "客片",
+        "linked_project_keys": [],
+        "linked_customer_key": "CUSTOMER_ALIAS_001",
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "PROJECT_ALIAS_002",
+      "entity_type": "project",
+      "fields": {
+        "name": "测试项目B",
+        "status_raw": "策划中",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": null,
+        "wechat_id": null,
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": "客片",
+        "linked_project_keys": [],
+        "linked_customer_key": "CUSTOMER_ALIAS_004",
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "PROJECT_ALIAS_003",
+      "entity_type": "project",
+      "fields": {
+        "name": "测试项目C",
+        "status_raw": "策划中",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": null,
+        "wechat_id": null,
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": "客片",
+        "linked_project_keys": [],
+        "linked_customer_key": "CUSTOMER_ALIAS_006",
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "PROJECT_ALIAS_004",
+      "entity_type": "project",
+      "fields": {
+        "name": "",
+        "status_raw": "策划中",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": null,
+        "wechat_id": null,
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": "客片",
+        "linked_project_keys": [],
+        "linked_customer_key": "CUSTOMER_ALIAS_001",
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "PROJECT_ALIAS_005",
+      "entity_type": "project",
+      "fields": {
+        "name": "测试项目E",
+        "status_raw": "策划中",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": null,
+        "wechat_id": null,
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": "客片",
+        "linked_project_keys": [],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "PROJECT_ALIAS_006",
+      "entity_type": "project",
+      "fields": {
+        "name": "测试项目F",
+        "status_raw": "已完成",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": null,
+        "wechat_id": null,
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": "客片",
+        "linked_project_keys": [],
+        "linked_customer_key": "CUSTOMER_ALIAS_009",
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "PROJECT_ALIAS_007",
+      "entity_type": "project",
+      "fields": {
+        "name": "测试项目G",
+        "status_raw": "策划中",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": null,
+        "wechat_id": null,
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": "旅拍",
+        "linked_project_keys": [],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": "测试客户不存在",
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "PROJECT_ALIAS_008",
+      "entity_type": "project",
+      "fields": {
+        "name": "测试项目H",
+        "status_raw": "已完成",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": null,
+        "wechat_id": null,
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": "旅拍",
+        "linked_project_keys": [],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "PROJECT_ALIAS_009",
+      "entity_type": "project",
+      "fields": {
+        "name": "测试项目I",
+        "status_raw": "已完成",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": null,
+        "wechat_id": null,
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": "客片",
+        "linked_project_keys": [],
+        "linked_customer_key": "CUSTOMER_ALIAS_009",
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": true,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "PROJECT_ALIAS_010",
+      "entity_type": "project",
+      "fields": {
+        "name": "测试项目J",
+        "status_raw": "已完成",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": null,
+        "wechat_id": null,
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": "客片",
+        "linked_project_keys": [],
+        "linked_customer_key": "CUSTOMER_ALIAS_009",
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": true,
+        "has_archive_evidence": true
+      }
+    },
+    {
+      "record_key": "PROJECT_ALIAS_011",
+      "entity_type": "project",
+      "fields": {
+        "name": "测试项目K",
+        "status_raw": "策划中",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": null,
+        "wechat_id": null,
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": "旅拍",
+        "linked_project_keys": [],
+        "linked_customer_key": "CUSTOMER_ALIAS_001",
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "MODEL_ALIAS_001",
+      "entity_type": "model",
+      "fields": {
+        "name": "测试模特A",
+        "status_raw": "已合作",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": "10000000031",
+        "wechat_id": "fixture_wechat_m001",
+        "portfolio_url": "https://example.com/portfolio/m001",
+        "xiaohongshu_account": "fixture_xhs_m001",
+        "project_type_raw": null,
+        "linked_project_keys": [],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "MODEL_ALIAS_002",
+      "entity_type": "model",
+      "fields": {
+        "name": "",
+        "status_raw": "已合作",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": "10000000032",
+        "wechat_id": "fixture_wechat_m002",
+        "portfolio_url": "https://example.com/portfolio/m002",
+        "xiaohongshu_account": "fixture_xhs_m002",
+        "project_type_raw": null,
+        "linked_project_keys": [],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "MODEL_ALIAS_003",
+      "entity_type": "model",
+      "fields": {
+        "name": "测试模特C",
+        "status_raw": "已合作",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": "",
+        "wechat_id": "",
+        "portfolio_url": "",
+        "xiaohongshu_account": "",
+        "project_type_raw": null,
+        "linked_project_keys": [],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "MODEL_ALIAS_004",
+      "entity_type": "model",
+      "fields": {
+        "name": "测试模特D",
+        "status_raw": "潜在合作",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": "10000000034",
+        "wechat_id": "fixture_wechat_m004",
+        "portfolio_url": "https://example.com/portfolio/m004",
+        "xiaohongshu_account": "fixture_xhs_m004",
+        "project_type_raw": null,
+        "linked_project_keys": [],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "MODEL_ALIAS_005",
+      "entity_type": "model",
+      "fields": {
+        "name": "测试模特E",
+        "status_raw": "已合作",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": "10000000035",
+        "wechat_id": "fixture_wechat_m005",
+        "portfolio_url": "https://example.com/portfolio/m005",
+        "xiaohongshu_account": "fixture_xhs_m005",
+        "project_type_raw": null,
+        "linked_project_keys": [],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [
+          { "record_key": "MODEL_ALIAS_001", "decision": "UNRESOLVED" }
+        ],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "MAKEUP_ALIAS_001",
+      "entity_type": "makeup",
+      "fields": {
+        "name": "测试化妆师A",
+        "status_raw": "已合作",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": "10000000041",
+        "wechat_id": "fixture_wechat_k001",
+        "portfolio_url": "https://example.com/portfolio/k001",
+        "xiaohongshu_account": "fixture_xhs_k001",
+        "project_type_raw": null,
+        "linked_project_keys": [],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "MAKEUP_ALIAS_002",
+      "entity_type": "makeup",
+      "fields": {
+        "name": "",
+        "status_raw": "已合作",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": "10000000042",
+        "wechat_id": "fixture_wechat_k002",
+        "portfolio_url": "https://example.com/portfolio/k002",
+        "xiaohongshu_account": "fixture_xhs_k002",
+        "project_type_raw": null,
+        "linked_project_keys": [],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "MAKEUP_ALIAS_003",
+      "entity_type": "makeup",
+      "fields": {
+        "name": "测试化妆师C",
+        "status_raw": "已合作",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": "",
+        "wechat_id": "",
+        "portfolio_url": "",
+        "xiaohongshu_account": "",
+        "project_type_raw": null,
+        "linked_project_keys": [],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "MAKEUP_ALIAS_004",
+      "entity_type": "makeup",
+      "fields": {
+        "name": "测试化妆师D",
+        "status_raw": "备用",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": "10000000044",
+        "wechat_id": "fixture_wechat_k004",
+        "portfolio_url": "https://example.com/portfolio/k004",
+        "xiaohongshu_account": "fixture_xhs_k004",
+        "project_type_raw": null,
+        "linked_project_keys": [],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    }
+  ]
+}
