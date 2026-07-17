@@ -3,6 +3,8 @@
 > Repository: `https://github.com/Catcherog/feishu`
 > Branch: `master`
 > Current execution state: `PHASE_1B3_REMEDIATION`
+> Current gate: `R2`
+> R2 audit status: `HOLD_SCHEMA_VIEW_DRIFT`
 > Migration pilot: `NOT_APPROVED`
 > This file is the phase-specific execution entrypoint. It overrides stale phase instructions in older prompts or chat history.
 
@@ -50,15 +52,34 @@ No public file may contain real Base identifiers, table identifiers, field ident
 
 ## 3. Current gate decision
 
-The latest independent audit result is:
+The latest gate decisions are:
 
 ```text
-PHASE_1B3_AUDIT = FAIL_WITH_REMEDIATION_REQUIRED
-REMAIN_AT_MIGRATION_REVIEW_GATE = YES
+GATE_R1 = INDEPENDENTLY_VERIFIED_PASS
+GATE_R2 = HOLD_SCHEMA_VIEW_DRIFT
+GATE_R3 = NOT_STARTED
+GATE_R4 = NOT_STARTED
+GATE_R5 = NOT_STARTED
+GATE_R6 = NOT_STARTED
 MIGRATION_PILOT_001 = NOT_APPROVED
 ```
 
-The Dry Run gate direction is valid, but the public evidence package is not yet independently reproducible and has a public-repository hygiene issue.
+R1 was independently verified on 2026-07-17 (see `docs/audit/phaseR1-independent-verification-2026-07-17.md` and `reports/phaseR1-final-gpt-audit-package.md`). The public tree (113 files) and reachable history (20 commits) both scan as `S0=0 S1=0 S2=0`. The 17 pre-rewrite commits are unreachable; their content is preserved only in the local private mirror backup.
+
+R2 generated the deterministic Schema v1.0 → v1.1 machine diff (`schemas/schema-diff-v1.0-to-v1.1.json`) and the reproducible generator (`scripts/generate_schema_diff.py`) with three passing tests. The machine facts are `added_fields=35, removed_fields=0, changed_fields=0, enum_changes=1, required_changes=0, view_changes=0, state_machine_changes=2, global_enum_changes=1`.
+
+R2 is on hold because of an unresolved `SCHEMA_VIEW_DRIFT`:
+
+- `schemas/v2-schema-v1.1.json` contains no `views` entries for the new "迁移记录" views (Customer/Project/Resource) or the "按付款状态分组" board view (Project), so `view_changes=0`.
+- `docs/v2-view-inventory.md` documents those four views as v1.1 additions.
+- `reports/phase1b3-gpt-audit-package.md` line 132 states "新增 19 个字段", which is inconsistent with the machine fact `added_fields=35`.
+
+R2 did not modify Schema v1.0/v1.1, the field dictionary, the view inventory, any real Feishu Base, the APP, or production automations. The next authorized gate is R3, but R3 must not start until the user resolves the drift above. Two consistent resolutions are possible:
+
+1. Treat `schemas/v2-schema-v1.1.json` as authoritative and remove the four new view entries from `docs/v2-view-inventory.md` (and update line 132 of `reports/phase1b3-gpt-audit-package.md` to the machine count of 35 added fields, or supersede that audit package with a corrected one).
+2. Treat the approved view inventory as authoritative, add the four views to `schemas/v2-schema-v1.1.json`, regenerate `schemas/v2-schema-v1.1.sha256`, and re-run the diff generator before starting R3.
+
+Either choice is a Schema/View content change that requires user approval. It is out of scope for R2 evidence work.
 
 ## 4. Approved work
 

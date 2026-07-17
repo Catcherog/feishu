@@ -1,0 +1,17 @@
+{
+  "schema_version": "v1.0",
+  "tables": {
+    "demo": {
+      "fields": [
+        {"field_key": "keep", "display_name": "Keep", "feishu_type": "text", "required": false, "options": ["A"]},
+        {"field_key": "remove_me", "display_name": "Remove", "feishu_type": "text", "required": false, "options": null}
+      ],
+      "views": [
+        {"view_name": "changed", "view_type": "grid", "filter": "old"},
+        {"view_name": "removed", "view_type": "grid", "filter": "none"}
+      ]
+    }
+  },
+  "state_machines": {"flow": {"rules": ["old"]}},
+  "enums": {"channel": ["A"]}
+}

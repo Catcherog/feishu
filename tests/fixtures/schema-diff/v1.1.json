@@ -1,0 +1,17 @@
+{
+  "schema_version": "v1.1",
+  "tables": {
+    "demo": {
+      "fields": [
+        {"field_key": "keep", "display_name": "Keep", "feishu_type": "number", "required": true, "options": ["A", "B"]},
+        {"field_key": "add_me", "display_name": "Add", "feishu_type": "text", "required": false, "options": null}
+      ],
+      "views": [
+        {"view_name": "changed", "view_type": "grid", "filter": "new"},
+        {"view_name": "added", "view_type": "board", "filter": "none"}
+      ]
+    }
+  },
+  "state_machines": {"flow": {"rules": ["new"]}},
+  "enums": {"channel": ["A", "B"]}
+}

@@ -1,0 +1,1267 @@
+{
+  "added_fields": [
+    {
+      "definition": {
+        "constraints": {
+          "default": "budget-map-v1.0"
+        },
+        "description": "预算解析规则版本",
+        "display_name": "预算解析规则版本",
+        "feishu_type": "text",
+        "field_key": "budget_parse_rule_version",
+        "options": null,
+        "required": false
+      },
+      "field_key": "budget_parse_rule_version",
+      "table": "customer"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "预算文本解析结果状态",
+        "display_name": "预算解析状态",
+        "feishu_type": "single_select",
+        "field_key": "budget_parse_status",
+        "options": [
+          "parsed",
+          "ambiguous",
+          "unknown",
+          "invalid"
+        ],
+        "required": false
+      },
+      "field_key": "budget_parse_status",
+      "table": "customer"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "迁移前旧表的原始预算文本，保留业务事实",
+        "display_name": "预算区间原始文本",
+        "feishu_type": "text",
+        "field_key": "budget_range_raw",
+        "options": null,
+        "required": false
+      },
+      "field_key": "budget_range_raw",
+      "table": "customer"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "人工确认重复候选后指向的主记录业务 ID，未确认时与 customer_id 相同",
+        "display_name": "规范业务ID",
+        "feishu_type": "text",
+        "field_key": "canonical_business_id",
+        "options": null,
+        "required": false
+      },
+      "field_key": "canonical_business_id",
+      "table": "customer"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "重复候选人工决策状态，UNRESOLVED 不得进入 Pilot",
+        "display_name": "重复候选审核状态",
+        "feishu_type": "single_select",
+        "field_key": "duplicate_review_status",
+        "options": [
+          "SAME_ENTITY",
+          "DISTINCT_ENTITY",
+          "UNRESOLVED",
+          "NA"
+        ],
+        "required": false
+      },
+      "field_key": "duplicate_review_status",
+      "table": "customer"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "迁移前旧表的客户状态原始文本",
+        "display_name": "旧客户状态原始值",
+        "feishu_type": "text",
+        "field_key": "legacy_status_raw",
+        "options": null,
+        "required": false
+      },
+      "field_key": "legacy_status_raw",
+      "table": "customer"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "数据写入 V2 的时间",
+        "display_name": "迁移时间",
+        "feishu_type": "datetime",
+        "field_key": "migrated_at",
+        "options": null,
+        "required": false
+      },
+      "field_key": "migrated_at",
+      "table": "customer"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "写入 V2 时标记的迁移批次，如 MIGRATION_PILOT_001",
+        "display_name": "迁移批次ID",
+        "feishu_type": "text",
+        "field_key": "migration_batch_id",
+        "options": null,
+        "required": false
+      },
+      "field_key": "migration_batch_id",
+      "table": "customer"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "执行迁移时使用的规则版本集合",
+        "display_name": "迁移规则版本",
+        "feishu_type": "text",
+        "field_key": "migration_rule_version",
+        "options": null,
+        "required": false
+      },
+      "field_key": "migration_rule_version",
+      "table": "customer"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "旧表源记录 record_id",
+        "display_name": "迁移源记录ID",
+        "feishu_type": "text",
+        "field_key": "migration_source_record_id",
+        "options": null,
+        "required": false
+      },
+      "field_key": "migration_source_record_id",
+      "table": "customer"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "旧表表名",
+        "display_name": "迁移源表",
+        "feishu_type": "text",
+        "field_key": "migration_source_table",
+        "options": null,
+        "required": false
+      },
+      "field_key": "migration_source_table",
+      "table": "customer"
+    },
+    {
+      "definition": {
+        "constraints": {
+          "default": "source-map-v1.0"
+        },
+        "description": "来源渠道映射规则版本",
+        "display_name": "来源渠道映射版本",
+        "feishu_type": "text",
+        "field_key": "source_channel_mapping_version",
+        "options": null,
+        "required": false
+      },
+      "field_key": "source_channel_mapping_version",
+      "table": "customer"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "迁移前旧表的原始来源渠道文本，保留业务事实",
+        "display_name": "来源渠道原始值",
+        "feishu_type": "text",
+        "field_key": "source_channel_raw",
+        "options": null,
+        "required": false
+      },
+      "field_key": "source_channel_raw",
+      "table": "customer"
+    },
+    {
+      "definition": {
+        "constraints": {
+          "default": "status-map-v1.0"
+        },
+        "description": "客户状态映射规则版本",
+        "display_name": "状态映射规则版本",
+        "feishu_type": "text",
+        "field_key": "status_mapping_rule_version",
+        "options": null,
+        "required": false
+      },
+      "field_key": "status_mapping_rule_version",
+      "table": "customer"
+    },
+    {
+      "definition": {
+        "constraints": {
+          "default": "CNY"
+        },
+        "description": "金额币种",
+        "display_name": "币种",
+        "feishu_type": "single_select",
+        "field_key": "currency",
+        "options": [
+          "CNY"
+        ],
+        "required": false
+      },
+      "field_key": "currency",
+      "table": "project"
+    },
+    {
+      "definition": {
+        "constraints": {
+          "integer": true,
+          "min": 0,
+          "unit": "元"
+        },
+        "description": "项目成交金额，人民币",
+        "display_name": "成交金额",
+        "feishu_type": "number",
+        "field_key": "deal_amount",
+        "options": null,
+        "required": false
+      },
+      "field_key": "deal_amount",
+      "table": "project"
+    },
+    {
+      "definition": {
+        "constraints": {
+          "integer": true,
+          "min": 0,
+          "unit": "元"
+        },
+        "description": "客户已付定金金额，人民币",
+        "display_name": "定金金额",
+        "feishu_type": "number",
+        "field_key": "deposit_amount",
+        "options": null,
+        "required": false
+      },
+      "field_key": "deposit_amount",
+      "table": "project"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "满意度反馈收集时间",
+        "display_name": "满意度收集时间",
+        "feishu_type": "datetime",
+        "field_key": "feedback_collected_at",
+        "options": null,
+        "required": false
+      },
+      "field_key": "feedback_collected_at",
+      "table": "project"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "迁移前旧表的项目状态原始文本",
+        "display_name": "旧项目状态原始值",
+        "feishu_type": "text",
+        "field_key": "legacy_status_raw",
+        "options": null,
+        "required": false
+      },
+      "field_key": "legacy_status_raw",
+      "table": "project"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "数据写入 V2 的时间",
+        "display_name": "迁移时间",
+        "feishu_type": "datetime",
+        "field_key": "migrated_at",
+        "options": null,
+        "required": false
+      },
+      "field_key": "migrated_at",
+      "table": "project"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "写入 V2 时标记的迁移批次，如 MIGRATION_PILOT_001",
+        "display_name": "迁移批次ID",
+        "feishu_type": "text",
+        "field_key": "migration_batch_id",
+        "options": null,
+        "required": false
+      },
+      "field_key": "migration_batch_id",
+      "table": "project"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "执行迁移时使用的规则版本集合",
+        "display_name": "迁移规则版本",
+        "feishu_type": "text",
+        "field_key": "migration_rule_version",
+        "options": null,
+        "required": false
+      },
+      "field_key": "migration_rule_version",
+      "table": "project"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "旧表源记录 record_id",
+        "display_name": "迁移源记录ID",
+        "feishu_type": "text",
+        "field_key": "migration_source_record_id",
+        "options": null,
+        "required": false
+      },
+      "field_key": "migration_source_record_id",
+      "table": "project"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "旧表表名",
+        "display_name": "迁移源表",
+        "feishu_type": "text",
+        "field_key": "migration_source_table",
+        "options": null,
+        "required": false
+      },
+      "field_key": "migration_source_table",
+      "table": "project"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "项目付款状态",
+        "display_name": "付款状态",
+        "feishu_type": "single_select",
+        "field_key": "payment_status",
+        "options": [
+          "未知",
+          "待定金",
+          "已付定金",
+          "已结清",
+          "已退款",
+          "部分退款"
+        ],
+        "required": false
+      },
+      "field_key": "payment_status",
+      "table": "project"
+    },
+    {
+      "definition": {
+        "constraints": {
+          "max_length": 500
+        },
+        "description": "客户满意度反馈原文或摘要",
+        "display_name": "满意度备注",
+        "feishu_type": "multiline_text",
+        "field_key": "satisfaction_note",
+        "options": null,
+        "required": false
+      },
+      "field_key": "satisfaction_note",
+      "table": "project"
+    },
+    {
+      "definition": {
+        "constraints": {
+          "max": 5,
+          "min": 1,
+          "precision": 1
+        },
+        "description": "客户对项目结果满意度，建议 1-5",
+        "display_name": "客户满意度评分",
+        "feishu_type": "number",
+        "field_key": "satisfaction_score",
+        "options": null,
+        "required": false
+      },
+      "field_key": "satisfaction_score",
+      "table": "project"
+    },
+    {
+      "definition": {
+        "constraints": {
+          "default": "status-map-v1.0"
+        },
+        "description": "项目状态映射规则版本",
+        "display_name": "状态映射规则版本",
+        "feishu_type": "text",
+        "field_key": "status_mapping_rule_version",
+        "options": null,
+        "required": false
+      },
+      "field_key": "status_mapping_rule_version",
+      "table": "project"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "人工确认重复候选后指向的主记录业务 ID，未确认时与 resource_id 相同",
+        "display_name": "规范业务ID",
+        "feishu_type": "text",
+        "field_key": "canonical_business_id",
+        "options": null,
+        "required": false
+      },
+      "field_key": "canonical_business_id",
+      "table": "resource"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "重复候选人工决策状态，UNRESOLVED 不得进入 Pilot",
+        "display_name": "重复候选审核状态",
+        "feishu_type": "single_select",
+        "field_key": "duplicate_review_status",
+        "options": [
+          "SAME_ENTITY",
+          "DISTINCT_ENTITY",
+          "UNRESOLVED",
+          "NA"
+        ],
+        "required": false
+      },
+      "field_key": "duplicate_review_status",
+      "table": "resource"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "数据写入 V2 的时间",
+        "display_name": "迁移时间",
+        "feishu_type": "datetime",
+        "field_key": "migrated_at",
+        "options": null,
+        "required": false
+      },
+      "field_key": "migrated_at",
+      "table": "resource"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "写入 V2 时标记的迁移批次，如 MIGRATION_PILOT_001",
+        "display_name": "迁移批次ID",
+        "feishu_type": "text",
+        "field_key": "migration_batch_id",
+        "options": null,
+        "required": false
+      },
+      "field_key": "migration_batch_id",
+      "table": "resource"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "执行迁移时使用的规则版本集合",
+        "display_name": "迁移规则版本",
+        "feishu_type": "text",
+        "field_key": "migration_rule_version",
+        "options": null,
+        "required": false
+      },
+      "field_key": "migration_rule_version",
+      "table": "resource"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "旧表源记录 record_id",
+        "display_name": "迁移源记录ID",
+        "feishu_type": "text",
+        "field_key": "migration_source_record_id",
+        "options": null,
+        "required": false
+      },
+      "field_key": "migration_source_record_id",
+      "table": "resource"
+    },
+    {
+      "definition": {
+        "constraints": null,
+        "description": "旧表表名",
+        "display_name": "迁移源表",
+        "feishu_type": "text",
+        "field_key": "migration_source_table",
+        "options": null,
+        "required": false
+      },
+      "field_key": "migration_source_table",
+      "table": "resource"
+    }
+  ],
+  "changed_fields": [],
+  "enum_changes": [
+    {
+      "field_key": "source_channel",
+      "from": [
+        "小红书",
+        "微信",
+        "官网",
+        "小程序",
+        "转介绍",
+        "其他"
+      ],
+      "table": "customer",
+      "to": [
+        "小红书",
+        "抖音",
+        "视频号",
+        "朋友圈",
+        "微信公众号",
+        "微信私聊",
+        "官网",
+        "小程序",
+        "转介绍",
+        "线下活动",
+        "其他",
+        "未知"
+      ]
+    }
+  ],
+  "generator": "scripts/generate_schema_diff.py",
+  "global_enum_changes": [
+    {
+      "from": [
+        "小红书",
+        "微信",
+        "官网",
+        "小程序",
+        "转介绍",
+        "其他"
+      ],
+      "key": "source_channel",
+      "to": [
+        "小红书",
+        "抖音",
+        "视频号",
+        "朋友圈",
+        "微信公众号",
+        "微信私聊",
+        "官网",
+        "小程序",
+        "转介绍",
+        "线下活动",
+        "其他",
+        "未知"
+      ]
+    }
+  ],
+  "removed_fields": [],
+  "required_changes": [],
+  "source_schema_version": "v1.0",
+  "state_machine_changes": [
+    {
+      "from": {
+        "rules": [
+          "不允许跨越关键状态直接更新，除非管理员填写例外原因（关键状态：待定金 → 已成交（需定金确认证据）；关键状态：已成交 → 服务中（需项目进入待拍摄状态））",
+          "AI 不得直接修改客户状态，仅可通过 AI_Inbox 提交候选",
+          "S5 自动化只允许单向、受控更新：第一个有效项目进入\"待拍摄\"后，客户可进入\"服务中\"；所有项目已交付后，客户可进入\"已完成\"；不允许项目状态直接覆盖\"复购/转介绍\"或\"已流失\"",
+          "所有状态变化写入 Automation_Event 或变更日志",
+          "公式字段不得作为关键自动化触发源"
+        ],
+        "states": [
+          {
+            "color": "灰",
+            "description": "刚录入，尚未跟进",
+            "display_name": "新线索",
+            "key": "new_lead"
+          },
+          {
+            "color": "蓝",
+            "description": "正在沟通",
+            "display_name": "跟进中",
+            "key": "contacting"
+          },
+          {
+            "color": "青",
+            "description": "需求已明确",
+            "display_name": "已确认需求",
+            "key": "qualified"
+          },
+          {
+            "color": "黄",
+            "description": "已报价，等待定金",
+            "display_name": "待定金",
+            "key": "deposit_pending"
+          },
+          {
+            "color": "绿",
+            "description": "定金已确认",
+            "display_name": "已成交",
+            "key": "converted"
+          },
+          {
+            "color": "浅绿",
+            "description": "有项目在服务中",
+            "display_name": "服务中",
+            "key": "active_service"
+          },
+          {
+            "color": "深绿",
+            "description": "所有项目已交付",
+            "display_name": "已完成",
+            "key": "completed"
+          },
+          {
+            "color": "紫",
+            "description": "已完成客户产生新需求",
+            "display_name": "复购/转介绍",
+            "key": "repeat_referral"
+          },
+          {
+            "color": "红",
+            "description": "任意阶段可进入",
+            "display_name": "已流失",
+            "key": "lost"
+          }
+        ],
+        "transitions": [
+          {
+            "from": "新线索",
+            "operator": "人工 / 自动化(S5)",
+            "to": "跟进中",
+            "trigger": "首次联系客户"
+          },
+          {
+            "from": "新线索",
+            "operator": "人工",
+            "to": "已流失",
+            "trigger": "明确无意向"
+          },
+          {
+            "from": "跟进中",
+            "operator": "人工",
+            "to": "已确认需求",
+            "trigger": "需求明确"
+          },
+          {
+            "from": "跟进中",
+            "operator": "人工",
+            "to": "新线索",
+            "trigger": "退回重新跟进"
+          },
+          {
+            "from": "跟进中",
+            "operator": "人工",
+            "to": "已流失",
+            "trigger": "明确无意向"
+          },
+          {
+            "from": "已确认需求",
+            "operator": "人工",
+            "to": "待定金",
+            "trigger": "已报价"
+          },
+          {
+            "from": "已确认需求",
+            "operator": "人工",
+            "to": "跟进中",
+            "trigger": "退回继续跟进"
+          },
+          {
+            "from": "已确认需求",
+            "operator": "人工",
+            "to": "已流失",
+            "trigger": "明确无意向"
+          },
+          {
+            "from": "待定金",
+            "operator": "人工 / 自动化(S1)",
+            "to": "已成交",
+            "trigger": "定金确认（S1 触发）"
+          },
+          {
+            "from": "待定金",
+            "operator": "人工",
+            "to": "已确认需求",
+            "trigger": "退回重新沟通"
+          },
+          {
+            "from": "待定金",
+            "operator": "人工",
+            "to": "已流失",
+            "trigger": "明确无意向"
+          },
+          {
+            "from": "已成交",
+            "operator": "自动化(S5)",
+            "to": "服务中",
+            "trigger": "首个项目进入待拍摄（S5 触发）"
+          },
+          {
+            "from": "服务中",
+            "operator": "自动化(S5)",
+            "to": "已完成",
+            "trigger": "所有项目已交付（S5 触发）"
+          },
+          {
+            "from": "已完成",
+            "operator": "人工 / 自动化",
+            "to": "复购/转介绍",
+            "trigger": "新需求或转介绍产生"
+          },
+          {
+            "from": "复购/转介绍",
+            "operator": "人工 / 自动化",
+            "to": "新线索",
+            "trigger": "产生新项目需求"
+          },
+          {
+            "from": "已流失",
+            "operator": "人工",
+            "to": "新线索",
+            "trigger": "重新激活"
+          }
+        ]
+      },
+      "key": "customer_relationship_status",
+      "to": {
+        "rules": [
+          "不允许跨越关键状态直接更新，除非管理员填写例外原因（关键状态：待定金 → 已成交（需定金确认证据）；关键状态：已成交 → 服务中（需项目进入待拍摄状态））",
+          "AI 不得直接修改客户状态，仅可通过 AI_Inbox 提交候选",
+          "S5 自动化只允许单向、受控更新：第一个有效项目进入\"待拍摄\"后，客户可进入\"服务中\"；所有项目已交付后，客户可进入\"已完成\"；不允许项目状态直接覆盖\"复购/转介绍\"或\"已流失\"",
+          "所有状态变化写入 Automation_Event 或变更日志",
+          "公式字段不得作为关键自动化触发源",
+          "迁移时客户状态不得简单复制项目状态：存在未交付或未归档的有效关联项目 → 服务中；所有关联项目均已交付或已归档 → 已完成；无法判断 → NEEDS_REVIEW。保留 legacy_status_raw 和 status_mapping_rule_version。"
+        ],
+        "states": [
+          {
+            "color": "灰",
+            "description": "刚录入，尚未跟进",
+            "display_name": "新线索",
+            "key": "new_lead"
+          },
+          {
+            "color": "蓝",
+            "description": "正在沟通",
+            "display_name": "跟进中",
+            "key": "contacting"
+          },
+          {
+            "color": "青",
+            "description": "需求已明确",
+            "display_name": "已确认需求",
+            "key": "qualified"
+          },
+          {
+            "color": "黄",
+            "description": "已报价，等待定金",
+            "display_name": "待定金",
+            "key": "deposit_pending"
+          },
+          {
+            "color": "绿",
+            "description": "定金已确认",
+            "display_name": "已成交",
+            "key": "converted"
+          },
+          {
+            "color": "浅绿",
+            "description": "有项目在服务中",
+            "display_name": "服务中",
+            "key": "active_service"
+          },
+          {
+            "color": "深绿",
+            "description": "所有项目已交付",
+            "display_name": "已完成",
+            "key": "completed"
+          },
+          {
+            "color": "紫",
+            "description": "已完成客户产生新需求",
+            "display_name": "复购/转介绍",
+            "key": "repeat_referral"
+          },
+          {
+            "color": "红",
+            "description": "任意阶段可进入",
+            "display_name": "已流失",
+            "key": "lost"
+          }
+        ],
+        "transitions": [
+          {
+            "from": "新线索",
+            "operator": "人工 / 自动化(S5)",
+            "to": "跟进中",
+            "trigger": "首次联系客户"
+          },
+          {
+            "from": "新线索",
+            "operator": "人工",
+            "to": "已流失",
+            "trigger": "明确无意向"
+          },
+          {
+            "from": "跟进中",
+            "operator": "人工",
+            "to": "已确认需求",
+            "trigger": "需求明确"
+          },
+          {
+            "from": "跟进中",
+            "operator": "人工",
+            "to": "新线索",
+            "trigger": "退回重新跟进"
+          },
+          {
+            "from": "跟进中",
+            "operator": "人工",
+            "to": "已流失",
+            "trigger": "明确无意向"
+          },
+          {
+            "from": "已确认需求",
+            "operator": "人工",
+            "to": "待定金",
+            "trigger": "已报价"
+          },
+          {
+            "from": "已确认需求",
+            "operator": "人工",
+            "to": "跟进中",
+            "trigger": "退回继续跟进"
+          },
+          {
+            "from": "已确认需求",
+            "operator": "人工",
+            "to": "已流失",
+            "trigger": "明确无意向"
+          },
+          {
+            "from": "待定金",
+            "operator": "人工 / 自动化(S1)",
+            "to": "已成交",
+            "trigger": "定金确认（S1 触发）"
+          },
+          {
+            "from": "待定金",
+            "operator": "人工",
+            "to": "已确认需求",
+            "trigger": "退回重新沟通"
+          },
+          {
+            "from": "待定金",
+            "operator": "人工",
+            "to": "已流失",
+            "trigger": "明确无意向"
+          },
+          {
+            "from": "已成交",
+            "operator": "自动化(S5)",
+            "to": "服务中",
+            "trigger": "首个项目进入待拍摄（S5 触发）"
+          },
+          {
+            "from": "服务中",
+            "operator": "自动化(S5)",
+            "to": "已完成",
+            "trigger": "所有项目已交付（S5 触发）"
+          },
+          {
+            "from": "已完成",
+            "operator": "人工 / 自动化",
+            "to": "复购/转介绍",
+            "trigger": "新需求或转介绍产生"
+          },
+          {
+            "from": "复购/转介绍",
+            "operator": "人工 / 自动化",
+            "to": "新线索",
+            "trigger": "产生新项目需求"
+          },
+          {
+            "from": "已流失",
+            "operator": "人工",
+            "to": "新线索",
+            "trigger": "重新激活"
+          }
+        ]
+      }
+    },
+    {
+      "from": {
+        "rules": [
+          "不允许跨越关键状态直接更新，除非管理员填写例外原因（关键状态：策划已批准 -> 资源确认中（需策划案批准证据）；关键状态：资源确认中 -> 待拍摄（需关键资源已确认）；关键状态：客户确认 -> 已交付（需客户确认证据））",
+          "AI 不得直接修改项目状态",
+          "公式字段不得作为关键自动化触发源",
+          "所有状态变化写入 Automation_Event 或变更日志",
+          "逆向回退允许相邻状态回退（如后期制作 -> 拍摄完成），但跨越多步回退需管理员例外原因",
+          "S5 自动化联动：项目进入\"待拍摄\"时，客户可进入\"服务中\"；项目进入\"已交付\"时，检查客户所有项目是否均已交付"
+        ],
+        "states": [
+          {
+            "color": "灰",
+            "description": "项目刚创建，信息不完整",
+            "display_name": "草稿",
+            "key": "draft"
+          },
+          {
+            "color": "蓝",
+            "description": "正在生成/编辑策划案",
+            "display_name": "策划中",
+            "key": "planning"
+          },
+          {
+            "color": "青",
+            "description": "策划案已内部批准",
+            "display_name": "策划已批准",
+            "key": "planning_approved"
+          },
+          {
+            "color": "黄",
+            "description": "正在确认资源安排",
+            "display_name": "资源确认中",
+            "key": "resource_confirming"
+          },
+          {
+            "color": "橙",
+            "description": "资源确认完成，等待拍摄",
+            "display_name": "待拍摄",
+            "key": "ready_to_shoot"
+          },
+          {
+            "color": "浅绿",
+            "description": "拍摄结束，待后期",
+            "display_name": "拍摄完成",
+            "key": "shooting_completed"
+          },
+          {
+            "color": "绿",
+            "description": "正在后期处理",
+            "display_name": "后期制作",
+            "key": "post_production"
+          },
+          {
+            "color": "紫",
+            "description": "交付客户确认中",
+            "display_name": "客户确认",
+            "key": "client_review"
+          },
+          {
+            "color": "深绿",
+            "description": "客户已确认，项目完成",
+            "display_name": "已交付",
+            "key": "delivered"
+          },
+          {
+            "color": "深灰",
+            "description": "归档存储",
+            "display_name": "已归档",
+            "key": "archived"
+          }
+        ],
+        "transitions": [
+          {
+            "from": "草稿",
+            "operator": "人工 / 自动化(S1)",
+            "to": "策划中",
+            "trigger": "项目信息补全，启动策划"
+          },
+          {
+            "from": "策划中",
+            "operator": "人工",
+            "to": "策划已批准",
+            "trigger": "策划案内部批准（S3 触发前置）"
+          },
+          {
+            "from": "策划中",
+            "operator": "人工",
+            "to": "草稿",
+            "trigger": "退回补充信息"
+          },
+          {
+            "from": "策划已批准",
+            "operator": "人工 / 自动化(S3)",
+            "to": "资源确认中",
+            "trigger": "启动资源安排（S3 触发）"
+          },
+          {
+            "from": "策划已批准",
+            "operator": "人工",
+            "to": "策划中",
+            "trigger": "策划需修改"
+          },
+          {
+            "from": "资源确认中",
+            "operator": "人工",
+            "to": "待拍摄",
+            "trigger": "所有关键资源已确认"
+          },
+          {
+            "from": "资源确认中",
+            "operator": "人工",
+            "to": "策划已批准",
+            "trigger": "资源不足需调整策划"
+          },
+          {
+            "from": "待拍摄",
+            "operator": "人工",
+            "to": "拍摄完成",
+            "trigger": "拍摄结束"
+          },
+          {
+            "from": "待拍摄",
+            "operator": "人工",
+            "to": "资源确认中",
+            "trigger": "退回重新确认资源"
+          },
+          {
+            "from": "拍摄完成",
+            "operator": "人工",
+            "to": "后期制作",
+            "trigger": "进入后期处理"
+          },
+          {
+            "from": "拍摄完成",
+            "operator": "人工",
+            "to": "待拍摄",
+            "trigger": "补拍"
+          },
+          {
+            "from": "后期制作",
+            "operator": "人工",
+            "to": "客户确认",
+            "trigger": "后期完成，提交客户"
+          },
+          {
+            "from": "后期制作",
+            "operator": "人工",
+            "to": "拍摄完成",
+            "trigger": "退回补拍"
+          },
+          {
+            "from": "客户确认",
+            "operator": "人工",
+            "to": "已交付",
+            "trigger": "客户确认通过"
+          },
+          {
+            "from": "客户确认",
+            "operator": "人工",
+            "to": "后期制作",
+            "trigger": "客户要求修改"
+          },
+          {
+            "from": "已交付",
+            "operator": "人工 / 自动化",
+            "to": "已归档",
+            "trigger": "项目归档"
+          },
+          {
+            "from": "已归档",
+            "operator": "管理员（需填例外原因）",
+            "to": "已交付",
+            "trigger": "退回归档（例外）"
+          }
+        ]
+      },
+      "key": "project_status",
+      "to": {
+        "rules": [
+          "不允许跨越关键状态直接更新，除非管理员填写例外原因（关键状态：策划已批准 -> 资源确认中（需策划案批准证据）；关键状态：资源确认中 -> 待拍摄（需关键资源已确认）；关键状态：客户确认 -> 已交付（需客户确认证据））",
+          "AI 不得直接修改项目状态",
+          "公式字段不得作为关键自动化触发源",
+          "所有状态变化写入 Automation_Event 或变更日志",
+          "逆向回退允许相邻状态回退（如后期制作 -> 拍摄完成），但跨越多步回退需管理员例外原因",
+          "S5 自动化联动：项目进入\"待拍摄\"时，客户可进入\"服务中\"；项目进入\"已交付\"时，检查客户所有项目是否均已交付",
+          "迁移时旧状态待立项 → 草稿；旧状态已完成需证据：有交付日期/交付附件/明确交付证据 → 已交付，同时存在归档或复盘完成证据 → 已归档，无法证明交付 → NEEDS_REVIEW。保留 legacy_status_raw 和 status_mapping_rule_version。"
+        ],
+        "states": [
+          {
+            "color": "灰",
+            "description": "项目刚创建，信息不完整",
+            "display_name": "草稿",
+            "key": "draft"
+          },
+          {
+            "color": "蓝",
+            "description": "正在生成/编辑策划案",
+            "display_name": "策划中",
+            "key": "planning"
+          },
+          {
+            "color": "青",
+            "description": "策划案已内部批准",
+            "display_name": "策划已批准",
+            "key": "planning_approved"
+          },
+          {
+            "color": "黄",
+            "description": "正在确认资源安排",
+            "display_name": "资源确认中",
+            "key": "resource_confirming"
+          },
+          {
+            "color": "橙",
+            "description": "资源确认完成，等待拍摄",
+            "display_name": "待拍摄",
+            "key": "ready_to_shoot"
+          },
+          {
+            "color": "浅绿",
+            "description": "拍摄结束，待后期",
+            "display_name": "拍摄完成",
+            "key": "shooting_completed"
+          },
+          {
+            "color": "绿",
+            "description": "正在后期处理",
+            "display_name": "后期制作",
+            "key": "post_production"
+          },
+          {
+            "color": "紫",
+            "description": "交付客户确认中",
+            "display_name": "客户确认",
+            "key": "client_review"
+          },
+          {
+            "color": "深绿",
+            "description": "客户已确认，项目完成",
+            "display_name": "已交付",
+            "key": "delivered"
+          },
+          {
+            "color": "深灰",
+            "description": "归档存储",
+            "display_name": "已归档",
+            "key": "archived"
+          }
+        ],
+        "transitions": [
+          {
+            "from": "草稿",
+            "operator": "人工 / 自动化(S1)",
+            "to": "策划中",
+            "trigger": "项目信息补全，启动策划"
+          },
+          {
+            "from": "策划中",
+            "operator": "人工",
+            "to": "策划已批准",
+            "trigger": "策划案内部批准（S3 触发前置）"
+          },
+          {
+            "from": "策划中",
+            "operator": "人工",
+            "to": "草稿",
+            "trigger": "退回补充信息"
+          },
+          {
+            "from": "策划已批准",
+            "operator": "人工 / 自动化(S3)",
+            "to": "资源确认中",
+            "trigger": "启动资源安排（S3 触发）"
+          },
+          {
+            "from": "策划已批准",
+            "operator": "人工",
+            "to": "策划中",
+            "trigger": "策划需修改"
+          },
+          {
+            "from": "资源确认中",
+            "operator": "人工",
+            "to": "待拍摄",
+            "trigger": "所有关键资源已确认"
+          },
+          {
+            "from": "资源确认中",
+            "operator": "人工",
+            "to": "策划已批准",
+            "trigger": "资源不足需调整策划"
+          },
+          {
+            "from": "待拍摄",
+            "operator": "人工",
+            "to": "拍摄完成",
+            "trigger": "拍摄结束"
+          },
+          {
+            "from": "待拍摄",
+            "operator": "人工",
+            "to": "资源确认中",
+            "trigger": "退回重新确认资源"
+          },
+          {
+            "from": "拍摄完成",
+            "operator": "人工",
+            "to": "后期制作",
+            "trigger": "进入后期处理"
+          },
+          {
+            "from": "拍摄完成",
+            "operator": "人工",
+            "to": "待拍摄",
+            "trigger": "补拍"
+          },
+          {
+            "from": "后期制作",
+            "operator": "人工",
+            "to": "客户确认",
+            "trigger": "后期完成，提交客户"
+          },
+          {
+            "from": "后期制作",
+            "operator": "人工",
+            "to": "拍摄完成",
+            "trigger": "退回补拍"
+          },
+          {
+            "from": "客户确认",
+            "operator": "人工",
+            "to": "已交付",
+            "trigger": "客户确认通过"
+          },
+          {
+            "from": "客户确认",
+            "operator": "人工",
+            "to": "后期制作",
+            "trigger": "客户要求修改"
+          },
+          {
+            "from": "已交付",
+            "operator": "人工 / 自动化",
+            "to": "已归档",
+            "trigger": "项目归档"
+          },
+          {
+            "from": "已归档",
+            "operator": "管理员（需填例外原因）",
+            "to": "已交付",
+            "trigger": "退回归档（例外）"
+          }
+        ]
+      }
+    }
+  ],
+  "summary": {
+    "added_fields": 35,
+    "changed_fields": 0,
+    "enum_changes": 1,
+    "global_enum_changes": 1,
+    "removed_fields": 0,
+    "required_changes": 0,
+    "state_machine_changes": 2,
+    "view_changes": 0
+  },
+  "target_schema_version": "v1.1",
+  "view_changes": []
+}
