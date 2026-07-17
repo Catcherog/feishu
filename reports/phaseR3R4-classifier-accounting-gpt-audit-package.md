@@ -8,7 +8,7 @@
 > **工作仓库**：`feishu-v2/`（Catcherog/feishu）
 > **R3 基线提交**：`0a05378b8863dd14ce1b88d5803d654c2c4069cd`
 > **R4 首轮提交**：`e42e2a4`（已被本轮 P0/P1 修复取代，仍保留在 git 历史中供 diff 比对）
-> **本轮修复提交**：见第 5 点（提交后 `git log -1`）
+> **本轮修复提交**：`402cb6e9dc96c98a7a2d3037bf7035fa532aa8a6`
 
 ## 1. 本次完成内容
 
@@ -158,7 +158,7 @@
 | `tests/migration-classifier.test.js` | 修改 | 新增 16 条 P0 回归测试（58 总，13 suites） | `cb3d732276bf5cc19c37ab82803614674aa8065a` | `ed415cd2021ff91412aaaf70d75bad3253450925325a694fb2870fe52f90d21d` | REPRODUCIBLE_FROM_PUBLIC_REPO |
 | `reports/classification-reason-summary.json` | 修改 | 重新生成的公开匿名汇总 | `b9ce2d30c926b4bdeb5b064df3bb8ab3d78031fe` | `548077756b9e50b883e2674c2268926849d67e86b13494b90b06673e2c49e632` | REPRODUCIBLE_FROM_PUBLIC_REPO |
 | `reports/classifier-test-report.md` | 修改 | P1：fixture 引用错位修复 + 更新测试/fixture 计数 + 更新 R4 数值 | `0a017724f8afb5abe19255b0f7fbbdcaf270edf3` | `dd54f1259c2ee5f45bc45d540c8316e4a94c4e4014b023e75491adc08b5bb295` | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `reports/phaseR3R4-classifier-accounting-gpt-audit-package.md` | 修改 | P0-5：本审计包自身重写 | 见提交后 `git hash-object` | 见提交后 `git hash-object` 并转 SHA256 | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `reports/phaseR3R4-classifier-accounting-gpt-audit-package.md` | 修改 | P0-5：本审计包自身重写 | <code>fd4ececc338b1bc4841cfd0468e201c2f7ef6138</code>（pre-amend 值；amend 后会变化，最终值以 push 后 `git rev-parse HEAD` 为准） | <code>2b8438a9129e091619fce978e0e6933e86a6be48d15521a9c827ca281ba1144c</code>（pre-amend 值；amend 后会变化） | REPRODUCIBLE_FROM_PUBLIC_REPO |
 | `config/public-execution-manifest.json` | 修改 | 新增 revision_history 字段，保持 R4_REVIEW_PENDING | `79cd48414210896fbad3838e3d0dcb97407be6cc` | `cfeafc209abe31451a966f9cec70622a3954123e9a01189c5efff85903377778` | REPRODUCIBLE_FROM_PUBLIC_REPO |
 
 ### 5.2 R3 提交中已建立的文件（commit `0a05378`，本轮未修改）

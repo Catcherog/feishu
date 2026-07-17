@@ -74,7 +74,7 @@
       "date": "2026-07-18",
       "gate": "R3+R4",
       "action": "p0_p1_fix_resubmission",
-      "commit": "pending_commit",
+      "commit": "402cb6e9dc96c98a7a2d3037bf7035fa532aa8a6",
       "audit_outcome": "PENDING_REVIEW",
       "fix_packet": "docs/ai/tasks/TASK-002-R4-FIX-PACKET.md",
       "fixes_applied": [
