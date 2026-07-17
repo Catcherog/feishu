@@ -3,14 +3,14 @@
   "repository": "Catcherog/feishu",
   "branch": "master",
   "current_phase": "PHASE_1B3_REMEDIATION",
-  "current_gate": "R2",
-  "audit_status": "R2_INDEPENDENTLY_VERIFIED_PASS",
+  "current_gate": "R4",
+  "audit_status": "R3_R4_REVIEW_PENDING",
   "migration_pilot_status": "NOT_APPROVED",
   "gate_status": {
     "R1": "INDEPENDENTLY_VERIFIED_PASS",
     "R2": "INDEPENDENTLY_VERIFIED_PASS",
-    "R3": "NOT_STARTED",
-    "R4": "NOT_STARTED",
+    "R3": "R3_REVIEW_PENDING",
+    "R4": "R4_REVIEW_PENDING",
     "R5": "NOT_STARTED",
     "R6": "NOT_STARTED"
   },
@@ -23,7 +23,10 @@
     "docs/audit/phase1b3-remediation-plan.md",
     "docs/audit/phaseR1-independent-verification-2026-07-17.md",
     "reports/phaseR1-final-gpt-audit-package.md",
-    "reports/phaseR2-schema-evidence-gpt-audit-package.md"
+    "reports/phaseR2-schema-evidence-gpt-audit-package.md",
+    "reports/classifier-test-report.md",
+    "reports/classification-reason-summary.json",
+    "reports/phaseR3R4-classifier-accounting-gpt-audit-package.md"
   ],
   "approved_actions": [
     "sanitize_public_reports",

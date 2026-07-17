@@ -1,0 +1,68 @@
+{
+  "schema_version": "classification-summary-v1.0",
+  "classifier_version": "classifier-v1.0",
+  "entities": {
+    "customer": {
+      "source_total": 36,
+      "by_classification": {
+        "MIGRATABLE": 0,
+        "NEEDS_REVIEW": 0,
+        "BLOCKED": 36
+      },
+      "by_primary_reason_code": {
+        "MISSING_IDENTITY": 13,
+        "MISSING_NAME": 23
+      },
+      "reconciled": true
+    },
+    "project": {
+      "source_total": 47,
+      "by_classification": {
+        "MIGRATABLE": 0,
+        "NEEDS_REVIEW": 0,
+        "BLOCKED": 47
+      },
+      "by_primary_reason_code": {
+        "ORPHAN_PROJECT": 22,
+        "MISSING_NAME": 25
+      },
+      "reconciled": true
+    },
+    "model": {
+      "source_total": 106,
+      "by_classification": {
+        "MIGRATABLE": 3,
+        "NEEDS_REVIEW": 35,
+        "BLOCKED": 68
+      },
+      "by_primary_reason_code": {
+        "STATUS_NEEDS_REVIEW": 35,
+        "MISSING_IDENTITY": 30,
+        "ELIGIBLE": 3,
+        "MISSING_NAME": 38
+      },
+      "reconciled": true
+    },
+    "makeup": {
+      "source_total": 115,
+      "by_classification": {
+        "MIGRATABLE": 5,
+        "NEEDS_REVIEW": 34,
+        "BLOCKED": 76
+      },
+      "by_primary_reason_code": {
+        "STATUS_NEEDS_REVIEW": 34,
+        "MISSING_IDENTITY": 37,
+        "ELIGIBLE": 5,
+        "MISSING_NAME": 39
+      },
+      "reconciled": true
+    }
+  },
+  "overall": {
+    "source_total": 304,
+    "classified_total": 304,
+    "primary_reason_total": 304,
+    "reconciled": true
+  }
+}
