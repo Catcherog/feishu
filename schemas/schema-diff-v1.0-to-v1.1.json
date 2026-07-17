@@ -1260,8 +1260,57 @@
     "removed_fields": 0,
     "required_changes": 0,
     "state_machine_changes": 2,
-    "view_changes": 0
+    "view_changes": 4
   },
   "target_schema_version": "v1.1",
-  "view_changes": []
+  "view_changes": [
+    {
+      "action": "added",
+      "definition": {
+        "description": "按迁移批次查看",
+        "filter": "migration_batch_id 不为空",
+        "sort": "migrated_at 降序",
+        "view_name": "迁移记录",
+        "view_type": "表格"
+      },
+      "table": "customer",
+      "view_name": "迁移记录"
+    },
+    {
+      "action": "added",
+      "definition": {
+        "description": "payment_status 分组",
+        "filter": "无",
+        "sort": "—",
+        "view_name": "按付款状态分组",
+        "view_type": "看板"
+      },
+      "table": "project",
+      "view_name": "按付款状态分组"
+    },
+    {
+      "action": "added",
+      "definition": {
+        "description": "按迁移批次查看",
+        "filter": "migration_batch_id 不为空",
+        "sort": "migrated_at 降序",
+        "view_name": "迁移记录",
+        "view_type": "表格"
+      },
+      "table": "project",
+      "view_name": "迁移记录"
+    },
+    {
+      "action": "added",
+      "definition": {
+        "description": "按迁移批次查看",
+        "filter": "migration_batch_id 不为空",
+        "sort": "migrated_at 降序",
+        "view_name": "迁移记录",
+        "view_type": "表格"
+      },
+      "table": "resource",
+      "view_name": "迁移记录"
+    }
+  ]
 }

@@ -29,6 +29,10 @@ build/
 .DS_Store
 Thumbs.db
 
+# Python 字节码缓存
+__pycache__/
+*.pyc
+
 # 临时脚本
 src/scripts/temp/
 

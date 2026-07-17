@@ -50,7 +50,7 @@ class SchemaDiffTests(unittest.TestCase):
             "changed_fields": 0,
             "enum_changes": 1,
             "required_changes": 0,
-            "view_changes": 0,
+            "view_changes": 4,
             "state_machine_changes": 2,
             "global_enum_changes": 1,
         })

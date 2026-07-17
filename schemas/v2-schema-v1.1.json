@@ -485,6 +485,13 @@
           "filter": "privacy_level = 高敏",
           "sort": "created_at 降序",
           "description": "隐私管控"
+        },
+        {
+          "view_name": "迁移记录",
+          "view_type": "表格",
+          "filter": "migration_batch_id 不为空",
+          "sort": "migrated_at 降序",
+          "description": "按迁移批次查看"
         }
       ]
     },
@@ -943,6 +950,20 @@
           "filter": "project_status = 已交付",
           "sort": "delivery_due_at 降序",
           "description": "已交付项目展示"
+        },
+        {
+          "view_name": "迁移记录",
+          "view_type": "表格",
+          "filter": "migration_batch_id 不为空",
+          "sort": "migrated_at 降序",
+          "description": "按迁移批次查看"
+        },
+        {
+          "view_name": "按付款状态分组",
+          "view_type": "看板",
+          "filter": "无",
+          "sort": "—",
+          "description": "payment_status 分组"
         }
       ]
     },
@@ -1372,6 +1393,13 @@
           "filter": "无",
           "sort": "—",
           "description": "resource_type 分组"
+        },
+        {
+          "view_name": "迁移记录",
+          "view_type": "表格",
+          "filter": "migration_batch_id 不为空",
+          "sort": "migrated_at 降序",
+          "description": "按迁移批次查看"
         }
       ]
     },
