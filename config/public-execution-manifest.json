@@ -61,5 +61,34 @@
     "reports/private/**",
     ".env*"
   ],
+  "revision_history": [
+    {
+      "date": "2026-07-17",
+      "gate": "R3+R4",
+      "action": "initial_submission",
+      "commit": "e42e2a4",
+      "audit_outcome": "MVP_FAIL",
+      "notes": "GPT audit identified 5 P0 blockers + 1 P1 doc accuracy issue. See docs/ai/tasks/TASK-002-R4-FIX-PACKET.md."
+    },
+    {
+      "date": "2026-07-18",
+      "gate": "R3+R4",
+      "action": "p0_p1_fix_resubmission",
+      "commit": "pending_commit",
+      "audit_outcome": "PENDING_REVIEW",
+      "fix_packet": "docs/ai/tasks/TASK-002-R4-FIX-PACKET.md",
+      "fixes_applied": [
+        "P0-1: budget.js D-025 prefix-symbol direction",
+        "P0-2: classifier.js D-020 customer status inference propagation",
+        "P0-3: PROJECT_STATUS_DIRECT_MAP added 已交付/已归档",
+        "P0-4: customerMissingIdentity added has_valid_need_summary path",
+        "P0-5: rewrote joint audit package",
+        "P1: fixed reason-code fixture references in classifier-test-report.md"
+      ],
+      "test_count": 58,
+      "fixture_count": 43,
+      "notes": "R3_R4_REVIEW_PENDING retained per fix-packet instruction. R5/R6/MIGRATION_PILOT_001 NOT started."
+    }
+  ],
   "stop_after_completion": true
 }

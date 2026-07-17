@@ -195,17 +195,86 @@ describe('acceptance criterion: budget parsing variants (D-025)', () => {
     assert.equal(r.budget_max, 5000);
   });
 
-  it('3000以下 -> parsed, min=0, max=3000', () => {
+  it('3000以下 -> parsed, min=0, max=3000 (Chinese suffix form)', () => {
     const r = parseBudget('3000以下');
     assert.equal(r.budget_parse_status, 'parsed');
     assert.equal(r.budget_min, 0);
     assert.equal(r.budget_max, 3000);
   });
 
-  it('5000+ -> parsed, min=5000, max=null', () => {
+  it('5000以上 -> parsed, min=5000, max=null (Chinese suffix form)', () => {
+    const r = parseBudget('5000以上');
+    assert.equal(r.budget_parse_status, 'parsed');
+    assert.equal(r.budget_min, 5000);
+    assert.equal(r.budget_max, null);
+  });
+
+  it('5000+ -> parsed, min=5000, max=null (plus suffix form)', () => {
     const r = parseBudget('5000+');
     assert.equal(r.budget_parse_status, 'parsed');
     assert.equal(r.budget_min, 5000);
+    assert.equal(r.budget_max, null);
+  });
+
+  // P0-1 regression: approved prefix-symbol bound forms. These were
+  // previously rejected as ambiguous because the regex required the symbol
+  // to appear AFTER the number.
+  it('<3000 -> parsed, min=0, max=3000 (prefix-symbol form)', () => {
+    const r = parseBudget('<3000');
+    assert.equal(r.budget_parse_status, 'parsed');
+    assert.equal(r.budget_min, 0);
+    assert.equal(r.budget_max, 3000);
+  });
+
+  it('≤3000 -> parsed, min=0, max=3000 (prefix-symbol form)', () => {
+    const r = parseBudget('≤3000');
+    assert.equal(r.budget_parse_status, 'parsed');
+    assert.equal(r.budget_min, 0);
+    assert.equal(r.budget_max, 3000);
+  });
+
+  it('>5000 -> parsed, min=5000, max=null (prefix-symbol form)', () => {
+    const r = parseBudget('>5000');
+    assert.equal(r.budget_parse_status, 'parsed');
+    assert.equal(r.budget_min, 5000);
+    assert.equal(r.budget_max, null);
+  });
+
+  it('≥5000 -> parsed, min=5000, max=null (prefix-symbol form)', () => {
+    const r = parseBudget('≥5000');
+    assert.equal(r.budget_parse_status, 'parsed');
+    assert.equal(r.budget_min, 5000);
+    assert.equal(r.budget_max, null);
+  });
+
+  // P0-1 regression: disallowed reversed forms must NOT be parsed.
+  // Previously they were accepted because the regex matched "number then
+  // symbol". They must fall through to ambiguous.
+  it('3000< (reversed) -> ambiguous, NOT parsed', () => {
+    const r = parseBudget('3000<');
+    assert.equal(r.budget_parse_status, 'ambiguous');
+    assert.equal(r.budget_min, null);
+    assert.equal(r.budget_max, null);
+  });
+
+  it('5000≥ (reversed) -> ambiguous, NOT parsed', () => {
+    const r = parseBudget('5000≥');
+    assert.equal(r.budget_parse_status, 'ambiguous');
+    assert.equal(r.budget_min, null);
+    assert.equal(r.budget_max, null);
+  });
+
+  it('3000≤ (reversed) -> ambiguous, NOT parsed', () => {
+    const r = parseBudget('3000≤');
+    assert.equal(r.budget_parse_status, 'ambiguous');
+    assert.equal(r.budget_min, null);
+    assert.equal(r.budget_max, null);
+  });
+
+  it('5000> (reversed) -> ambiguous, NOT parsed', () => {
+    const r = parseBudget('5000>');
+    assert.equal(r.budget_parse_status, 'ambiguous');
+    assert.equal(r.budget_min, null);
     assert.equal(r.budget_max, null);
   });
 
@@ -220,6 +289,75 @@ describe('acceptance criterion: budget parsing variants (D-025)', () => {
     const r = parseBudget('3000-5000');
     assert.equal(r.budget_parse_rule_version, 'budget-map-v1.0');
     assert.equal(r.budget_range_raw, '3000-5000');
+  });
+});
+
+describe('P0-2 regression: D-020 customer status inference propagates any unclear project status', () => {
+  const batchOutput = classifyBatch(CASES.cases);
+  const byKey = new Map(batchOutput.map((r) => [r.record_key, r]));
+
+  it('CUSTOMER_ALIAS_020 (已拍摄 + linked project status "无法判断") -> STATUS_NEEDS_REVIEW', () => {
+    // Previously this case was ELIGIBLE/MIGRATABLE because only the
+    // "已完成 without evidence" branch of isProjectStatusUnclear was
+    // consulted; any other non-V2 project status was silently accepted.
+    const r = byKey.get('CUSTOMER_ALIAS_020');
+    assert.equal(r.classification, 'NEEDS_REVIEW');
+    assert.equal(r.primary_reason_code, 'STATUS_NEEDS_REVIEW');
+  });
+
+  it('PROJECT_ALIAS_014 (status "无法判断") -> STATUS_NEEDS_REVIEW itself', () => {
+    const r = byKey.get('PROJECT_ALIAS_014');
+    assert.equal(r.classification, 'NEEDS_REVIEW');
+    assert.equal(r.primary_reason_code, 'STATUS_NEEDS_REVIEW');
+  });
+
+  it('CUSTOMER_ALIAS_009 (已拍摄 + linked project 已完成 without evidence) still STATUS_NEEDS_REVIEW', () => {
+    // Existing case must continue to pass after the refactor.
+    const r = byKey.get('CUSTOMER_ALIAS_009');
+    assert.equal(r.classification, 'NEEDS_REVIEW');
+    assert.equal(r.primary_reason_code, 'STATUS_NEEDS_REVIEW');
+  });
+});
+
+describe('P0-3 regression: valid V2 project statuses 已交付 / 已归档 are not STATUS_NEEDS_REVIEW', () => {
+  const batchOutput = classifyBatch(CASES.cases);
+  const byKey = new Map(batchOutput.map((r) => [r.record_key, r]));
+
+  it('PROJECT_ALIAS_012 (已交付) -> MIGRATABLE / ELIGIBLE', () => {
+    // Previously 已交付 was missing from PROJECT_STATUS_DIRECT_MAP and
+    // was incorrectly classified as STATUS_NEEDS_REVIEW.
+    const r = byKey.get('PROJECT_ALIAS_012');
+    assert.equal(r.classification, 'MIGRATABLE');
+    assert.equal(r.primary_reason_code, 'ELIGIBLE');
+  });
+
+  it('PROJECT_ALIAS_013 (已归档) -> MIGRATABLE / ELIGIBLE', () => {
+    const r = byKey.get('PROJECT_ALIAS_013');
+    assert.equal(r.classification, 'MIGRATABLE');
+    assert.equal(r.primary_reason_code, 'ELIGIBLE');
+  });
+});
+
+describe('P0-4 regression: D-023 valid need summary counts as customer identity', () => {
+  const batchOutput = classifyBatch(CASES.cases);
+  const byKey = new Map(batchOutput.map((r) => [r.record_key, r]));
+
+  it('CUSTOMER_ALIAS_019 (name + has_valid_need_summary=true, no phone/wechat/source) -> MIGRATABLE / ELIGIBLE', () => {
+    // Previously this customer would have been BLOCKED with MISSING_IDENTITY
+    // because the only identity signals were phone/wechat/source.
+    const r = byKey.get('CUSTOMER_ALIAS_019');
+    assert.equal(r.classification, 'MIGRATABLE');
+    assert.equal(r.primary_reason_code, 'ELIGIBLE');
+    assert.equal(r.secondary_reason_codes.includes('MISSING_IDENTITY'), false,
+      'has_valid_need_summary=true must suppress MISSING_IDENTITY');
+  });
+
+  it('a customer with no identity and has_valid_need_summary=false still hits MISSING_IDENTITY', () => {
+    // CUSTOMER_ALIAS_003 has name but no phone/wechat/source and no
+    // has_valid_need_summary. It must still be BLOCKED with MISSING_IDENTITY.
+    const r = byKey.get('CUSTOMER_ALIAS_003');
+    assert.equal(r.classification, 'BLOCKED');
+    assert.equal(r.primary_reason_code, 'MISSING_IDENTITY');
   });
 });
 

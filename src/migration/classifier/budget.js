@@ -4,13 +4,23 @@
 //
 // Source of truth: DECISION_LOG D-025 (budget-map-v1.0).
 //
-// Parsing rules:
-//   - "3000以下" / "<3000" / "≤3000"  -> min=0,    max=3000,  status=parsed
-//   - "3000-5000" / "3000~5000"      -> min=3000,  max=5000,  status=parsed
-//   - "5000以上" / "5000+" / "≥5000"  -> min=5000,  max=null,  status=parsed
-//   - "未确定" / "面议" / ""          -> min=null,  max=null,  status=unknown
-//   - multiple conflicting ranges or
-//     uninterpretable text            -> min=null,  max=null,  status=ambiguous
+// Approved parsing forms (D-025):
+//   Prefix-symbol form:
+//     "<3000"   -> min=0,    max=3000,  status=parsed
+//     "≤3000"   -> min=0,    max=3000,  status=parsed
+//     ">5000"   -> min=5000, max=null,  status=parsed
+//     "≥5000"   -> min=5000, max=null,  status=parsed
+//   Chinese-suffix / plus form:
+//     "3000以下" -> min=0,    max=3000,  status=parsed
+//     "5000以上" -> min=5000, max=null,  status=parsed
+//     "5000+"    -> min=5000, max=null,  status=parsed
+//   Range form:
+//     "3000-5000" / "3000~5000" / "3000到5000"
+//                          -> min=3000, max=5000, status=parsed
+//   Unknown keywords:
+//     "面议" / "未确定" / "" -> min=null, max=null, status=unknown
+//   Otherwise (including disallowed reversed forms like "3000<", "5000≥"):
+//     -> min=null, max=null, status=ambiguous
 //
 // All amounts are CNY integers. The original raw text is always preserved.
 
@@ -30,6 +40,29 @@ function parseAmount(token) {
   if (cleaned === '') return null;
   const n = Number(cleaned);
   return Number.isFinite(n) && n >= 0 ? Math.trunc(n) : null;
+}
+
+/**
+ * Count the number of range-like fragments in a string. Used by the
+ * multi-range ambiguity detector. Counts both approved forms (prefix
+ * symbol "<3000", "≥5000") and disallowed reversed forms ("3000<", "5000≥")
+ * because both indicate range intent and should trigger ambiguity when
+ * multiple fragments are present.
+ *
+ * @param {string} text
+ * @returns {number}
+ */
+function countRangeFragments(text) {
+  let count = 0;
+  // Range "3000-5000" / "3000~5000" / "3000到5000"
+  count += (text.match(/\d+\s*[-~到]\s*\d+/g) || []).length;
+  // Prefix-symbol bound: "<3000" / "≤3000" / ">5000" / "≥5000"
+  count += (text.match(/^[<>≤≥]\s*\d+|\s[<>≤≥]\s*\d+/g) || []).length;
+  // Suffix-symbol bound (reversed, disallowed): "3000<" / "3000≤" / "5000>" / "5000≥"
+  count += (text.match(/\d\s*[<>≤≥](?!\d)/g) || []).length;
+  // Chinese-suffix or plus bound: "3000以下" / "5000以上" / "5000+"
+  count += (text.match(/\d+\s*(?:以下|以上|\+)/g) || []).length;
+  return count;
 }
 
 /**
@@ -62,9 +95,7 @@ function parseBudget(rawText) {
   // Detect multiple conflicting ranges (any "或" / "或者" / "|" separator).
   // If present and at least two range-like fragments exist, mark ambiguous.
   if (/[或者|]|\/\s*(?=\d)/.test(trimmed)) {
-    const rangeCount = (trimmed.match(/\d+\s*[-~到]\s*\d+/g) || []).length
-      + (trimmed.match(/\d+\s*(?:以下|<|≤)/g) || []).length
-      + (trimmed.match(/\d+\s*(?:以上|\+|>|≥)/g) || []).length;
+    const rangeCount = countRangeFragments(trimmed);
     if (rangeCount >= 2) {
       base.budget_parse_status = 'ambiguous';
       return base;
@@ -84,32 +115,56 @@ function parseBudget(rawText) {
     }
   }
 
-  // Lower bound: "3000以下", "<3000", "≤3000"
-  m = trimmed.match(/^(\d+)\s*(?:以下|<|≤)$/);
+  // Approved prefix-symbol bound form: "<3000", "≤3000", ">5000", "≥5000".
+  // The symbol MUST appear before the number. Reversed forms like "3000<"
+  // or "5000≥" do NOT match this pattern and fall through to ambiguous.
+  m = trimmed.match(/^([<>≤≥])\s*(\d+)$/);
   if (m) {
-    const hi = parseAmount(m[1]);
-    if (hi !== null) {
-      base.budget_min = 0;
-      base.budget_max = hi;
-      base.budget_parse_status = 'parsed';
-      return base;
+    const sym = m[1];
+    const n = parseAmount(m[2]);
+    if (n !== null) {
+      if (sym === '<' || sym === '≤') {
+        base.budget_min = 0;
+        base.budget_max = n;
+        base.budget_parse_status = 'parsed';
+        return base;
+      }
+      if (sym === '>' || sym === '≥') {
+        base.budget_min = n;
+        base.budget_max = null;
+        base.budget_parse_status = 'parsed';
+        return base;
+      }
     }
   }
 
-  // Upper bound: "5000以上", "5000+", "≥5000"
-  m = trimmed.match(/^(\d+)\s*(?:以上|\+|>|≥)$/);
+  // Approved Chinese-suffix or plus bound form:
+  //   "3000以下"  -> upper bound (min=0, max=n)
+  //   "5000以上"  -> lower bound (min=n, max=null)
+  //   "5000+"     -> lower bound (min=n, max=null)
+  m = trimmed.match(/^(\d+)\s*(以下|以上|\+)$/);
   if (m) {
-    const lo = parseAmount(m[1]);
-    if (lo !== null) {
-      base.budget_min = lo;
-      base.budget_max = null;
-      base.budget_parse_status = 'parsed';
-      return base;
+    const n = parseAmount(m[1]);
+    const suffix = m[2];
+    if (n !== null) {
+      if (suffix === '以下') {
+        base.budget_min = 0;
+        base.budget_max = n;
+        base.budget_parse_status = 'parsed';
+        return base;
+      }
+      if (suffix === '以上' || suffix === '+') {
+        base.budget_min = n;
+        base.budget_max = null;
+        base.budget_parse_status = 'parsed';
+        return base;
+      }
     }
   }
 
   // Uninterpretable text that is not empty and not a known "no budget" keyword
-  // is treated as ambiguous per D-025 ("无法解释 -> ambiguous").
+  // is treated as ambiguous per D-025 ("无法解释 -> ambiguous"). This
+  // includes disallowed reversed forms like "3000<" and "5000≥".
   base.budget_parse_status = 'ambiguous';
   return base;
 }

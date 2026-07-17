@@ -37,6 +37,11 @@ const CUSTOMER_STATUS_INFERENCE = new Set(['已拍摄', '拍摄完成']);
 const PROJECT_STATUS_DIRECT_MAP = new Set([
   '草稿', '策划中', '策划已批准', '资源确认中', '待拍摄',
   '拍摄完成', '后期制作', '客户确认',
+  // Added per P0-3 fix (TASK-002-R4-FIX-PACKET.md).
+  // These are valid V2 project_status values per docs/v2-field-dictionary.md
+  // and were previously missing from this set, causing them to be
+  // incorrectly classified as STATUS_NEEDS_REVIEW.
+  '已交付', '已归档',
 ]);
 
 // 待立项 -> 草稿 (per D-020).
@@ -76,19 +81,36 @@ function nonEmpty(v) {
 }
 
 /**
- * Project status is "unclear" when legacy status is 已完成 but no delivery
- * or archive evidence is present (D-020).
+ * Project status requires review per D-020:
+ *   - empty status
+ *   - 已完成 without delivery or archive evidence
+ *   - any status not in the direct map and not an alias
+ *
+ * This is the canonical "project status is unclear / cannot be mapped"
+ * predicate. Customer-status inference (D-020) MUST reuse this function
+ * instead of a narrower subset, so that any linked project whose status
+ * cannot be determined (not just "已完成 without evidence") propagates
+ * NEEDS_REVIEW to the inferred customer status.
  */
-function isProjectStatusUnclear(fields) {
-  const status = str(fields && fields.status_raw);
-  if (status !== '已完成') return false;
-  return !(fields && (fields.has_delivery_evidence || fields.has_archive_evidence));
+function projectStatusNeedsReview(record) {
+  const fields = record.fields || {};
+  const status = str(fields.status_raw);
+  if (status === '') return true;
+  if (PROJECT_STATUS_DIRECT_MAP.has(status)) return false;
+  if (PROJECT_STATUS_ALIAS.has(status)) return false;
+  if (status === '已完成') {
+    return !(fields.has_delivery_evidence || fields.has_archive_evidence);
+  }
+  return true;
 }
 
 /**
  * Customer status requires review per D-020:
  *   - empty status
  *   - inference status (已拍摄/拍摄完成) with no usable linked project info
+ *     — "usable" means the linked project's status can be mapped
+ *     (i.e. projectStatusNeedsReview returns false). Any linked project
+ *     whose status cannot be determined causes the customer to need review.
  *   - any status not in the direct map and not an inference status
  */
 function customerStatusNeedsReview(record, context) {
@@ -103,27 +125,15 @@ function customerStatusNeedsReview(record, context) {
     for (const key of linkedKeys) {
       const project = context.recordsByKey.get(key);
       if (!project) return true;
-      if (isProjectStatusUnclear(project.fields || {})) return true;
+      // Reuse the full project-status clarity check so that ANY
+      // unclear project status propagates NEEDS_REVIEW to the customer.
+      // Previously only the "已完成 without evidence" case was checked,
+      // which let customers with status=已拍摄 linked to projects whose
+      // status_raw was a non-V2 value (e.g. "无法判断") be classified
+      // as ELIGIBLE / MIGRATABLE.
+      if (projectStatusNeedsReview(project)) return true;
     }
     return false;
-  }
-  return true;
-}
-
-/**
- * Project status requires review per D-020:
- *   - empty status
- *   - 已完成 without delivery or archive evidence
- *   - any status not in the direct map and not an alias
- */
-function projectStatusNeedsReview(record) {
-  const fields = record.fields || {};
-  const status = str(fields.status_raw);
-  if (status === '') return true;
-  if (PROJECT_STATUS_DIRECT_MAP.has(status)) return false;
-  if (PROJECT_STATUS_ALIAS.has(status)) return false;
-  if (status === '已完成') {
-    return !(fields.has_delivery_evidence || fields.has_archive_evidence);
   }
   return true;
 }
@@ -139,7 +149,17 @@ function resourceStatusNeedsReview(record) {
 
 /**
  * Customer has no identifying information (D-023):
- * no phone, no wechat, no source channel.
+ * no phone, no wechat, no source channel, no valid need summary.
+ *
+ * Per D-023, a customer with a name or 称呼 can be migrated if at least one
+ * of the following is present:
+ *   - 联系方式 (phone)
+ *   - 来源 (source_channel_raw)
+ *   - 有效需求摘要 (has_valid_need_summary)
+ *
+ * The `has_valid_need_summary` field is a deterministic boolean produced by
+ * the private normalizer from approved V1 field mappings. The classifier
+ * never inspects raw text or arbitrary 备注; it only consumes the boolean.
  *
  * Independent of MISSING_NAME: a record may be missing both a name and an
  * identity. In that case both reason codes are produced so that the
@@ -147,7 +167,10 @@ function resourceStatusNeedsReview(record) {
  */
 function customerMissingIdentity(record) {
   const f = record.fields || {};
-  const hasIdentity = nonEmpty(f.phone) || nonEmpty(f.wechat_id) || nonEmpty(f.source_channel_raw);
+  const hasIdentity = nonEmpty(f.phone)
+    || nonEmpty(f.wechat_id)
+    || nonEmpty(f.source_channel_raw)
+    || f.has_valid_need_summary === true;
   return !hasIdentity;
 }
 

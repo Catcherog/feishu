@@ -6,11 +6,12 @@
       "source_total": 36,
       "by_classification": {
         "MIGRATABLE": 0,
-        "NEEDS_REVIEW": 0,
-        "BLOCKED": 36
+        "NEEDS_REVIEW": 2,
+        "BLOCKED": 34
       },
       "by_primary_reason_code": {
-        "MISSING_IDENTITY": 13,
+        "STATUS_NEEDS_REVIEW": 2,
+        "MISSING_IDENTITY": 11,
         "MISSING_NAME": 23
       },
       "reconciled": true
