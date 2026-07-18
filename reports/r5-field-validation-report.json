@@ -1,0 +1,347 @@
+{
+  "report_version": "r5-field-validation-report-v1.0",
+  "completed_at": "2026-07-18T04:14:55.754Z",
+  "validation_marker": "R5_VALIDATION_20260718",
+  "summary": {
+    "total_fields_validated": 35,
+    "total_pass": 35,
+    "total_fail": 0,
+    "total_illegal_write_tests": 8,
+    "total_illegal_rejected": 8,
+    "total_default_checks": 35
+  },
+  "tables": {
+    "customer": {
+      "table_alias": "V2_CUSTOMER_TABLE_ALIAS",
+      "field_count": 14,
+      "create_ok": true,
+      "read_back": {
+        "pass_count": 14,
+        "fail_count": 0,
+        "failures": []
+      },
+      "illegal_writes": [
+        {
+          "field_key": "budget_parse_status",
+          "feishu_type": "single_select",
+          "status": "REJECTED_AS_EXPECTED"
+        },
+        {
+          "field_key": "duplicate_review_status",
+          "feishu_type": "single_select",
+          "status": "REJECTED_AS_EXPECTED"
+        }
+      ],
+      "defaults": [
+        {
+          "field_key": "budget_parse_rule_version",
+          "feishu_type": "text",
+          "schema_default": "budget-map-v1.0",
+          "actual": "null",
+          "status": "NO_DEFAULT_LIVE_BUT_SCHEMA_SPECIFIES_DEFAULT"
+        },
+        {
+          "field_key": "budget_parse_status",
+          "feishu_type": "single_select",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "budget_range_raw",
+          "feishu_type": "text",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "canonical_business_id",
+          "feishu_type": "text",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "duplicate_review_status",
+          "feishu_type": "single_select",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "legacy_status_raw",
+          "feishu_type": "text",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "migrated_at",
+          "feishu_type": "datetime",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "migration_batch_id",
+          "feishu_type": "text",
+          "schema_default": null,
+          "actual": "R5_VALIDATION_20260718_DEFAULT_CHECK",
+          "status": "HAS_VALUE_NO_SCHEMA_DEFAULT"
+        },
+        {
+          "field_key": "migration_rule_version",
+          "feishu_type": "text",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "migration_source_record_id",
+          "feishu_type": "text",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "migration_source_table",
+          "feishu_type": "text",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "source_channel_mapping_version",
+          "feishu_type": "text",
+          "schema_default": "source-map-v1.0",
+          "actual": "null",
+          "status": "NO_DEFAULT_LIVE_BUT_SCHEMA_SPECIFIES_DEFAULT"
+        },
+        {
+          "field_key": "source_channel_raw",
+          "feishu_type": "text",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "status_mapping_rule_version",
+          "feishu_type": "text",
+          "schema_default": "status-map-v1.0",
+          "actual": "null",
+          "status": "NO_DEFAULT_LIVE_BUT_SCHEMA_SPECIFIES_DEFAULT"
+        }
+      ]
+    },
+    "project": {
+      "table_alias": "V2_PROJECT_TABLE_ALIAS",
+      "field_count": 14,
+      "create_ok": true,
+      "read_back": {
+        "pass_count": 14,
+        "fail_count": 0,
+        "failures": []
+      },
+      "illegal_writes": [
+        {
+          "field_key": "currency",
+          "feishu_type": "single_select",
+          "status": "REJECTED_AS_EXPECTED"
+        },
+        {
+          "field_key": "deal_amount",
+          "feishu_type": "number",
+          "status": "REJECTED_AS_EXPECTED"
+        },
+        {
+          "field_key": "deposit_amount",
+          "feishu_type": "number",
+          "status": "REJECTED_AS_EXPECTED"
+        },
+        {
+          "field_key": "payment_status",
+          "feishu_type": "single_select",
+          "status": "REJECTED_AS_EXPECTED"
+        },
+        {
+          "field_key": "satisfaction_score",
+          "feishu_type": "number",
+          "status": "REJECTED_AS_EXPECTED"
+        }
+      ],
+      "defaults": [
+        {
+          "field_key": "currency",
+          "feishu_type": "single_select",
+          "schema_default": "CNY",
+          "actual": "null",
+          "status": "NO_DEFAULT_LIVE_BUT_SCHEMA_SPECIFIES_DEFAULT"
+        },
+        {
+          "field_key": "deal_amount",
+          "feishu_type": "number",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "deposit_amount",
+          "feishu_type": "number",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "feedback_collected_at",
+          "feishu_type": "datetime",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "legacy_status_raw",
+          "feishu_type": "text",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "migrated_at",
+          "feishu_type": "datetime",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "migration_batch_id",
+          "feishu_type": "text",
+          "schema_default": null,
+          "actual": "R5_VALIDATION_20260718_DEFAULT_CHECK",
+          "status": "HAS_VALUE_NO_SCHEMA_DEFAULT"
+        },
+        {
+          "field_key": "migration_rule_version",
+          "feishu_type": "text",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "migration_source_record_id",
+          "feishu_type": "text",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "migration_source_table",
+          "feishu_type": "text",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "payment_status",
+          "feishu_type": "single_select",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "satisfaction_note",
+          "feishu_type": "multiline_text",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "satisfaction_score",
+          "feishu_type": "number",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "status_mapping_rule_version",
+          "feishu_type": "text",
+          "schema_default": "status-map-v1.0",
+          "actual": "null",
+          "status": "NO_DEFAULT_LIVE_BUT_SCHEMA_SPECIFIES_DEFAULT"
+        }
+      ]
+    },
+    "resource": {
+      "table_alias": "V2_RESOURCE_TABLE_ALIAS",
+      "field_count": 7,
+      "create_ok": true,
+      "read_back": {
+        "pass_count": 7,
+        "fail_count": 0,
+        "failures": []
+      },
+      "illegal_writes": [
+        {
+          "field_key": "duplicate_review_status",
+          "feishu_type": "single_select",
+          "status": "REJECTED_AS_EXPECTED"
+        }
+      ],
+      "defaults": [
+        {
+          "field_key": "canonical_business_id",
+          "feishu_type": "text",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "duplicate_review_status",
+          "feishu_type": "single_select",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "migrated_at",
+          "feishu_type": "datetime",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "migration_batch_id",
+          "feishu_type": "text",
+          "schema_default": null,
+          "actual": "R5_VALIDATION_20260718_DEFAULT_CHECK",
+          "status": "HAS_VALUE_NO_SCHEMA_DEFAULT"
+        },
+        {
+          "field_key": "migration_rule_version",
+          "feishu_type": "text",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "migration_source_record_id",
+          "feishu_type": "text",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        },
+        {
+          "field_key": "migration_source_table",
+          "feishu_type": "text",
+          "schema_default": null,
+          "actual": "null",
+          "status": "NO_DEFAULT"
+        }
+      ]
+    }
+  },
+  "private_evidence": {
+    "validation_log_path": "backups/private/r5-field-validation-log.json",
+    "validation_log_sha256": "a8de06fa83d2da4c6d586eee6a4f9746bb0cd166373e7e30ad7eff9d15983c8b",
+    "created_record_ids_path": "backups/private/r5-field-validation-log.json (created_record_ids field)"
+  }
+}
