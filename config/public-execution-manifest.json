@@ -2,9 +2,9 @@
   "manifest_version": "1.0.0",
   "repository": "Catcherog/feishu",
   "branch": "master",
-  "current_phase": "PHASE_R5_INDEPENDENTLY_VERIFIED_PASS",
-  "current_gate": "R5",
-  "audit_status": "R5_INDEPENDENTLY_VERIFIED_PASS",
+  "current_phase": "PHASE_R6_READ_ONLY_DRY_RUN",
+  "current_gate": "R6",
+  "audit_status": "R6_REVIEW_PENDING",
   "migration_pilot_status": "NOT_APPROVED",
   "gate_status": {
     "R1": "INDEPENDENTLY_VERIFIED_PASS",
@@ -12,7 +12,7 @@
     "R3": "INDEPENDENTLY_VERIFIED_PASS",
     "R4": "INDEPENDENTLY_VERIFIED_PASS",
     "R5": "INDEPENDENTLY_VERIFIED_PASS",
-    "R6": "NOT_STARTED"
+    "R6": "REVIEW_PENDING"
   },
   "entrypoint": "PUBLIC_EXECUTION_ENTRYPOINT.md",
   "authoritative_files": [
@@ -221,6 +221,30 @@
       ],
       "next_gate": "R6",
       "notes": "R5 advanced to INDEPENDENTLY_VERIFIED_PASS (MVP_PASS_WITH_DEBT). P1 scanner debt (phone_number hex boundary case-insensitivity + regression tests) to be addressed in a separate P1 batch before R6 audit package finalization. R6=NOT_STARTED (about to start per TASK-004). MIGRATION_PILOT_001=NOT_APPROVED."
+    },
+    {
+      "date": "2026-07-18",
+      "gate": "R6",
+      "action": "r6_read_only_dry_run_submission",
+      "baseline_head": "8448e9ba74d792f5b227cf78c3399d1253ebe4c6",
+      "main_commit": "0f3fb108c790b054251e67940761f99705a76c18",
+      "backfill_commit": "PENDING_GPT_VERIFICATION_VIA_GIT_FACTS",
+      "final_head": "PENDING_GPT_VERIFICATION_VIA_GIT_FACTS",
+      "task_packet": "docs/ai/tasks/TASK-004-R6-READ-ONLY-DRY-RUN-PACKET.md",
+      "scope": [
+        "R5 closeout (manifest/entrypoint/audit package sync to R5_INDEPENDENTLY_VERIFIED_PASS)",
+        "P1 scanner debt: phone_number hex boundary upgraded to [0-9A-Fa-f] + 3 regression tests",
+        "R6 read-only Dry Run on 304 private V1 records (36 customer + 47 project + 106 model + 115 makeup)",
+        "Migration rule explicit defaults for 5 schema-default fields",
+        "4 new views filter/sort status registered as tech debt",
+        "MIGRATABLE / NEEDS_REVIEW / BLOCKED per-entity tables + duplicate candidates + orphan records + D-026 threshold judgement"
+      ],
+      "test_results": "58/58 migration-classifier + 23/23 verify_public_repo + schema_diff (20 verify + 3 schema_diff) = 81 PASS",
+      "scan_results": "tracked 153 files S0=0 S1=0 S2=0; staged main commit 12 files + backfill commit 3 files S0=0 S1=0 S2=0",
+      "d026_threshold_judgement": "FAIL — customer 0/5, project 0/5, model 3/10, makeup 5/10. MIGRATION_PILOT_001 MUST NOT start.",
+      "private_matrix_sha256": "9401ba56f0d812e3f41e47a5450b0bbcf4f2aa25502cf15959e8bdfbb96200f2",
+      "public_summary_sha256": "548077756b9e50b883e2674c2268926849d67e86b13494b90b06673e2c49e632",
+      "notes": "R6 read-only Dry Run completed. Control plane at R6_REVIEW_PENDING. MIGRATION_PILOT_001=NOT_APPROVED. History cleanup NOT_APPROVED, NOT_EXECUTED."
     }
   ],
   "stop_after_completion": true

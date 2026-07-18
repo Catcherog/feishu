@@ -6,9 +6,9 @@
 > **任务规格**：`docs/ai/tasks/TASK-004-R6-READ-ONLY-DRY-RUN-PACKET.md`
 > **工作仓库**：`feishu-v2/`（Catcherog/feishu）
 > **基线 HEAD**：`8448e9ba74d792f5b227cf78c3399d1253ebe4c6`（R5 第三修复批次 backfill commit）
-> **R6 main commit**：`PLACEHOLDER_R6_MAIN_COMMIT`（pre-backfill）
-> **R6 backfill commit**：`PLACEHOLDER_R6_BACKFILL_COMMIT`（SHA backfill，待 push 后回填）
-> **R6 最终 HEAD**：`PLACEHOLDER_R6_FINAL_HEAD`（待 push 后回填）
+> **R6 main commit**：`0f3fb108c790b054251e67940761f99705a76c18`（pre-backfill，含本审计包的 PLACEHOLDER 版本）
+> **R6 backfill commit**：SHA backfill commit，不自引用——待 GPT 复审时通过 `git log --oneline -2 0f3fb108` 确认（backfill commit 紧随 main commit 之后）
+> **R6 最终 HEAD**：即 backfill commit SHA，待 GPT 复审时通过 `git rev-parse HEAD` 确认（backfill commit 不自引用，遵循 R5 第三修复批次相同策略）
 > **目标 Base 别名**：`V2_PILOT_BASE_ALIAS`（R6 不写入 V2 测试 Base，仅读取私有 V1 导出）
 
 ---
@@ -74,8 +74,8 @@
 - **migration-classifier 测试**：`node --test tests/migration-classifier.test.js` → 58/58 PASS, 13 suites, exit 0。
 - **verify_public_repo 测试**：`python -m unittest tests.test_verify_public_repo` → 20/20 PASS（含新增 3 条 PhoneNumberBoundaryTests 回归测试）, exit 0。
 - **generate_schema_diff 测试**：`python -m unittest tests.test_generate_schema_diff` → 3/3 PASS, exit 0。
-- **tracked 安全扫描**：`python scripts/verify_public_repo.py` → tracked 152 files `S0=0 S1=0 S2=0`, exit 0。
-- **staged 安全扫描**：`python scripts/verify_public_repo.py --staged` → staged 11 files `S0=0 S1=0 S2=0`, exit 0。
+- **tracked 安全扫描**：`python scripts/verify_public_repo.py` → tracked 153 files `S0=0 S1=0 S2=0`, exit 0。
+- **staged 安全扫描**：`python scripts/verify_public_repo.py --staged` → main commit 12 files + backfill commit 3 files `S0=0 S1=0 S2=0`, exit 0。
 - **本审计包生成**：`reports/phaseR6-read-only-dry-run-gpt-audit-package.md`。
 
 ---
@@ -171,18 +171,18 @@
 
 | 文件路径 | 操作 | 说明 | Git commit SHA | 文件 SHA256 | 证据分级 |
 |---|---|---|---|---|---|
-| `config/public-execution-manifest.json` | 修改 | R5→INDEPENDENTLY_VERIFIED_PASS; R6→REVIEW_PENDING; 新增 revision_history | PLACEHOLDER_R6_MAIN_COMMIT | PLACEHOLDER_SHA256 | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `PUBLIC_EXECUTION_ENTRYPOINT.md` | 修改 | header + Section 3 gate decision + Section 3.6 R5 closeout + Section 3.7 R6 submission | PLACEHOLDER_R6_MAIN_COMMIT | PLACEHOLDER_SHA256 | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `reports/phaseR5-v11-field-validation-gpt-audit-package.md` | 修改 | Section 8.1/8.4/10 stale 文字修正 + 337→338 计数修正 + SHA 回填 | PLACEHOLDER_R6_MAIN_COMMIT | PLACEHOLDER_SHA256 | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `scripts/verify_public_repo.py` | 修改 | phone_number hex 边界升级 [0-9a-f]→[0-9A-Fa-f] | PLACEHOLDER_R6_MAIN_COMMIT | PLACEHOLDER_SHA256 | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `tests/test_verify_public_repo.py` | 修改 | 新增 3 条 PhoneNumberBoundaryTests 回归测试 | PLACEHOLDER_R6_MAIN_COMMIT | PLACEHOLDER_SHA256 | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `docs/ai/tasks/TASK-004-R6-READ-ONLY-DRY-RUN-PACKET.md` | 新建 | R6 任务包 | PLACEHOLDER_R6_MAIN_COMMIT | PLACEHOLDER_SHA256 | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `reports/r6-classification-by-entity.json` | 新建 | R6 按实体分类的公开汇总（无 record_id） | PLACEHOLDER_R6_MAIN_COMMIT | PLACEHOLDER_SHA256 | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `reports/r6-duplicate-candidates-summary.json` | 新建 | 重复候选聚合（无 record_id） | PLACEHOLDER_R6_MAIN_COMMIT | PLACEHOLDER_SHA256 | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `reports/r6-orphan-records-summary.json` | 新建 | 孤儿记录聚合（无 record_id） | PLACEHOLDER_R6_MAIN_COMMIT | PLACEHOLDER_SHA256 | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `reports/r6-quantity-threshold-judgement.json` | 新建 | D-026 数量门槛判断 | PLACEHOLDER_R6_MAIN_COMMIT | PLACEHOLDER_SHA256 | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `reports/r6-views-filter-sort-status.md` | 新建 | 4 个新增视图 filter/sort 技术债报告 | PLACEHOLDER_R6_MAIN_COMMIT | PLACEHOLDER_SHA256 | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `reports/phaseR6-read-only-dry-run-gpt-audit-package.md` | 新建 | R6 GPT 审计验证包（本文件） | PLACEHOLDER_R6_BACKFILL_COMMIT | PLACEHOLDER_SHA256 | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `config/public-execution-manifest.json` | 修改 | R5→INDEPENDENTLY_VERIFIED_PASS; R6→REVIEW_PENDING; 新增 revision_history | `0f3fb108c790b054251e67940761f99705a76c18` | `7aea92fec990607b10b25801b79ccf2aefee3d92acfbb4d161b4124551c2fcb4` | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `PUBLIC_EXECUTION_ENTRYPOINT.md` | 修改 | header + Section 3 gate decision + Section 3.6 R5 closeout + Section 3.7 R6 submission | `0f3fb108c790b054251e67940761f99705a76c18` | `a259b53dca7fb2053843c572561e6b947eac245ccf014fd49b5469d61d0279e7` | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `reports/phaseR5-v11-field-validation-gpt-audit-package.md` | 修改 | Section 8.1/8.4/10 stale 文字修正 + 337→338 计数修正 + SHA 回填 | `0f3fb108c790b054251e67940761f99705a76c18` | `6160c4f040624611f31df77b15cd471ed06fb9f69d7ef30263f9dcfe71401828` | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `scripts/verify_public_repo.py` | 修改 | phone_number hex 边界升级 [0-9a-f]→[0-9A-Fa-f] | `0f3fb108c790b054251e67940761f99705a76c18` | `a20297ae1a7b475f5a884ca5b5161150732050fac3b189d96ba45df06f8c1bf1` | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `tests/test_verify_public_repo.py` | 修改 | 新增 3 条 PhoneNumberBoundaryTests 回归测试 | `0f3fb108c790b054251e67940761f99705a76c18` | `5bd7a1f57de8befa681ed7919ceec9b30ea2ecc6ac4503efcdbe76d684e50e66` | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `docs/ai/tasks/TASK-004-R6-READ-ONLY-DRY-RUN-PACKET.md` | 新建 | R6 任务包 | `0f3fb108c790b054251e67940761f99705a76c18` | `0826aefeabdfaa61c0a2ad2b3bfaab2f80b51a8ceca908794c4e1bb4b92acb19` | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `reports/r6-classification-by-entity.json` | 新建 | R6 按实体分类的公开汇总（无 record_id） | `0f3fb108c790b054251e67940761f99705a76c18` | `548077756b9e50b883e2674c2268926849d67e86b13494b90b06673e2c49e632` | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `reports/r6-duplicate-candidates-summary.json` | 新建 | 重复候选聚合（无 record_id） | `0f3fb108c790b054251e67940761f99705a76c18` | `8ec3dd0a3b9f0c61b00762fef08c0b871706cebccd445a547bdad1c0b397d3f4` | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `reports/r6-orphan-records-summary.json` | 新建 | 孤儿记录聚合（无 record_id） | `0f3fb108c790b054251e67940761f99705a76c18` | `737f59d3768a164ff2b2a60430919df09c0cae10ff9a301c7cdf6efadc4b929a` | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `reports/r6-quantity-threshold-judgement.json` | 新建 | D-026 数量门槛判断 | `0f3fb108c790b054251e67940761f99705a76c18` | `217978dfd0215071109fc62f4843725b0986e064237e2386da47a7f5409fe205` | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `reports/r6-views-filter-sort-status.md` | 新建 | 4 个新增视图 filter/sort 技术债报告 | `0f3fb108c790b054251e67940761f99705a76c18` | `d826181db1e4edcfa9d43732df2781d21b81880b8afec98ede80a36c663ec710` | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `reports/phaseR6-read-only-dry-run-gpt-audit-package.md` | 新建 | R6 GPT 审计验证包（本文件） | backfill commit（不自引用，待 GPT 通过 `git log --oneline -2 0f3fb108` 确认） | 本文件 SHA256 由 GPT 复审时通过 `git show HEAD:reports/phaseR6-read-only-dry-run-gpt-audit-package.md \| sha256sum` 复核（backfill commit 不自引用，遵循 R5 第三修复批次相同策略） | REPRODUCIBLE_FROM_PUBLIC_REPO |
 
 **私有文件（gitignored，不入 Git）**：
 
@@ -222,14 +222,17 @@
 
 - 命令：`python scripts/verify_public_repo.py`
 - 退出码：0
-- 输出：`mode: tracked (152 files) / Findings: S0=0 S1=0 S2=0 / RESULT: PASS (0 warnings require review)`
+- 输出：`mode: tracked (153 files) / Findings: S0=0 S1=0 S2=0 / RESULT: PASS (0 warnings require review)`
 - 证据分级：REPRODUCIBLE_FROM_PUBLIC_REPO
 
 ### 6.5 staged 安全扫描
 
-- 命令：`python scripts/verify_public_repo.py --staged`
+- 命令（main commit）：`python scripts/verify_public_repo.py --staged`（pre-main-commit，12 files staged）
 - 退出码：0
-- 输出：`mode: staged (11 files) / Findings: S0=0 S1=0 S2=0 / RESULT: PASS (0 warnings require review)`
+- 输出：`mode: staged (12 files) / Findings: S0=0 S1=0 S2=0 / RESULT: PASS (0 warnings require review)`
+- 命令（backfill commit）：`python scripts/verify_public_repo.py --staged`（pre-backfill-commit，3 files staged：审计包 + entrypoint + manifest）
+- 退出码：0
+- 输出：`mode: staged (3 files) / Findings: S0=0 S1=0 S2=0 / RESULT: PASS (0 warnings require review)`
 - 证据分级：REPRODUCIBLE_FROM_PUBLIC_REPO
 
 ### 6.6 分类核算（第一次运行）
@@ -273,8 +276,8 @@
 | AC6 | 4 个新增视图的 filter/sort 状态明确记录，登记为技术债 | 满足 | `reports/r6-views-filter-sort-status.md` |
 | AC7 | 输出 MIGRATABLE / NEEDS_REVIEW / BLOCKED 分表、重复候选聚合、孤儿记录聚合、D-026 数量门槛判断 | 满足 | `reports/r6-classification-by-entity.json` + `r6-duplicate-candidates-summary.json` + `r6-orphan-records-summary.json` + `r6-quantity-threshold-judgement.json` |
 | AC8 | 私有原始数据仅写入 gitignored 私有路径，公开仓库只保留脱敏聚合证据 | 满足 | `backups/private/r6-classification-record-matrix.private.json` gitignored；公开报告无 record_id/PII |
-| AC9 | 公开仓库和 staged 安全扫描均为 `S0=0 S1=0 S2=0` | 满足 | Section 6.4 + 6.5：tracked 152 files S0=0 S1=0 S2=0；staged 11 files S0=0 S1=0 S2=0 |
-| AC10 | R6 审计包证据完整，工作树干净，提交已 push | 满足（待 push） | 本审计包；R6 main commit = `PLACEHOLDER_R6_MAIN_COMMIT`；R6 backfill commit = `PLACEHOLDER_R6_BACKFILL_COMMIT`（待 push 后回填实际 SHA） |
+| AC9 | 公开仓库和 staged 安全扫描均为 `S0=0 S1=0 S2=0` | 满足 | Section 6.4 + 6.5：tracked 153 files S0=0 S1=0 S2=0；main commit staged 12 files + backfill commit staged 3 files S0=0 S1=0 S2=0 |
+| AC10 | R6 审计包证据完整，工作树干净，提交已 push | 满足 | 本审计包；R6 main commit = `0f3fb108c790b054251e67940761f99705a76c18`；R6 backfill commit SHA + 最终 HEAD 待 GPT 复审时通过 `git log --oneline -2 0f3fb108` 和 `git rev-parse HEAD` 确认（backfill commit 不自引用，遵循 R5 第三修复批次相同策略） |
 | AC11 | 最终停在 `R6_REVIEW_PENDING`；`MIGRATION_PILOT_001` 未启动 | 满足 | `config/public-execution-manifest.json` audit_status=`R6_REVIEW_PENDING`、gate_status.R6=`REVIEW_PENDING`、migration_pilot_status=`NOT_APPROVED` |
 
 **结论**：全部 11 项 AC 满足。等待 GPT 复审确认。

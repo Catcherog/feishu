@@ -2,10 +2,11 @@
 
 > Repository: `https://github.com/Catcherog/feishu`
 > Branch: `master`
-> Current execution state: `PHASE_R5_INDEPENDENTLY_VERIFIED_PASS`
-> Current gate: `R5`
+> Current execution state: `PHASE_R6_READ_ONLY_DRY_RUN_REVIEW_PENDING`
+> Current gate: `R6`
 > R4 audit status: `R4_INDEPENDENTLY_VERIFIED_PASS` (GPT 2026-07-18, `MVP_PASS_WITH_DEBT`)
-> R5 audit status: `R5_INDEPENDENTLY_VERIFIED_PASS` (GPT 2026-07-18 third fix batch review, `MVP_PASS_WITH_DEBT`; P1 scanner debt to be addressed before R6 audit package finalization)
+> R5 audit status: `R5_INDEPENDENTLY_VERIFIED_PASS` (GPT 2026-07-18 third fix batch review, `MVP_PASS_WITH_DEBT`; P1 scanner debt closed in R6 batch)
+> R6 audit status: `R6_REVIEW_PENDING` (R6 read-only Dry Run completed; awaiting GPT independent review)
 > Migration pilot: `NOT_APPROVED`
 > Current HEAD at R5 main batch closeout: `3df9fc5da09c751f28629d053951a50374138dda`
 > R5 first fix main commit: `82d98866686d4b0f502ad450b34177ab9a770335`（P0-1/P0-2/P0-3 主体修复）
@@ -13,7 +14,10 @@
 > R5 second fix batch commits: `8dcd9fdcba7e27e3275fd4b1c805f9a160d42a52`（R5 second fix main commit）+ `13dee7175f99e3c0577aa8267ad0e1440f4ebaf3`（R5 second fix backfill commit）
 > R5 third fix batch commits: `ea18cb69c9eee3ef798ba0bffb45b468c4ddc495`（R5 third fix main commit）+ `8448e9ba74d792f5b227cf78c3399d1253ebe4c6`（R5 third fix backfill commit）
 > R5 final HEAD after third fix backfill: `8448e9ba74d792f5b227cf78c3399d1253ebe4c6`
-> Tracked files at R5 main batch closeout: 140; at R5 first fix batch closeout: 142; at R5 second fix batch closeout: 146; at R5 third fix batch closeout: 146
+> Tracked files at R5 main batch closeout: 140; at R5 first fix batch closeout: 142; at R5 second fix batch closeout: 146; at R5 third fix batch closeout: 146; at R6 batch closeout: 152
+> R6 main commit: `0f3fb108c790b054251e67940761f99705a76c18`（R6 read-only Dry Run 主体提交：R5 closeout + P1 scanner debt + 全量分类 + 审计包 PLACEHOLDER 版本）
+> R6 backfill commit: SHA backfill commit，不自引用——待 GPT 复审时通过 `git log --oneline -2 0f3fb108` 确认（backfill commit 紧随 main commit 之后，遵循 R5 第三修复批次相同策略）
+> R6 final HEAD: 即 backfill commit SHA，待 GPT 复审时通过 `git rev-parse HEAD` 确认
 > This file is the phase-specific execution entrypoint. It overrides stale phase instructions in older prompts or chat history.
 
 ## 1. Bootstrap
@@ -67,8 +71,8 @@ GATE_R1 = INDEPENDENTLY_VERIFIED_PASS
 GATE_R2 = INDEPENDENTLY_VERIFIED_PASS
 GATE_R3 = INDEPENDENTLY_VERIFIED_PASS
 GATE_R4 = INDEPENDENTLY_VERIFIED_PASS (MVP_PASS_WITH_DEBT, 2026-07-18)
-GATE_R5 = INDEPENDENTLY_VERIFIED_PASS (MVP_PASS_WITH_DEBT, 2026-07-18; P1 scanner debt pending before R6 audit finalization)
-GATE_R6 = NOT_STARTED
+GATE_R5 = INDEPENDENTLY_VERIFIED_PASS (MVP_PASS_WITH_DEBT, 2026-07-18; P1 scanner debt closed in R6 batch)
+GATE_R6 = REVIEW_PENDING (R6 read-only Dry Run completed 2026-07-18; awaiting GPT independent review)
 MIGRATION_PILOT_001 = NOT_APPROVED
 ```
 
@@ -233,6 +237,51 @@ P1 debt approved for R6 (to be addressed in P1 scanner debt batch before R6 audi
 Based on the independent review outcome, manifest `gate_status.R5` and `audit_status` are advanced to `INDEPENDENTLY_VERIFIED_PASS` and `R5_INDEPENDENTLY_VERIFIED_PASS` respectively. `migration_pilot_status` remains `NOT_APPROVED`.
 
 R6 remains `NOT_STARTED` at the closeout boundary. R6 read-only Dry Run will be executed under `docs/ai/tasks/TASK-004-R6-READ-ONLY-DRY-RUN-PACKET.md`; Trae must stop at `R6_REVIEW_PENDING` and must not auto-continue to `MIGRATION_PILOT_001`.
+
+## 3.7 R6 read-only Dry Run submission (2026-07-18)
+
+R6 read-only Dry Run was executed under `docs/ai/tasks/TASK-004-R6-READ-ONLY-DRY-RUN-PACKET.md`. Scope: R5 closeout + P1 scanner debt + R6 full-batch classification on 304 private V1 records (36 customer + 47 project + 106 model + 115 makeup).
+
+P1 scanner debt closed in this batch:
+
+- `phone_number` S1 pattern hex-aware boundary upgraded from `(?<![0-9a-f])...(?![0-9a-f])` to `(?<![0-9A-Fa-f])...(?![0-9A-Fa-f])` (case-insensitive). PowerShell `Get-FileHash` and other tooling that emit uppercase hex are now correctly excluded from phone-number false positives.
+- 3 new regression tests added: (a) uppercase SHA/blob hash substrings not flagged; (b) mixed-case SHA256 hash substrings not flagged; (c) real phone numbers in JSON string values still flagged.
+- No restoration of any whole-file or path exemption mechanism.
+
+R6 classification results (per `reports/r6-classification-by-entity.json`):
+
+| Entity | Source | MIGRATABLE | NEEDS_REVIEW | BLOCKED | Reconciled |
+|---|---:|---:|---:|---:|---|
+| customer | 36 | 0 | 2 | 34 | true |
+| project | 47 | 0 | 0 | 47 | true |
+| model | 106 | 3 | 35 | 68 | true |
+| makeup | 115 | 5 | 34 | 76 | true |
+| **overall** | **304** | **8** | **71** | **225** | **true** |
+
+D-026 quantity threshold judgement (per `reports/r6-quantity-threshold-judgement.json`): **FAIL** — customer 0/5, project 0/5, model 3/10, makeup 5/10. `MIGRATION_PILOT_001` MUST NOT start.
+
+Private matrix SHA256 (stable across two runs): `9401ba56f0d812e3f41e47a5450b0bbcf4f2aa25502cf15959e8bdfbb96200f2`. Public summary SHA256: `548077756b9e50b883e2674c2268926849d67e86b13494b90b06673e2c49e632`. These match the R3+R4 first-run SHA256 values, confirming the classifier is deterministic and the input data has not changed.
+
+Migration rule explicit defaults (5 schema-default fields not applied at Base layer due to `lark-cli +field-create` limitation, per R5 Task 4 finding):
+
+- customer.budget_parse_rule_version = `budget-map-v1.0`
+- customer.source_channel_mapping_version = `source-map-v1.0`
+- customer.status_mapping_rule_version = `status-map-v1.0`
+- project.currency = `CNY`
+- project.status_mapping_rule_version = `status-map-v1.0`
+
+4 new views filter/sort status: registered as tech debt in `reports/r6-views-filter-sort-status.md`. Does not affect R6 machine classification (classifier uses pure functions, not Base views). Must be resolved before `MIGRATION_PILOT_001` starts.
+
+Independent evidence verified by Trae at submission:
+
+- `feishu-v2/` working tree clean before staging; `HEAD == origin/master == 8448e9ba74d792f5b227cf78c3399d1253ebe4c6` (R5 third fix backfill).
+- `node --test tests/migration-classifier.test.js`: 58/58 pass, 13 suites, exit 0.
+- `python -m unittest tests.test_verify_public_repo tests.test_generate_schema_diff`: 23/23 pass (20 + 3), exit 0.
+- `python scripts/verify_public_repo.py` against tracked 152 files: `S0=0 S1=0 S2=0`, exit 0.
+- `python scripts/verify_public_repo.py --staged` against staged 11 files: `S0=0 S1=0 S2=0`, exit 0.
+- Classification accounting CLI ran twice on 304 private V1 records; all four entity buckets and overall totals reconcile exactly; SHA256 stable across runs.
+
+Control plane is at `R6_REVIEW_PENDING`. `MIGRATION_PILOT_001` remains `NOT_APPROVED`. R6 audit package: `reports/phaseR6-read-only-dry-run-gpt-audit-package.md`.
 
 ## 4. Approved work
 
