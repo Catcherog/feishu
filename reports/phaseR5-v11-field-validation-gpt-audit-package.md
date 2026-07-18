@@ -6,7 +6,7 @@
 > **任务规格**：`docs/ai/tasks/TASK-003-R5-V11-FIELD-VALIDATION-PACKET.md`
 > **工作仓库**：`feishu-v2/`（Catcherog/feishu）
 > **基线 HEAD**：`82365a0436aff554e8f7bd5318518caeab993208`（R3+R4 P0/P1 修复 backfill commit）
-> **本批次 commits**：`7051a7f` → `c3d7e87` → `f21b347` → `9b63e8b` → （Task 5 commit）
+> **本批次 commits**：`7051a7f` → `c3d7e87` → `f21b347` → `9b63e8b` → `f373374`（Task 5）
 > **目标 Base 别名**：`V2_PILOT_BASE_ALIAS`
 
 ---
@@ -160,13 +160,13 @@
 | 文件路径 | 操作 | Commit SHA | Git blob SHA | 文件 SHA256 | 证据分级 |
 |---|---|---|---|---|---|
 | `reports/classifier-test-report.md` | 修改 | `7051a7f` | （见 git log） | （见 git） | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `config/public-execution-manifest.json` | 修改 | `7051a7f` + 本 commit | `0172219aa1497da32edae89ccb7e387c9c1db8c5`（前版） | （见 git） | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `config/public-execution-manifest.json` | 修改 | `7051a7f` + `f373374` | `a16bbe9358d4b903cefdf3d0465c047ba9469cc1` | （见 git） | REPRODUCIBLE_FROM_PUBLIC_REPO |
 | `reports/r5-dry-run-patch-plan.json` | 新建 | `c3d7e87` | `1acb0cbf4cea9a0e980ec194be00c0983ab7ae9c` | `f052ce494f084d65c8a5c228fb4dcaea9d4ec33e8c88fe3c8d00428e829b1fbf` | REPRODUCIBLE_FROM_PUBLIC_REPO |
 | `reports/r5-apply-summary.json` | 新建 | `f21b347` | `6ffcc483fc7b3be77324f87b0ea52abe2f6c5d12` | `bf0745169d3f2aac1a3c7ff2c5737f8fdea39ae859cfb9a2552bf22147cad415` | REPRODUCIBLE_FROM_PUBLIC_REPO |
 | `reports/r5-field-validation-report.json` | 新建 | `9b63e8b` | `6d6be4a9aba750ae8111d63191729411158a1828` | `cecbfe1674bf2fb3969ca5abc625864f7645bcb8d53b36bc6efc4bb09f1e7747` | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `reports/r5-rollback-drill-report.json` | 新建 | 本 commit | （本 commit 后填入） | `00d7398c4116651537fd91e2bb9e9f6ac22fbca798c0015b6df720a6756ea238` | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `reports/v1.1-field-write-path-report.md` | 新建 | 本 commit | （本 commit 后填入） | （见 git） | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `reports/phaseR5-v11-field-validation-gpt-audit-package.md`（本文件） | 新建 | 本 commit | （本 commit 后填入） | （见 git） | SELF_REPORTED |
+| `reports/r5-rollback-drill-report.json` | 新建 | `f373374` | `0201fb6170191f639d0afbe15292eec4430189dc` | `00d7398c4116651537fd91e2bb9e9f6ac22fbca798c0015b6df720a6756ea238` | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `reports/v1.1-field-write-path-report.md` | 新建 | `f373374` | `78ead57121d841919cd57c5b5acb9b765c831d9a` | （见 git） | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `reports/phaseR5-v11-field-validation-gpt-audit-package.md`（本文件） | 新建 | `f373374` + backfill commit | `dc2f6753fe97a871d58a1b264eea02bbb6298cb8`（pre-backfill） | （见 git） | SELF_REPORTED |
 
 ### 5.2 私有文件（gitignored，不入 Git）
 
@@ -240,7 +240,7 @@
 | AC7 | 没有创建真实迁移记录，没有触碰生产 Base/V1 Base | 满足 | 验证标记 `R5_VALIDATION_20260718`，非 `MIGRATION_PILOT_001`；仅操作 V2 测试 Base |
 | AC8 | 合成验证记录可追踪且已按 rollback plan 处理，无静默残留 | 满足 | 6/6 DELETED + 6/6 verified NOT_FOUND_AS_EXPECTED |
 | AC9 | 公开仓库和 staged 安全扫描均为 S0=0 S1=0 S2=0；私有证据未被跟踪/暂存 | 满足 | `verify_public_repo.py` S0=0 S1=0 S2=0；私有文件在 gitignored 路径 |
-| AC10 | R5 审计包证据完整，工作树干净，提交已 push | 满足 | 本审计包完整；工作树干净；4 commits 已 push（本 commit 待 push） |
+| AC10 | R5 审计包证据完整，工作树干净，提交已 push | 满足 | 本审计包完整；工作树干净；5 commits（7051a7f → c3d7e87 → f21b347 → 9b63e8b → f373374 + backfill）已 push |
 | AC11 | 最终停在 R5 Review Gate；R6 与 Migration Pilot 均未启动 | 满足 | `R5 = REVIEW_PENDING`、`R6 = NOT_STARTED`、`MIGRATION_PILOT_001 = NOT_APPROVED` |
 
 **结论：所有 11 项验收条件满足。**
