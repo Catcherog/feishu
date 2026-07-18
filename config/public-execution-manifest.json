@@ -4,14 +4,14 @@
   "branch": "master",
   "current_phase": "PHASE_R5_V11_FIELD_VALIDATION",
   "current_gate": "R5",
-  "audit_status": "R4_INDEPENDENTLY_VERIFIED_PASS_R5_PENDING_START",
+  "audit_status": "R5_REVIEW_PENDING",
   "migration_pilot_status": "NOT_APPROVED",
   "gate_status": {
     "R1": "INDEPENDENTLY_VERIFIED_PASS",
     "R2": "INDEPENDENTLY_VERIFIED_PASS",
     "R3": "INDEPENDENTLY_VERIFIED_PASS",
     "R4": "INDEPENDENTLY_VERIFIED_PASS",
-    "R5": "NOT_STARTED",
+    "R5": "REVIEW_PENDING",
     "R6": "NOT_STARTED"
   },
   "entrypoint": "PUBLIC_EXECUTION_ENTRYPOINT.md",
@@ -107,6 +107,48 @@
       "p1_doc_debt_fix_applied": "reports/classifier-test-report.md Section 2 suite counts rewritten to match TAP output (58 tests across 13 suites).",
       "next_gate": "R5",
       "notes": "R3/R4 advanced to INDEPENDENTLY_VERIFIED_PASS. R5 NOT_STARTED (about to start per TASK-003). R6/MIGRATION_PILOT_001 remain NOT_STARTED/NOT_APPROVED. No Feishu API calls, no feishu-v2 code changes, no commit/push in this review round."
+    },
+    {
+      "date": "2026-07-18",
+      "gate": "R5",
+      "action": "v11_field_validation_submission",
+      "task_packet": "docs/ai/tasks/TASK-003-R5-V11-FIELD-VALIDATION-PACKET.md",
+      "baseline_head": "82365a0436aff554e8f7bd5318518caeab993208",
+      "commits": ["7051a7f", "c3d7e87", "f21b347", "9b63e8b"],
+      "audit_outcome": "PENDING_REVIEW",
+      "target_base_alias": "V2_PILOT_BASE_ALIAS",
+      "schema_delta_applied": {
+        "added_fields": 35,
+        "enum_changes": 1,
+        "view_changes": 4,
+        "state_machine_changes": 2
+      },
+      "apply_results": {
+        "add_field_created": 29,
+        "add_field_no_op": 6,
+        "add_field_failed": 0,
+        "extend_enum": 1,
+        "add_view": 4,
+        "total_operations": 40,
+        "total_failures": 0
+      },
+      "field_validation_results": {
+        "fields_validated": 35,
+        "read_back_pass": 35,
+        "read_back_fail": 0,
+        "illegal_write_tests": 8,
+        "illegal_rejected": 8,
+        "default_checks": 35,
+        "schema_defaults_not_applied_live": 5
+      },
+      "rollback_drill_results": {
+        "synthetic_records_deleted": 6,
+        "verified_not_found": 6,
+        "schema_delta_rollback": "DOCUMENTED_ONLY_NOT_EXECUTED"
+      },
+      "audit_package": "reports/phaseR5-v11-field-validation-gpt-audit-package.md",
+      "field_write_path_report": "reports/v1.1-field-write-path-report.md",
+      "notes": "R5_REVIEW_PENDING. R6=NOT_STARTED. MIGRATION_PILOT_001=NOT_APPROVED. Validation marker R5_VALIDATION_20260718 (not MIGRATION_PILOT_001). 5 schema defaults not applied at Base layer due to lark-cli field-create limitation; migration scripts must set defaults explicitly."
     }
   ],
   "stop_after_completion": true

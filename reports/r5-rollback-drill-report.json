@@ -1,0 +1,53 @@
+{
+  "report_version": "r5-rollback-drill-report-v1.0",
+  "completed_at": "2026-07-18T04:18:17.129Z",
+  "validation_marker": "R5_VALIDATION_20260718",
+  "rollback_scope": "synthetic_validation_records_only",
+  "schema_delta_policy": "RETAINED_FOR_R6_documented_in_plan_only",
+  "rollback_plan": {
+    "synthetic_records": {
+      "action": "DELETE",
+      "scope": "6 records (2 per table: customer, project, resource) created during Task 4 field validation",
+      "method": "lark-cli base +record-delete per record",
+      "status": "EXECUTED"
+    },
+    "schema_delta": {
+      "action": "RETAIN",
+      "scope": "35 added fields (29 created + 6 pre-existing matched), 1 enum extension (source_channel +7 options), 4 new views",
+      "reason": "Schema delta is part of v1.1 and required for R6 migration. Rollback would be destructive and counterproductive.",
+      "rollback_plan_if_needed": "To rollback schema delta: (1) delete 4 new views via +view-delete; (2) revert source_channel enum by removing 7 added options (cannot remove options in use - ensure no records reference them first); (3) delete 29 new fields via +field-delete. This plan is DOCUMENTED ONLY and NOT EXECUTED.",
+      "status": "DOCUMENTED_ONLY_NOT_EXECUTED"
+    }
+  },
+  "summary": {
+    "total_targeted": 6,
+    "total_deleted": 6,
+    "total_failed": 0,
+    "all_deleted": true,
+    "all_verified_not_found": true
+  },
+  "tables": {
+    "customer": {
+      "table_alias": "V2_CUSTOMER_TABLE_ALIAS",
+      "records_targeted": 2,
+      "records_deleted": 2,
+      "records_failed": 0
+    },
+    "project": {
+      "table_alias": "V2_PROJECT_TABLE_ALIAS",
+      "records_targeted": 2,
+      "records_deleted": 2,
+      "records_failed": 0
+    },
+    "resource": {
+      "table_alias": "V2_RESOURCE_TABLE_ALIAS",
+      "records_targeted": 2,
+      "records_deleted": 2,
+      "records_failed": 0
+    }
+  },
+  "private_evidence": {
+    "rollback_log_path": "backups/private/r5-rollback-drill-log.json",
+    "rollback_log_sha256": "18924896c861173828e0a49008b1f917011d260b15bb2583ccd905f084105d7f"
+  }
+}
