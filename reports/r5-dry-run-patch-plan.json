@@ -1,0 +1,782 @@
+{
+  "plan_version": "r5-dry-run-patch-plan-v1.0",
+  "generated_at": "2026-07-18T03:51:49.426Z",
+  "baseline_head": "7051a7f",
+  "source_diff": "schemas/schema-diff-v1.0-to-v1.1.json",
+  "target_base_alias": "V2_PILOT_BASE_ALIAS",
+  "baseline_verification": {
+    "customer": {
+      "is_v10_baseline": true,
+      "v10_count": 22,
+      "live_count": 23,
+      "missing": [],
+      "extra": [
+        "关联项目"
+      ]
+    },
+    "project": {
+      "is_v10_baseline": true,
+      "v10_count": 20,
+      "live_count": 23,
+      "missing": [],
+      "extra": [
+        "关联任务",
+        "策划案版本",
+        "资源安排"
+      ]
+    },
+    "resource": {
+      "is_v10_baseline": true,
+      "v10_count": 22,
+      "live_count": 23,
+      "missing": [],
+      "extra": [
+        "项目安排"
+      ]
+    }
+  },
+  "field_validation": {
+    "customer": {
+      "total_added_in_diff": 14,
+      "already_exists": 0,
+      "missing": 14,
+      "details": [
+        {
+          "field_key": "budget_parse_rule_version",
+          "display_name": "预算解析规则版本",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "budget_parse_status",
+          "display_name": "预算解析状态",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "budget_range_raw",
+          "display_name": "预算区间原始文本",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "canonical_business_id",
+          "display_name": "规范业务ID",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "duplicate_review_status",
+          "display_name": "重复候选审核状态",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "legacy_status_raw",
+          "display_name": "旧客户状态原始值",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "migrated_at",
+          "display_name": "迁移时间",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "migration_batch_id",
+          "display_name": "迁移批次ID",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "migration_rule_version",
+          "display_name": "迁移规则版本",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "migration_source_record_id",
+          "display_name": "迁移源记录ID",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "migration_source_table",
+          "display_name": "迁移源表",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "source_channel_mapping_version",
+          "display_name": "来源渠道映射版本",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "source_channel_raw",
+          "display_name": "来源渠道原始值",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "status_mapping_rule_version",
+          "display_name": "状态映射规则版本",
+          "status": "TO_CREATE"
+        }
+      ]
+    },
+    "project": {
+      "total_added_in_diff": 14,
+      "already_exists": 0,
+      "missing": 14,
+      "details": [
+        {
+          "field_key": "currency",
+          "display_name": "币种",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "deal_amount",
+          "display_name": "成交金额",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "deposit_amount",
+          "display_name": "定金金额",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "feedback_collected_at",
+          "display_name": "满意度收集时间",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "legacy_status_raw",
+          "display_name": "旧项目状态原始值",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "migrated_at",
+          "display_name": "迁移时间",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "migration_batch_id",
+          "display_name": "迁移批次ID",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "migration_rule_version",
+          "display_name": "迁移规则版本",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "migration_source_record_id",
+          "display_name": "迁移源记录ID",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "migration_source_table",
+          "display_name": "迁移源表",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "payment_status",
+          "display_name": "付款状态",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "satisfaction_note",
+          "display_name": "满意度备注",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "satisfaction_score",
+          "display_name": "客户满意度评分",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "status_mapping_rule_version",
+          "display_name": "状态映射规则版本",
+          "status": "TO_CREATE"
+        }
+      ]
+    },
+    "resource": {
+      "total_added_in_diff": 7,
+      "already_exists": 0,
+      "missing": 7,
+      "details": [
+        {
+          "field_key": "canonical_business_id",
+          "display_name": "规范业务ID",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "duplicate_review_status",
+          "display_name": "重复候选审核状态",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "migrated_at",
+          "display_name": "迁移时间",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "migration_batch_id",
+          "display_name": "迁移批次ID",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "migration_rule_version",
+          "display_name": "迁移规则版本",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "migration_source_record_id",
+          "display_name": "迁移源记录ID",
+          "status": "TO_CREATE"
+        },
+        {
+          "field_key": "migration_source_table",
+          "display_name": "迁移源表",
+          "status": "TO_CREATE"
+        }
+      ]
+    }
+  },
+  "operations": {
+    "add_field": [
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_CUSTOMER_TABLE_ALIAS",
+        "field_key": "budget_parse_rule_version",
+        "display_name": "预算解析规则版本",
+        "feishu_type": "text",
+        "description": "预算解析规则版本",
+        "required": false,
+        "constraints": {
+          "default": "budget-map-v1.0"
+        },
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_CUSTOMER_TABLE_ALIAS",
+        "field_key": "budget_parse_status",
+        "display_name": "预算解析状态",
+        "feishu_type": "single_select",
+        "description": "预算文本解析结果状态",
+        "required": false,
+        "constraints": null,
+        "options": [
+          "parsed",
+          "ambiguous",
+          "unknown",
+          "invalid"
+        ]
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_CUSTOMER_TABLE_ALIAS",
+        "field_key": "budget_range_raw",
+        "display_name": "预算区间原始文本",
+        "feishu_type": "text",
+        "description": "迁移前旧表的原始预算文本，保留业务事实",
+        "required": false,
+        "constraints": null,
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_CUSTOMER_TABLE_ALIAS",
+        "field_key": "canonical_business_id",
+        "display_name": "规范业务ID",
+        "feishu_type": "text",
+        "description": "人工确认重复候选后指向的主记录业务 ID，未确认时与 customer_id 相同",
+        "required": false,
+        "constraints": null,
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_CUSTOMER_TABLE_ALIAS",
+        "field_key": "duplicate_review_status",
+        "display_name": "重复候选审核状态",
+        "feishu_type": "single_select",
+        "description": "重复候选人工决策状态，UNRESOLVED 不得进入 Pilot",
+        "required": false,
+        "constraints": null,
+        "options": [
+          "SAME_ENTITY",
+          "DISTINCT_ENTITY",
+          "UNRESOLVED",
+          "NA"
+        ]
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_CUSTOMER_TABLE_ALIAS",
+        "field_key": "legacy_status_raw",
+        "display_name": "旧客户状态原始值",
+        "feishu_type": "text",
+        "description": "迁移前旧表的客户状态原始文本",
+        "required": false,
+        "constraints": null,
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_CUSTOMER_TABLE_ALIAS",
+        "field_key": "migrated_at",
+        "display_name": "迁移时间",
+        "feishu_type": "datetime",
+        "description": "数据写入 V2 的时间",
+        "required": false,
+        "constraints": null,
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_CUSTOMER_TABLE_ALIAS",
+        "field_key": "migration_batch_id",
+        "display_name": "迁移批次ID",
+        "feishu_type": "text",
+        "description": "写入 V2 时标记的迁移批次，如 MIGRATION_PILOT_001",
+        "required": false,
+        "constraints": null,
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_CUSTOMER_TABLE_ALIAS",
+        "field_key": "migration_rule_version",
+        "display_name": "迁移规则版本",
+        "feishu_type": "text",
+        "description": "执行迁移时使用的规则版本集合",
+        "required": false,
+        "constraints": null,
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_CUSTOMER_TABLE_ALIAS",
+        "field_key": "migration_source_record_id",
+        "display_name": "迁移源记录ID",
+        "feishu_type": "text",
+        "description": "旧表源记录 record_id",
+        "required": false,
+        "constraints": null,
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_CUSTOMER_TABLE_ALIAS",
+        "field_key": "migration_source_table",
+        "display_name": "迁移源表",
+        "feishu_type": "text",
+        "description": "旧表表名",
+        "required": false,
+        "constraints": null,
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_CUSTOMER_TABLE_ALIAS",
+        "field_key": "source_channel_mapping_version",
+        "display_name": "来源渠道映射版本",
+        "feishu_type": "text",
+        "description": "来源渠道映射规则版本",
+        "required": false,
+        "constraints": {
+          "default": "source-map-v1.0"
+        },
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_CUSTOMER_TABLE_ALIAS",
+        "field_key": "source_channel_raw",
+        "display_name": "来源渠道原始值",
+        "feishu_type": "text",
+        "description": "迁移前旧表的原始来源渠道文本，保留业务事实",
+        "required": false,
+        "constraints": null,
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_CUSTOMER_TABLE_ALIAS",
+        "field_key": "status_mapping_rule_version",
+        "display_name": "状态映射规则版本",
+        "feishu_type": "text",
+        "description": "客户状态映射规则版本",
+        "required": false,
+        "constraints": {
+          "default": "status-map-v1.0"
+        },
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_PROJECT_TABLE_ALIAS",
+        "field_key": "currency",
+        "display_name": "币种",
+        "feishu_type": "single_select",
+        "description": "金额币种",
+        "required": false,
+        "constraints": {
+          "default": "CNY"
+        },
+        "options": [
+          "CNY"
+        ]
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_PROJECT_TABLE_ALIAS",
+        "field_key": "deal_amount",
+        "display_name": "成交金额",
+        "feishu_type": "number",
+        "description": "项目成交金额，人民币",
+        "required": false,
+        "constraints": {
+          "integer": true,
+          "min": 0,
+          "unit": "元"
+        },
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_PROJECT_TABLE_ALIAS",
+        "field_key": "deposit_amount",
+        "display_name": "定金金额",
+        "feishu_type": "number",
+        "description": "客户已付定金金额，人民币",
+        "required": false,
+        "constraints": {
+          "integer": true,
+          "min": 0,
+          "unit": "元"
+        },
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_PROJECT_TABLE_ALIAS",
+        "field_key": "feedback_collected_at",
+        "display_name": "满意度收集时间",
+        "feishu_type": "datetime",
+        "description": "满意度反馈收集时间",
+        "required": false,
+        "constraints": null,
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_PROJECT_TABLE_ALIAS",
+        "field_key": "legacy_status_raw",
+        "display_name": "旧项目状态原始值",
+        "feishu_type": "text",
+        "description": "迁移前旧表的项目状态原始文本",
+        "required": false,
+        "constraints": null,
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_PROJECT_TABLE_ALIAS",
+        "field_key": "migrated_at",
+        "display_name": "迁移时间",
+        "feishu_type": "datetime",
+        "description": "数据写入 V2 的时间",
+        "required": false,
+        "constraints": null,
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_PROJECT_TABLE_ALIAS",
+        "field_key": "migration_batch_id",
+        "display_name": "迁移批次ID",
+        "feishu_type": "text",
+        "description": "写入 V2 时标记的迁移批次，如 MIGRATION_PILOT_001",
+        "required": false,
+        "constraints": null,
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_PROJECT_TABLE_ALIAS",
+        "field_key": "migration_rule_version",
+        "display_name": "迁移规则版本",
+        "feishu_type": "text",
+        "description": "执行迁移时使用的规则版本集合",
+        "required": false,
+        "constraints": null,
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_PROJECT_TABLE_ALIAS",
+        "field_key": "migration_source_record_id",
+        "display_name": "迁移源记录ID",
+        "feishu_type": "text",
+        "description": "旧表源记录 record_id",
+        "required": false,
+        "constraints": null,
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_PROJECT_TABLE_ALIAS",
+        "field_key": "migration_source_table",
+        "display_name": "迁移源表",
+        "feishu_type": "text",
+        "description": "旧表表名",
+        "required": false,
+        "constraints": null,
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_PROJECT_TABLE_ALIAS",
+        "field_key": "payment_status",
+        "display_name": "付款状态",
+        "feishu_type": "single_select",
+        "description": "项目付款状态",
+        "required": false,
+        "constraints": null,
+        "options": [
+          "未知",
+          "待定金",
+          "已付定金",
+          "已结清",
+          "已退款",
+          "部分退款"
+        ]
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_PROJECT_TABLE_ALIAS",
+        "field_key": "satisfaction_note",
+        "display_name": "满意度备注",
+        "feishu_type": "multiline_text",
+        "description": "客户满意度反馈原文或摘要",
+        "required": false,
+        "constraints": {
+          "max_length": 500
+        },
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_PROJECT_TABLE_ALIAS",
+        "field_key": "satisfaction_score",
+        "display_name": "客户满意度评分",
+        "feishu_type": "number",
+        "description": "客户对项目结果满意度，建议 1-5",
+        "required": false,
+        "constraints": {
+          "max": 5,
+          "min": 1,
+          "precision": 1
+        },
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_PROJECT_TABLE_ALIAS",
+        "field_key": "status_mapping_rule_version",
+        "display_name": "状态映射规则版本",
+        "feishu_type": "text",
+        "description": "项目状态映射规则版本",
+        "required": false,
+        "constraints": {
+          "default": "status-map-v1.0"
+        },
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_RESOURCE_TABLE_ALIAS",
+        "field_key": "canonical_business_id",
+        "display_name": "规范业务ID",
+        "feishu_type": "text",
+        "description": "人工确认重复候选后指向的主记录业务 ID，未确认时与 resource_id 相同",
+        "required": false,
+        "constraints": null,
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_RESOURCE_TABLE_ALIAS",
+        "field_key": "duplicate_review_status",
+        "display_name": "重复候选审核状态",
+        "feishu_type": "single_select",
+        "description": "重复候选人工决策状态，UNRESOLVED 不得进入 Pilot",
+        "required": false,
+        "constraints": null,
+        "options": [
+          "SAME_ENTITY",
+          "DISTINCT_ENTITY",
+          "UNRESOLVED",
+          "NA"
+        ]
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_RESOURCE_TABLE_ALIAS",
+        "field_key": "migrated_at",
+        "display_name": "迁移时间",
+        "feishu_type": "datetime",
+        "description": "数据写入 V2 的时间",
+        "required": false,
+        "constraints": null,
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_RESOURCE_TABLE_ALIAS",
+        "field_key": "migration_batch_id",
+        "display_name": "迁移批次ID",
+        "feishu_type": "text",
+        "description": "写入 V2 时标记的迁移批次，如 MIGRATION_PILOT_001",
+        "required": false,
+        "constraints": null,
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_RESOURCE_TABLE_ALIAS",
+        "field_key": "migration_rule_version",
+        "display_name": "迁移规则版本",
+        "feishu_type": "text",
+        "description": "执行迁移时使用的规则版本集合",
+        "required": false,
+        "constraints": null,
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_RESOURCE_TABLE_ALIAS",
+        "field_key": "migration_source_record_id",
+        "display_name": "迁移源记录ID",
+        "feishu_type": "text",
+        "description": "旧表源记录 record_id",
+        "required": false,
+        "constraints": null,
+        "options": null
+      },
+      {
+        "op": "ADD_FIELD",
+        "table_alias": "V2_RESOURCE_TABLE_ALIAS",
+        "field_key": "migration_source_table",
+        "display_name": "迁移源表",
+        "feishu_type": "text",
+        "description": "旧表表名",
+        "required": false,
+        "constraints": null,
+        "options": null
+      }
+    ],
+    "no_op_already_matched": [],
+    "stop_type_mismatch": [],
+    "extend_enum": [
+      {
+        "op": "EXTEND_ENUM",
+        "table_alias": "V2_CUSTOMER_TABLE_ALIAS",
+        "field_key": "source_channel",
+        "display_name": "来源渠道",
+        "from_count": 6,
+        "to_count": 12,
+        "new_options_in_diff": [
+          "抖音",
+          "视频号",
+          "朋友圈",
+          "微信公众号",
+          "微信私聊",
+          "线下活动",
+          "未知"
+        ],
+        "new_options_already_in_live": [],
+        "new_options_to_add": [
+          "抖音",
+          "视频号",
+          "朋友圈",
+          "微信公众号",
+          "微信私聊",
+          "线下活动",
+          "未知"
+        ],
+        "extra_options_in_live_not_in_v11": [
+          "微信",
+          "不存在的渠道XYZ"
+        ],
+        "note": "WARNING: V2 test Base has 2 option(s) not in v1.1 spec: [\"微信\",\"不存在的渠道XYZ\"]. These are pre-existing test data; will NOT be removed per Out of Scope."
+      }
+    ],
+    "add_view": [
+      {
+        "op": "ADD_VIEW",
+        "table_alias": "V2_CUSTOMER_TABLE_ALIAS",
+        "view_name": "迁移记录",
+        "view_type": "表格",
+        "filter": "migration_batch_id 不为空",
+        "sort": "migrated_at 降序",
+        "description": "按迁移批次查看"
+      },
+      {
+        "op": "ADD_VIEW",
+        "table_alias": "V2_PROJECT_TABLE_ALIAS",
+        "view_name": "按付款状态分组",
+        "view_type": "看板",
+        "filter": "无",
+        "sort": "—",
+        "description": "payment_status 分组"
+      },
+      {
+        "op": "ADD_VIEW",
+        "table_alias": "V2_PROJECT_TABLE_ALIAS",
+        "view_name": "迁移记录",
+        "view_type": "表格",
+        "filter": "migration_batch_id 不为空",
+        "sort": "migrated_at 降序",
+        "description": "按迁移批次查看"
+      },
+      {
+        "op": "ADD_VIEW",
+        "table_alias": "V2_RESOURCE_TABLE_ALIAS",
+        "view_name": "迁移记录",
+        "view_type": "表格",
+        "filter": "migration_batch_id 不为空",
+        "sort": "migrated_at 降序",
+        "description": "按迁移批次查看"
+      }
+    ],
+    "document_only_state_machine_rule_update": [
+      {
+        "op": "DOCUMENT_ONLY_STATE_MACHINE_RULE_UPDATE",
+        "key": "customer_relationship_status",
+        "note": "State machine states and transitions unchanged. Only rules array gained one migration-related rule. No Base structural operation needed."
+      },
+      {
+        "op": "DOCUMENT_ONLY_STATE_MACHINE_RULE_UPDATE",
+        "key": "project_status",
+        "note": "State machine states and transitions unchanged. Only rules array gained one migration-related rule. No Base structural operation needed."
+      }
+    ]
+  },
+  "summary": {
+    "total_add_field_ops": 35,
+    "total_no_op": 0,
+    "total_stop_type_mismatch": 0,
+    "total_extend_enum_ops": 1,
+    "total_add_view_ops": 4,
+    "total_state_machine_rule_updates": 2,
+    "diff_summary_added_fields": 35,
+    "diff_summary_enum_changes": 1,
+    "diff_summary_view_changes": 4,
+    "diff_summary_state_machine_changes": 2,
+    "patch_plan_matches_machine_diff": true
+  },
+  "stop_conditions_triggered": [],
+  "private_evidence": {
+    "schema_snapshot_path": "backups/private/r5-v2-schema-snapshot.json",
+    "schema_snapshot_sha256": "eefb0bcf3fd6a69bc0d8ef2d9cefc4255e1eca4be5e4b421c5d301c4527f1d04",
+    "raw_field_dumps": [
+      "backups/private/r5-v2-customer-fields.json",
+      "backups/private/r5-v2-project-fields.json",
+      "backups/private/r5-v2-resource-fields.json"
+    ]
+  }
+}
