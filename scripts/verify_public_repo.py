@@ -69,16 +69,20 @@ SECRET_PATTERNS: list[tuple[str, str, re.Pattern]] = [
 ]
 
 # S2: Internal Feishu resource identifiers
-# Real Feishu IDs contain mixed case and/or digits, not all-same-char placeholders
+# Real Feishu IDs contain mixed case and/or digits, not all-same-char placeholders.
+# Real Feishu tbl/fld/wkf/viw IDs observed in production are typically 10 chars total
+# (3 prefix + 7 suffix), or 16 chars for some tbl IDs. The minimum suffix length is set
+# to {6,} (9+ chars total) to catch all real IDs while avoiding false positives on short
+# camelCase variable names like fldName (7 chars total) or fldValue (8 chars total).
 # Negative lookahead excludes common English words starting with "rec" (recent, receive, record, etc.)
 # to avoid false positives on camelCase variable names like recentProjects, receiveIdType
 INTERNAL_ID_PATTERNS: list[tuple[str, str, re.Pattern]] = [
     ("base_token_assignment", "S2", re.compile(
         r"(?i)\b(?:base_token|baseId|app_token)\s*[:=]\s*['\"]?(?!SOURCE_BASE_ALIAS|TARGET_V2_BASE_ALIAS|<)[A-Za-z0-9]{20,}")),
-    ("table_id", "S2", re.compile(r"\btbl(?=[A-Za-z0-9]*[a-z0-9])(?![A-Za-z0-9]*([A-Za-z0-9])\1{5,})[A-Za-z0-9]{8,}")),
-    ("field_id", "S2", re.compile(r"\bfld(?=[A-Za-z0-9]*[a-z0-9])(?![A-Za-z0-9]*([A-Za-z0-9])\1{5,})[A-Za-z0-9]{8,}")),
-    ("workflow_id", "S2", re.compile(r"\bwkf(?=[A-Za-z0-9]*[a-z0-9])(?![A-Za-z0-9]*([A-Za-z0-9])\1{5,})[A-Za-z0-9]{8,}")),
-    ("view_id", "S2", re.compile(r"\bviw(?=[A-Za-z0-9]*[a-z0-9])(?![A-Za-z0-9]*([A-Za-z0-9])\1{5,})[A-Za-z0-9]{8,}")),
+    ("table_id", "S2", re.compile(r"\btbl(?=[A-Za-z0-9]*[a-z0-9])(?![A-Za-z0-9]*([A-Za-z0-9])\1{5,})[A-Za-z0-9]{6,}")),
+    ("field_id", "S2", re.compile(r"\bfld(?=[A-Za-z0-9]*[a-z0-9])(?![A-Za-z0-9]*([A-Za-z0-9])\1{5,})[A-Za-z0-9]{6,}")),
+    ("workflow_id", "S2", re.compile(r"\bwkf(?=[A-Za-z0-9]*[a-z0-9])(?![A-Za-z0-9]*([A-Za-z0-9])\1{5,})[A-Za-z0-9]{6,}")),
+    ("view_id", "S2", re.compile(r"\bviw(?=[A-Za-z0-9]*[a-z0-9])(?![A-Za-z0-9]*([A-Za-z0-9])\1{5,})[A-Za-z0-9]{6,}")),
 ]
 
 # S1: Privacy - record IDs and personal data
@@ -99,12 +103,24 @@ PRIVACY_PATTERNS: list[tuple[str, str, re.Pattern]] = [
 ALIAS_PATTERNS = re.compile(
     r"(?:SOURCE_BASE_ALIAS|TARGET_V2_BASE_ALIAS|"
     r"V1_\w+_TABLE_ALIAS|V2_\w+_TABLE_ALIAS|"
+    r"V1_\w+_FIELD_ALIAS|V2_\w+_FIELD_ALIAS|"
     r"V1_WF_\w+_ALIAS|"
     r"REC_ALIAS_\d+|"
     r"CUSTOMER_ALIAS_\d+|MAKEUP_ALIAS_\d+|MODEL_ALIAS_\d+|"
     r"PROJECT_ALIAS_\d+|ENTITY_ALIAS_\d+|"
     r"<[A-Z_]+>)"
 )
+
+# Files that legitimately contain synthetic test fixtures matching the S2 ID patterns.
+# These files are exempt from S2 findings ONLY (S0/S1 findings are still reported).
+# Rationale: tests/verify_public_repo.py tests the scanner's pattern matching, so it
+# must contain strings that match the pattern. The IDs are synthetic (not real Feishu
+# resources), following the real Feishu ID format (3-letter prefix + 7-char alphanumeric
+# suffix, mixed case + digit). S0 (secrets) and S1 (privacy) are still scanned to catch
+# accidental real-data leaks in test files.
+S2_EXEMPT_FILES: set[str] = {
+    "tests/test_verify_public_repo.py",
+}
 
 
 def relative(path: Path) -> str:
@@ -161,7 +177,14 @@ def fingerprint(text: str) -> str:
 
 
 def scan_file(rel: str) -> list[dict]:
-    """Scan a single file and return findings list."""
+    """Scan a single file and return findings list.
+
+    S2_EXEMPT_FILES: files that legitimately contain synthetic test fixtures
+    matching the S2 ID patterns (e.g., the scanner's own test file). For these
+    files, S2 findings are suppressed because the IDs are synthetic. S0 (secrets)
+    and S1 (privacy) findings are still reported to catch accidental real-data
+    leaks in test files.
+    """
     path = ROOT / rel
     findings: list[dict] = []
 
@@ -177,19 +200,25 @@ def scan_file(rel: str) -> list[dict]:
         return [{"type": "non_utf8", "severity": "S3", "file": rel, "line": 0,
                  "match": "<non-UTF8>", "fingerprint": "N/A"}]
 
+    s2_exempt = rel in S2_EXEMPT_FILES
+
     # Check all pattern categories
     all_patterns = SECRET_PATTERNS + INTERNAL_ID_PATTERNS + PRIVACY_PATTERNS
 
     for name, severity, pattern in all_patterns:
+        # Skip S2 findings for exempt files (synthetic test fixtures)
+        if severity == "S2" and s2_exempt:
+            continue
+
         for match in pattern.finditer(text):
             match_text = match.group()
-            # Skip if it's a known alias
+            # Skip ONLY if the match text itself is a known alias.
+            # Do NOT skip based on surrounding context: a real fld/tbl/wkf/viw ID
+            # adjacent to an ALIAS literal (e.g., in JSON with alias on the previous
+            # line) must still be reported as S2. The previous context-based skip
+            # caused false negatives (a real Field ID adjacent to a TABLE_ALIAS was
+            # silently skipped).
             if ALIAS_PATTERNS.search(match_text):
-                continue
-            # Skip if the surrounding text contains alias indicators
-            start = max(0, match.start() - 30)
-            context = text[start:match.end() + 30]
-            if "ALIAS" in context or ("<" in context and ">" in context):
                 continue
 
             line_num = text[:match.start()].count("\n") + 1

@@ -2,15 +2,16 @@
 
 > Repository: `https://github.com/Catcherog/feishu`
 > Branch: `master`
-> Current execution state: `PHASE_R5_V11_FIELD_VALIDATION_REMEDIATION`
+> Current execution state: `PHASE_R5_V11_FIELD_VALIDATION_REMEDIATION_SECOND_FIX`
 > Current gate: `R5`
 > R4 audit status: `R4_INDEPENDENTLY_VERIFIED_PASS` (GPT 2026-07-18, `MVP_PASS_WITH_DEBT`)
-> R5 audit status: `R5_REVIEW_PENDING` (GPT 2026-07-18, `MVP_FAIL`, remediation in progress per `docs/ai/tasks/TASK-003-R5-REVIEW-FIX-PACKET.md`)
+> R5 audit status: `R5_REVIEW_PENDING` (GPT 2026-07-18 first review `MVP_FAIL`; R5 first fix batch submitted; R5 second fix batch submitted per `docs/ai/tasks/TASK-003-R5-REVIEW-FIX-PACKET.md` and the R5 second fix packet in this commit message)
 > Migration pilot: `NOT_APPROVED`
 > Current HEAD at R5 main batch closeout: `3df9fc5da09c751f28629d053951a50374138dda`
-> R5 fix main commit: `82d98866686d4b0f502ad450b34177ab9a770335`（P0-1/P0-2/P0-3 主体修复）
-> R5 fix backfill commit: 将在 backfill 后通过 `git rev-parse HEAD` 获取并单列
-> Tracked files at R5 main batch closeout: 140
+> R5 first fix main commit: `82d98866686d4b0f502ad450b34177ab9a770335`（P0-1/P0-2/P0-3 主体修复）
+> R5 first fix backfill commit: `672ed78640895e6a01f294c15d9b82ad270b60be`（SHA backfill for R5 first fix batch）
+> R5 second fix batch commits:将在 R5 second fix batch commit 后通过 `git rev-parse HEAD` 获取并单列（见 Section 3.4）
+> Tracked files at R5 main batch closeout: 140; at R5 first fix batch closeout: 142; at R5 second fix batch closeout: 146
 > This file is the phase-specific execution entrypoint. It overrides stale phase instructions in older prompts or chat history.
 
 ## 1. Bootstrap
@@ -152,6 +153,38 @@ Remediation scope (in progress):
 - P0-3: This file updated to `R5_REVIEW_PENDING (MVP_FAIL, remediation in progress)`.
 
 Control plane must remain at `R5_REVIEW_PENDING` until GPT re-reviews the remediation. R6 and `MIGRATION_PILOT_001` must remain `NOT_STARTED` / `NOT_APPROVED`.
+
+## 3.4 R5 second fix batch (2026-07-18)
+
+After R5 first fix batch submission, a second fix batch was required to address residual issues identified during review of the first fix batch. Scope (per user instructions, this batch):
+
+1. **Removed real Field ID from public HEAD**: `reports/r5-enum-cleanup-summary.json` previously contained a real Feishu Field ID `<REDACTED_FIELD_ID>` (10 chars total, 3 prefix + 7 suffix). Replaced with stable alias `V2_CUSTOMER_SOURCE_CHANNEL_FIELD_ALIAS`. The `field_id` JSON key was renamed to `field_id_alias` and a `field_id_redacted: true` flag was added.
+2. **Fixed `verify_public_repo.py` false negatives**: Two bugs had silently hidden real Feishu identifiers from the scanner:
+   - **Pattern minimum length too strict**: `INTERNAL_ID_PATTERNS` required `[A-Za-z0-9]{8,}` after the `fld`/`tbl`/`wkf`/`viw` prefix (11+ chars total), but real Feishu IDs are typically 10 chars total (3 prefix + 7 suffix). Relaxed to `{6,}` (9+ chars total) to catch all real IDs while preserving the negative lookahead that excludes short camelCase variable names like `fldName` / `fldValue`.
+   - **ALIAS context false negative**: The scanner skipped a real ID when its 30-character surrounding context contained the literal `ALIAS` or angle brackets. This caused real Field IDs adjacent to `V2_CUSTOMER_TABLE_ALIAS` in JSON files to be silently skipped. Removed the context-based skip; the scanner now only skips a match when the match text itself is a known alias.
+3. **Added regression tests**: New `tests/test_verify_public_repo.py` (8 tests) covers: real 10-char Feishu field IDs match the pattern; a real fld ID adjacent to an ALIAS literal is still reported as S2; alias literals in match text are correctly skipped; the sanitized `r5-enum-cleanup-summary.json` scans clean.
+4. **Corrected stale statements** in `reports/phaseR5-v11-field-validation-gpt-audit-package.md`, `reports/v1.1-field-write-path-report.md`, and this file (backfill commit SHA references, HEAD references, tracked-count, AC9/AC10 statements that previously claimed `S0=0 S1=0 S2=0`).
+5. **Committed missing TASK-003 task packets** to the public repo: `docs/ai/tasks/TASK-003-R5-V11-FIELD-VALIDATION-PACKET.md` and `docs/ai/tasks/TASK-003-R5-REVIEW-FIX-PACKET.md` (previously referenced by the audit package but not tracked in the public repo).
+6. **Documented Field ID exposure history**: `<REDACTED_FIELD_ID>` was introduced in commit `82d9886` (R5 first fix batch main commit) and was present in `reports/r5-enum-cleanup-summary.json` at HEAD. No other commits in reachable history touch this string. The history cleanup plan (`reports/r5-history-cleanup-plan-source-channel-field.md`) was created for this specific Field ID; history rewrite remains NOT APPROVED and NOT EXECUTED. The `reports/git-history-cleanup-plan.md` (covering V1 pre-existing exposures) was NOT updated.
+
+### 3.4.1 Scanner behavior after fix
+
+After the scanner fix, the tracked scan now reports `S0=0 S1=0 S2=340` (was `S0=0 S1=0 S2=0` before, due to the false negatives). The 340 S2 warnings are pre-existing exposures NOT fixed by this batch:
+
+| File | S2 count | Category | In scope of this batch? |
+|---|---:|---|---|
+| `docs/current-base-schema-export.json` | 337 | V1 Base schema export (real fld IDs, pre-existing since first commit) | No |
+| `reports/phase1b-write-path-test-report.md` | 2 | V1 phase 1B test report (real fld IDs in field references) | No |
+| `docs/current-automation-audit.md` | 1 | V1 automation audit (real fld ID in filter condition description) | No |
+
+These pre-existing exposures are documented as technical debt. They were already documented in `reports/git-history-cleanup-plan.md` (which lists `docs/current-base-schema-export.json` as containing Table IDs since the first commit). The history cleanup plan remains NOT APPROVED.
+
+### 3.4.2 AC9 / AC10 status after R5 second fix batch
+
+- **AC9** (公开仓库和 staged 安全扫描均为 `S0=0 S1=0 S2=0`): **不满足**. Tracked scan now reports `S0=0 S1=0 S2=340` after the scanner false-negative fix. The 340 S2 findings are pre-existing exposures in V1 audit artifacts (`docs/current-base-schema-export.json`, `reports/phase1b-write-path-test-report.md`, `docs/current-automation-audit.md`), not introduced by R5. R5-introduced exposures (`<REDACTED_FIELD_ID>` in `reports/r5-enum-cleanup-summary.json`) are now sanitized. Staged scan after R5 second fix batch will report `S0=0 S1=0 S2=0` (the staged files do not contain real identifiers).
+- **AC10** (R5 审计包证据完整，工作树干净，提交已 push): **满足（经 R5 第二修复批次关闭）**. R5 first fix batch audit package had stale backfill/HEAD/tracked-count/AC9/AC10 statements; this batch corrects them. Note AC10's "工作树干净" sub-clause is satisfied; the "审计包证据完整" sub-clause is satisfied for R5-introduced content; the "S0=0 S1=0 S2=0" claim is moved to AC9 and explicitly marked as not satisfied due to pre-existing V1 exposures.
+
+R5 second fix batch commits and final HEAD will be filled in via SHA backfill commit (see `reports/phaseR5-v11-field-validation-gpt-audit-package.md` Section 5 for the backfill strategy). Control plane remains `R5_REVIEW_PENDING`. R6 and `MIGRATION_PILOT_001` remain `NOT_STARTED` / `NOT_APPROVED`.
 
 ## 4. Approved work
 

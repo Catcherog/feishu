@@ -1,6 +1,6 @@
 # TASK-003 R5 Schema v1.1 字段验证 GPT 审计验证包
 
-> **生成时间**：2026-07-18 (Asia/Shanghai)，R5 修复批次更新于 2026-07-18
+> **生成时间**：2026-07-18 (Asia/Shanghai)，R5 修复批次更新于 2026-07-18，R5 第二修复批次更新于 2026-07-18
 > **执行者**：Trae (GLM-5.2)
 > **审计目标**：供 GPT 或人工审计者验证 R5 v1.1 字段验证执行的正确性和完整性
 > **任务规格**：`docs/ai/tasks/TASK-003-R5-V11-FIELD-VALIDATION-PACKET.md`（主批次）+ `docs/ai/tasks/TASK-003-R5-REVIEW-FIX-PACKET.md`（修复批次）
@@ -9,9 +9,12 @@
 > **R5 主批次 commits**（6 个）：`7051a7f` → `c3d7e87` → `f21b347` → `9b63e8b` → `f373374` → `3df9fc5`（SHA backfill）
 > **R5 主批次最终 HEAD**：`3df9fc5da09c751f28629d053951a50374138dda`
 > **R5 复审结论**：`MVP_FAIL`（GPT 2026-07-18，3 个 P0 阻塞）
-> **R5 修复批次基线 HEAD**：`3df9fc5da09c751f28629d053951a50374138dda`
-> **R5 修复批次 commits**（2 个）：`82d9886`（P0-1/P0-2/P0-3 主体修复）→ R5 fix backfill commit（SHA 引用回填，将在下方"审计包自引用策略"小节单列）
-> **R5 修复批次最终 HEAD**：将在 R5 fix backfill commit 后通过 `git rev-parse HEAD` 获取并回填到本节
+> **R5 第一修复批次基线 HEAD**：`3df9fc5da09c751f28629d053951a50374138dda`
+> **R5 第一修复批次 commits**（2 个）：`82d9886`（P0-1/P0-2/P0-3 主体修复）→ `672ed78`（SHA backfill）
+> **R5 第一修复批次最终 HEAD**：`672ed78640895e6a01f294c15d9b82ad270b60be`
+> **R5 第二修复批次基线 HEAD**：`672ed78640895e6a01f294c15d9b82ad270b60be`
+> **R5 第二修复批次 commits**：将在 R5 第二修复批次 commit 后通过 `git rev-parse HEAD` 获取并单列（详见下方"R5 第二修复批次自引用策略"）
+> **R5 第二修复批次最终 HEAD**：将在 R5 第二修复批次 commit 后通过 `git rev-parse HEAD` 获取并回填到本节
 > **目标 Base 别名**：`V2_PILOT_BASE_ALIAS`
 
 ---
@@ -105,6 +108,18 @@
 - 更新当前 HEAD（`3df9fc5`）和 tracked 文件数（140）。
 - 控制面保持 `R5_REVIEW_PENDING`，与 manifest 一致，不提前标 PASS。
 
+### 1.C R5 第二修复批次（用户指令 7 点，2026-07-18）
+
+R5 第一修复批次提交后，复审发现 `reports/r5-enum-cleanup-summary.json` 仍含真实 Field ID `<REDACTED_FIELD_ID>`，且 `scripts/verify_public_repo.py` 存在两个假阴性 bug 导致扫描器静默漏报。用户指令触发 R5 第二修复批次，按 7 点要求执行：
+
+1. **删除真实 Field ID（全面 redact）**：最初仅 `reports/r5-enum-cleanup-summary.json` 中 `source_channel_field_id` 字段的真实值被替换为 `source_channel_field_id_alias: "V2_CUSTOMER_SOURCE_CHANNEL_FIELD_ALIAS"` + `source_channel_field_id_redacted: true`。但 Step 3 在审计包/v1.1 报告/PUBLIC_EXECUTION_ENTRYPOINT 中引用真实 Field ID 作为叙事上下文，造成 19 个新 S2 暴露（扫描器修复后检出）。最终全面 redact：所有公开文件中的真实 Field ID 字面量统一替换为占位符 `<REDACTED_FIELD_ID>`（被 ALIAS_PATTERNS `<[A-Z_]+>` 覆盖，扫描器不报），历史清理方案文件原名（含真实 Field ID）重命名为 `r5-history-cleanup-plan-source-channel-field.md` 并内部 redact。redact 后 tracked 扫描从 S2=359 降至 S2=340（V1 预存在基线）。
+2. **修复扫描器假阴性**：`scripts/verify_public_repo.py` 两处修复——（a）`INTERNAL_ID_PATTERNS` 后缀长度从 `{8,}` 放宽到 `{6,}`，覆盖真实 10 chars 飞书 ID；（b）删除 ALIAS 上下文 30 chars 跳过逻辑，改为只在 match text 本身是 ALIAS 时跳过。新增 ALIAS 模式 `V1_\w+_FIELD_ALIAS|V2_\w+_FIELD_ALIAS`。
+3. **新增回归测试**：`tests/test_verify_public_repo.py` 11 条测试覆盖 10 chars ID 匹配（使用合成 ID 避免测试文件自身成为 S2 暴露源，测试文件本身在 `S2_EXEMPT_FILES` 中豁免 S2 扫描）、ALIAS 相邻场景、短 camelCase 不匹配、清理后 JSON 扫描干净、S2 豁免机制本身。
+4. **修正 stale 陈述**：本审计包、`reports/v1.1-field-write-path-report.md`、`PUBLIC_EXECUTION_ENTRYPOINT.md` 中所有 stale backfill/HEAD/tracked-count/AC9/AC10 陈述。
+5. **TASK-003 任务包入仓**：将 `docs/ai/tasks/TASK-003-R5-V11-FIELD-VALIDATION-PACKET.md` 和 `docs/ai/tasks/TASK-003-R5-REVIEW-FIX-PACKET.md` 加入公共仓库 `feishu-v2/docs/ai/tasks/`（之前仅存在于 SOP 项目根，被审计包引用但未入仓）。
+6. **历史暴露扫描**：扫描 HEAD 和 `3df9fc5..HEAD` 可达历史，确认 `<REDACTED_FIELD_ID>` 暴露范围仅 commit `82d9886` 引入，仅 `reports/r5-enum-cleanup-summary.json` 在 HEAD 含此字符串。详见 Section 8.5。
+7. **历史清理方案**：输出 `reports/r5-history-cleanup-plan-source-channel-field.md` 文档化清理选项，**不执行** rewrite history 或 force push，等待用户明确批准。详见 Section 8.5。
+
 ---
 
 ## 2. 发现的关键事实
@@ -196,7 +211,15 @@
 
 ### 4.3 当前阻塞项
 
-无。R5 修复批次提交后等待 GPT 复审，控制面保持 `R5_REVIEW_PENDING`。
+R5 第一修复批次提交后，复审过程中发现残留问题，触发 R5 第二修复批次（详见 Section 1.C）。R5 第二修复批次完成后，控制面保持 `R5_REVIEW_PENDING`，等待 GPT 复审。
+
+**R5 第二修复批次引入的新事实**：
+
+- 公开 HEAD 的 `reports/r5-enum-cleanup-summary.json` 曾含真实 Field ID `<REDACTED_FIELD_ID>`（10 chars），已被替换为稳定别名 `V2_CUSTOMER_SOURCE_CHANNEL_FIELD_ALIAS`。
+- `scripts/verify_public_repo.py` 存在两个假阴性 bug：（1）`INTERNAL_ID_PATTERNS` 后缀长度阈值过严（`{8,}` 应为 `{6,}`）；（2）ALIAS 上下文跳过逻辑导致真实 ID 紧邻 ALIAS 字面量时被静默跳过。两个 bug 均已修复，并新增 11 条回归测试（覆盖 S2_EXEMPT_FILES 机制本身）。
+- 修复后 tracked 扫描结果为 `S0=0 S1=0 S2=340`（原误报为 `S0=0 S1=0 S2=0`）。340 个 S2 全部为 V1 阶段产出的预存在暴露（`docs/current-base-schema-export.json` 337 + `reports/phase1b-write-path-test-report.md` 2 + `docs/current-automation-audit.md` 1），不在 R5 第二修复批次范围内。详见 Section 6.3。
+- **Meta-leak 发现与修复**：扫描器修复后首次 tracked 扫描实际报告 `S2=359`（非 340），多出的 19 个 S2 来自 Step 3 在审计包（13）/v1.1 报告（1）/PUBLIC_EXECUTION_ENTRYPOINT（3）/历史清理方案（2，未跟踪但工作树存在）中引用真实 Field ID 作为叙事上下文。最终全面 redact 所有公开文件中的真实 Field ID 字面量 → 占位符 `<REDACTED_FIELD_ID>`（被 ALIAS_PATTERNS `<[A-Z_]+>` 覆盖），重命名历史清理方案文件，tracked 扫描回到 `S2=340` 基线。测试文件 `tests/test_verify_public_repo.py` 使用合成 ID（不在公开叙事中给出字面量）避免自身成为 S2 暴露源，并通过 `S2_EXEMPT_FILES` 机制在扫描器中豁免该测试文件的 S2 检查（仍保留 S0/S1 扫描）。
+- `<REDACTED_FIELD_ID>` 的历史暴露范围：仅 commit `82d9886`（R5 第一修复批次 main commit）引入，仅 `reports/r5-enum-cleanup-summary.json` 在 HEAD 含此字符串（指 R5 第二修复批次 redact 前的 HEAD）。详见 Section 8.5 历史清理方案。
 
 ---
 
@@ -226,13 +249,36 @@
 | `PUBLIC_EXECUTION_ENTRYPOINT.md` | 修改 | `82d9886` + R5 fix backfill commit | `299b1aae83f410f4fb302d663acabe0e4a170761`（R5 fix main commit `82d9886` 中）；R5 fix backfill commit 后的最终 blob 将在 backfill 后单列 | `8fe22db1ee4f6fa4a37fca12db32ee31ce56a7386e07a92a896c7070b3b23e74`（R5 fix main commit `82d9886` 中）；R5 fix backfill commit 后的最终 SHA256 将在 backfill 后单列 | REPRODUCIBLE_FROM_PUBLIC_REPO |
 | `reports/phaseR5-v11-field-validation-gpt-audit-package.md`（本文件） | 新建 + R5 fix 修改 | `f373374` + `3df9fc5` + `82d9886` + R5 fix backfill commit | `cdcd7ec75b7e6aabd984b15fe8ce0da35333eb83`（R5 主批次 backfill 后的 pre-R5-fix blob）；`8a3a4bba3c440b7007f1352ded5b0f6c9143306b`（R5 fix main commit `82d9886` 中的 pre-backfill blob）；R5 fix backfill commit 后的最终 blob 由 `git rev-parse HEAD:reports/phaseR5-v11-field-validation-gpt-audit-package.md` 获取并单列 | `b9cf8dae01d4e276db025c3b702d67045e3afc0d416d3b472ab2e24ac5222515`（R5 fix main commit `82d9886` 中的 pre-backfill SHA256）；R5 fix backfill commit 后的最终 SHA256 由 `sha256sum` 获取并单列 | SELF_REPORTED |
 
+#### R5 第二修复批次公开文件
+
+| 文件路径 | 操作 | Commit SHA | Git blob SHA | 文件 SHA256 | 证据分级 |
+|---|---|---|---|---|---|
+| `reports/r5-enum-cleanup-summary.json` | 修改（redact Field ID） | R5 second fix main commit + R5 second fix backfill commit | 将在 R5 second fix backfill commit 中通过 `git rev-parse HEAD:reports/r5-enum-cleanup-summary.json` 获取并单列 | 将在 R5 second fix backfill commit 中通过 `sha256sum` 获取并单列 | REPRODUCIBLE_FROM_PUBLIC_REPO（公开聚合 JSON，已脱敏） |
+| `scripts/verify_public_repo.py` | 修改（修复假阴性） | R5 second fix main commit + R5 second fix backfill commit | 将在 R5 second fix backfill commit 中单列 | 将在 R5 second fix backfill commit 中单列 | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `tests/test_verify_public_repo.py` | 新建（回归测试） | R5 second fix main commit + R5 second fix backfill commit | 将在 R5 second fix backfill commit 中单列 | 将在 R5 second fix backfill commit 中单列 | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `docs/ai/tasks/TASK-003-R5-V11-FIELD-VALIDATION-PACKET.md` | 新建（入仓） | R5 second fix main commit + R5 second fix backfill commit | 将在 R5 second fix backfill commit 中单列 | 将在 R5 second fix backfill commit 中单列 | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `docs/ai/tasks/TASK-003-R5-REVIEW-FIX-PACKET.md` | 新建（入仓） | R5 second fix main commit + R5 second fix backfill commit | 将在 R5 second fix backfill commit 中单列 | 将在 R5 second fix backfill commit 中单列 | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `reports/r5-history-cleanup-plan-source-channel-field.md` | 新建（清理方案，不执行） | R5 second fix main commit + R5 second fix backfill commit | 将在 R5 second fix backfill commit 中单列 | 将在 R5 second fix backfill commit 中单列 | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `reports/v1.1-field-write-path-report.md` | 修改（修正 stale 陈述） | `f373374` + `3df9fc5` + `82d9886` + `672ed78` + R5 second fix main commit + R5 second fix backfill commit | 将在 R5 second fix backfill commit 中单列 | 将在 R5 second fix backfill commit 中单列 | REPRODUCIBLE_FROM_PUBLIC_REPO（公开报告）+ SELF_REPORTED（其中 live 字段写读结果依赖私有脚本与真实 Base） |
+| `PUBLIC_EXECUTION_ENTRYPOINT.md` | 修改（新增 Section 3.4） | `82d9886` + `672ed78` + R5 second fix main commit + R5 second fix backfill commit | 将在 R5 second fix backfill commit 中单列 | 将在 R5 second fix backfill commit 中单列 | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `reports/phaseR5-v11-field-validation-gpt-audit-package.md`（本文件） | 修改（R5 second fix） | `f373374` + `3df9fc5` + `82d9886` + `672ed78` + R5 second fix main commit + R5 second fix backfill commit | R5 second fix main commit 中的 pre-backfill blob 将在 backfill commit 中单列；R5 second fix backfill commit 后的最终 blob 由 `git rev-parse HEAD:reports/phaseR5-v11-field-validation-gpt-audit-package.md` 获取并单列 | R5 second fix main commit 中的 pre-backfill SHA256 将在 backfill commit 中单列；R5 second fix backfill commit 后的最终 SHA256 由 `sha256sum` 获取并单列 | SELF_REPORTED |
+
 #### 审计包自引用策略
 
 为避免审计包 SHA 自引用的递归问题（审计包写入磁盘后才能计算其 SHA，但此 SHA 在 commit 后才被固定），采用 backfill commit 模式：
 
 1. R5 fix main commit (`82d9886`)：审计包内本节使用 placeholder（"将在 R5 fix backfill commit 中回填"）记录自引用。该 commit 中审计包的 pre-backfill blob = `8a3a4bba3c440b7007f1352ded5b0f6c9143306b`，pre-backfill SHA256 = `b9cf8dae01d4e276db025c3b702d67045e3afc0d416d3b472ab2e24ac5222515`。
-2. R5 fix backfill commit（本 commit）：填入 R5 fix main commit 中审计包的 pre-backfill blob/SHA256（已在第 5.1 节本文件行回填）。R5 fix backfill commit 后的最终 blob 由 `git rev-parse HEAD:reports/phaseR5-v11-field-validation-gpt-audit-package.md` 获取，最终 SHA256 由 `sha256sum` 获取，二者由 GPT 在复审时通过 Git 事实单列复核，不在本文件内自引用。
+2. R5 fix backfill commit（`672ed78`）：填入 R5 fix main commit 中审计包的 pre-backfill blob/SHA256（已在第 5.1 节本文件行回填）。R5 fix backfill commit 后的最终 blob = `git rev-parse 672ed78:reports/phaseR5-v11-field-validation-gpt-audit-package.md` 获取，最终 SHA256 = `sha256sum` 获取，二者由 GPT 在复审时通过 Git 事实单列复核，不在本文件内自引用。
 3. 不得把 pre-backfill 与 post-backfill SHA 混写。
+
+#### R5 第二修复批次自引用策略
+
+R5 第二修复批次同样采用 backfill commit 模式：
+
+1. R5 second fix main commit：审计包内本节使用 placeholder（"将在 R5 second fix backfill commit 中回填"）记录自引用。该 commit 中审计包的 pre-backfill blob/SHA256 将在 backfill commit 中通过 Git 事实单列复核，不在本文件内自引用。
+2. R5 second fix backfill commit：填入 R5 second fix main commit 中审计包的 pre-backfill blob/SHA256。R5 second fix backfill commit 后的最终 blob 由 `git rev-parse HEAD:reports/phaseR5-v11-field-validation-gpt-audit-package.md` 获取，最终 SHA256 由 `sha256sum` 获取，二者由 GPT 在复审时通过 Git 事实单列复核，不在本文件内自引用。
+3. 不得把 pre-backfill 与 post-backfill SHA 混写。
+4. R5 第二修复批次不修改 R5 第一修复批次的 commit SHA 引用（`82d9886`、`672ed78`），只追加新的 commit SHA 引用。
 
 ### 5.2 私有文件（gitignored，不入 Git）
 
@@ -281,12 +327,26 @@
 
 ### 6.3 安全扫描
 
+> **重要事实更正**：R5 第一修复批次审计包原报告 `S0=0 S1=0 S2=0` 是错误的，源于 `verify_public_repo.py` 两个假阴性 bug（详见 Section 1.C 第 2 点）。R5 第二修复批次修复扫描器后，tracked 扫描结果为 `S0=0 S1=0 S2=340`。340 个 S2 全部为 V1 阶段产出的预存在暴露，不在 R5 任何批次范围内。
+
 | 测试项 | 命令 | 退出码 | 结果 |
 |---|---|---|---|
-| 公开仓库扫描（tracked） | `python scripts/verify_public_repo.py` | 0 | S0=0 S1=0 S2=0（R5 主批次 backfill 后 140 文件） |
-| Staged 扫描（Task 4 commit 前） | `python scripts/verify_public_repo.py --staged` | 0 | S0=0 S1=0 S2=0 |
-| R5 fix 修复批次扫描（tracked） | `python scripts/verify_public_repo.py`（在 R5 fix main commit `82d9886` 前） | 0 | S0=0 S1=0 S2=0（140 文件） |
-| R5 fix 修复批次扫描（staged） | `python scripts/verify_public_repo.py --staged`（5 个 staged 文件） | 0 | S0=0 S1=0 S2=0 |
+| 公开仓库扫描（tracked）——R5 主批次 backfill 后 | `python scripts/verify_public_repo.py` | 0 | S0=0 S1=0 S2=0（**误报**，扫描器有假阴性 bug；140 文件） |
+| Staged 扫描（Task 4 commit 前）——R5 主批次 | `python scripts/verify_public_repo.py --staged` | 0 | S0=0 S1=0 S2=0（**误报**，扫描器有假阴性 bug） |
+| R5 fix 修复批次扫描（tracked）——R5 fix main commit `82d9886` 前 | `python scripts/verify_public_repo.py` | 0 | S0=0 S1=0 S2=0（**误报**，扫描器有假阴性 bug；140 文件） |
+| R5 fix 修复批次扫描（staged）——5 个 staged 文件 | `python scripts/verify_public_repo.py --staged` | 0 | S0=0 S1=0 S2=0（**误报**，扫描器有假阴性 bug） |
+| **R5 第二修复批次扫描（tracked）——扫描器修复后** | `python scripts/verify_public_repo.py` | 0 | **S0=0 S1=0 S2=340**（146 文件；340 个 S2 全部为 V1 阶段预存在暴露，详见下表） |
+| **R5 第二修复批次扫描（staged）——R5 second fix main commit 前** | `python scripts/verify_public_repo.py --staged` | 0 | **S0=0 S1=0 S2=0**（9 staged 文件；含 `tests/test_verify_public_repo.py` 因 `S2_EXEMPT_FILES` 机制豁免 S2） |
+
+**340 个 S2 预存在暴露分布**（不在 R5 第二修复批次范围内）：
+
+| 文件 | S2 数 | 类别 | 引入批次 |
+|---|---:|---|---|
+| `docs/current-base-schema-export.json` | 337 | V1 Base schema 导出（真实 fld ID） | 自首次 commit 起 |
+| `reports/phase1b-write-path-test-report.md` | 2 | V1 phase 1B 测试报告（真实 fld ID） | V1 phase 1B |
+| `docs/current-automation-audit.md` | 1 | V1 自动化审计（filter 条件中的真实 fld ID） | V1 phase 0 |
+
+这些预存在暴露已在 `reports/git-history-cleanup-plan.md` 中记录（`docs/current-base-schema-export.json` 自首次 commit 起含 Table IDs）。历史清理方案 NOT APPROVED，NOT EXECUTED。R5 第二修复批次新增 `reports/r5-history-cleanup-plan-source-channel-field.md` 文档化 `<REDACTED_FIELD_ID>` 的清理选项，同样 NOT APPROVED，NOT EXECUTED。
 
 ### 6.4 基线一致性
 
@@ -296,9 +356,12 @@
 | R5 主批次工作树状态 | `git status` | 0 | 干净（仅 untracked gitignored temp 脚本和私有日志） |
 | R5 主批次 Push 状态 | `git push origin master` | 0 | 成功（通过 VPN socks5h 代理 127.0.0.1:7890） |
 | R5 主批次 HEAD == origin/master | `git rev-parse HEAD` 与 `git rev-parse origin/master` | 0 | 均 `3df9fc5da09c751f28629d053951a50374138dda` |
-| R5 修复批次基线 HEAD | `git rev-parse HEAD` | 0 | `3df9fc5da09c751f28629d053951a50374138dda`（R5 fix 起始） |
-| R5 修复批次 main commit SHA | `git rev-parse HEAD`（R5 fix main commit 后） | 0 | `82d98866686d4b0f502ad450b34177ab9a770335` |
-| R5 修复批次最终 HEAD | `git rev-parse HEAD`（R5 fix backfill commit 后） | 0 | 将在 R5 fix backfill commit 后通过 `git rev-parse HEAD` 获取并单列（GPT 复审时由 Git 事实复核） |
+| R5 第一修复批次基线 HEAD | `git rev-parse HEAD` | 0 | `3df9fc5da09c751f28629d053951a50374138dda`（R5 fix 起始） |
+| R5 第一修复批次 main commit SHA | `git rev-parse HEAD`（R5 fix main commit 后） | 0 | `82d98866686d4b0f502ad450b34177ab9a770335` |
+| R5 第一修复批次最终 HEAD | `git rev-parse HEAD`（R5 fix backfill commit 后） | 0 | `672ed78640895e6a01f294c15d9b82ad270b60be` |
+| **R5 第二修复批次基线 HEAD** | `git rev-parse HEAD` | 0 | `672ed78640895e6a01f294c15d9b82ad270b60be`（R5 second fix 起始） |
+| **R5 第二修复批次 main commit SHA** | `git rev-parse HEAD`（R5 second fix main commit 后） | 0 | 将在 R5 second fix main commit 后通过 `git rev-parse HEAD` 获取并单列 |
+| **R5 第二修复批次最终 HEAD** | `git rev-parse HEAD`（R5 second fix backfill commit 后） | 0 | 将在 R5 second fix backfill commit 后通过 `git rev-parse HEAD` 获取并单列（GPT 复审时由 Git 事实复核） |
 
 ---
 
@@ -316,14 +379,15 @@
 | AC6 | 所有枚举、默认值、合法写读和非法值拒绝已逐字段验证 | **不满足**（R5 主批次：source_channel 14 options 与 v1.1 spec 12 项不一致，违反 Stop Condition） | **满足（经修复批次关闭）** | R5 主批次 `reports/r5-field-validation-report.json` 35/35 read-back PASS + 8/8 illegal REJECTED + 35 default checks；R5 修复批次 `reports/r5-enum-cleanup-summary.json` `live_matches_v11: true` + 新 schema 快照 SHA256 `691e78a2244a6d44a7d02f44e603a3ed33c8e0b0cd457d4194c67aa414eeeefd`；REPRODUCIBLE_FROM_PUBLIC_REPO + SELF_REPORTED |
 | AC7 | 没有创建真实迁移记录，没有触碰生产 Base/V1 Base | 满足 | 满足 | 验证标记 `R5_VALIDATION_20260718`（非 `MIGRATION_PILOT_001`）；仅操作 V2 测试 Base 别名 `V2_PILOT_BASE_ALIAS`；通过 `config/resource-map.local.json` 别名确认 |
 | AC8 | 合成验证记录可追踪且已按 rollback plan 处理，无静默残留 | 满足 | 满足 | `reports/r5-rollback-drill-report.json` 6/6 DELETED + 6/6 verified NOT_FOUND_AS_EXPECTED；blob `0201fb6170191f639d0afbe15292eec4430189dc`；REPRODUCIBLE_FROM_PUBLIC_REPO + SELF_REPORTED |
-| AC9 | 公开仓库和 staged 安全扫描均为 `S0=0 S1=0 S2=0`；私有证据未被跟踪/暂存 | 满足 | 满足 | R5 主批次 `verify_public_repo.py` tracked 140 files S0=0 S1=0 S2=0；R5 修复批次 tracked 140 files S0=0 S1=0 S2=0 + staged 5 files S0=0 S1=0 S2=0；私有文件在 gitignored 路径 |
-| AC10 | R5 审计包证据完整，工作树干净，提交已 push | **不满足**（R5 主批次：审计包有"见 git"占位、错误 HEAD、错误 commit 数、错误证据分级） | **满足（经修复批次关闭）** | R5 修复批次重写审计包，补齐所有 blob/SHA256、6 commit 链、正确证据分级、AC 逐条对齐；R5 fix commits + backfill 将在 push 后通过 `git rev-parse HEAD` 确认；SELF_REPORTED |
+| AC9 | 公开仓库和 staged 安全扫描均为 `S0=0 S1=0 S2=0`；私有证据未被跟踪/暂存 | 满足（**误报**，扫描器有假阴性 bug） | **不满足**（R5 第一修复批次：扫描器假阴性导致原 `S0=0 S1=0 S2=0` 误报；R5 第二修复批次扫描器修复后 tracked 实际为 `S0=0 S1=0 S2=340`，340 个 S2 为 V1 阶段预存在暴露） | R5 主批次 + R5 第一修复批次：`verify_public_repo.py` tracked 140 files 误报 `S0=0 S1=0 S2=0`（扫描器有假阴性 bug）；R5 第二修复批次：tracked 146 files `S0=0 S1=0 S2=340`（340 个 S2 全部为 V1 阶段预存在暴露：`docs/current-base-schema-export.json` 337 + `reports/phase1b-write-path-test-report.md` 2 + `docs/current-automation-audit.md` 1）；staged 扫描在 R5 第二修复批次 commit 前预期 `S0=0 S1=0 S2=0`；私有文件在 gitignored 路径。**AC9 严格判定为"不满足"**：尽管 340 个 S2 是 V1 阶段预存在暴露而非 R5 引入，但 AC9 字面要求"均为 S0=0 S1=0 S2=0"，当前 tracked 扫描不满足该字面要求。R5 第二修复批次已通过删除 `<REDACTED_FIELD_ID>` 关闭 R5 自身引入的暴露；V1 阶段预存在暴露需独立历史清理流程处理（NOT APPROVED）。 |
+| AC10 | R5 审计包证据完整，工作树干净，提交已 push | **不满足**（R5 主批次：审计包有"见 git"占位、错误 HEAD、错误 commit 数、错误证据分级） | **满足（经 R5 第二修复批次关闭）** | R5 第一修复批次重写审计包，补齐所有 blob/SHA256、6 commit 链、正确证据分级、AC 逐条对齐；R5 第二修复批次进一步修正 stale backfill/HEAD/tracked-count/AC9/AC10 陈述，新增 R5 第二修复批次自引用策略；R5 second fix commits + backfill 将在 push 后通过 `git rev-parse HEAD` 确认；SELF_REPORTED。**注**：AC10 的"工作树干净"和"审计包证据完整"子条款满足；"提交已 push" 在 R5 第二修复批次 push 后满足；但 AC9 字面要求不满足，审计包如实标注。 |
 | AC11 | 最终停在 R5 Review Gate；R6 与 Migration Pilot 均未启动 | 满足 | 满足 | `config/public-execution-manifest.json` `R5 = REVIEW_PENDING`、`R6 = NOT_STARTED`、`MIGRATION_PILOT_001 = NOT_APPROVED`；`PUBLIC_EXECUTION_ENTRYPOINT.md` Section 3.3 同步 |
 
 **结论：**
 
-- R5 主批次：AC6 和 AC10 不满足（P0-1 和 P0-2 阻塞），其余 9 项满足。
-- R5 修复批次：AC6 和 AC10 经修复批次关闭，全部 11 项满足。等待 GPT 复审确认。
+- R5 主批次：AC6 和 AC10 不满足（P0-1 和 P0-2 阻塞），其余 9 项满足（AC9 当时误报为满足）。
+- R5 第一修复批次：AC6 和 AC10 经修复批次关闭；AC9 仍误报为满足（扫描器假阴性 bug 未发现）。
+- R5 第二修复批次：AC9 修正为"不满足"（340 个 V1 阶段预存在 S2 暴露）；AC10 进一步修正 stale 陈述，标注为"满足（经 R5 第二修复批次关闭）"。其余 9 项满足。等待 GPT 复审确认。
 
 ---
 
@@ -331,7 +395,7 @@
 
 ### 8.1 R5 Review Gate 等待
 
-- R5 修复批次提交后，控制面保持 `R5_REVIEW_PENDING`，等待 GPT 复审 R5 修复批次。
+- R5 第二修复批次提交后，控制面保持 `R5_REVIEW_PENDING`，等待 GPT 复审 R5 第二修复批次。
 - 复审通过后可推进到 `R5_INDEPENDENTLY_VERIFIED_PASS`。
 - 复审不通过则按新修复包继续修复。
 
@@ -349,11 +413,23 @@
 
 ### 8.4 建议的后续行动
 
-1. GPT 复审 R5 修复批次审计包，确认 `MVP_PASS` 或提出新修复包。
+1. GPT 复审 R5 第二修复批次审计包，确认 `MVP_PASS` 或提出新修复包。
 2. 如复审通过，准备 R6 迁移 Dry Run 任务包。
 3. 在 R6 任务包中明确要求迁移脚本处理 5 个 schema 默认值字段。
 4. 在 R6 任务包中明确要求视图 filter/sort 配置状态。
 5. 考虑是否需要扩展 lark-cli 或使用飞书 OpenAPI 直接调用以支持 `default_value` 配置。
+6. **历史清理决策**：用户需决定是否批准 `reports/git-history-cleanup-plan.md`（V1 阶段 340 个 S2 暴露的历史清理）和 `reports/r5-history-cleanup-plan-source-channel-field.md`（`<REDACTED_FIELD_ID>` 的历史清理）的执行。两者均 NOT APPROVED，NOT EXECUTED。
+
+### 8.5 `<REDACTED_FIELD_ID>` 历史暴露扫描与清理方案
+
+**暴露范围扫描结果**：
+
+- 引入 commit：`82d9886`（R5 第一修复批次 main commit）。
+- HEAD 含此字符串的文件：仅 `reports/r5-enum-cleanup-summary.json`（R5 第二修复批次已替换为 `V2_CUSTOMER_SOURCE_CHANNEL_FIELD_ALIAS`）。
+- `3df9fc5..HEAD` 可达历史中含此字符串的 commit：仅 `82d9886` 和 `672ed78`（R5 第一修复批次 backfill commit，因 backfill commit 不会修改 `r5-enum-cleanup-summary.json` 但会引用其 blob）。
+- 实际暴露 blob：`82d9886` 中 `reports/r5-enum-cleanup-summary.json` 的 blob（SHA `bcd0f4dfe1c00f84b5fc4d7a2868e39c2ffd957c`）；`672ed78` 中同一文件 blob 不变（未修改）。
+
+**清理方案**：见 `reports/r5-history-cleanup-plan-source-channel-field.md`。方案文档化三种选项（`git filter-repo` / BFG / 不清理），列出前提条件、影响和推荐。**NOT APPROVED，NOT EXECUTED**。等待用户明确批准。
 
 ---
 
@@ -385,6 +461,19 @@
 - ✓ **已删除** V2 测试 Base 中 2 个不在 v1.1 spec 内的 source_channel 选项（`微信`、`不存在的渠道XYZ`），系用户明确决策后执行；引用 `微信` 的 1 条测试记录已重映射为 v1.1 合法值 `微信私聊`
 - ✓ 未删除 V2 测试 Base 上任何 v1.1 spec 内的字段/选项/视图
 
+### 9.3 R5 第二修复批次（用户指令 7 点）
+
+- ✓ 未修改生产 V2 Base、V1 Base、APP 或自动化
+- ✓ 未读取或写入真实客户业务记录
+- ✓ 未重新运行完整迁移 Dry Run（R6）
+- ✓ 未启动 MIGRATION_PILOT_001
+- ✓ 未扩大 Schema v1.1
+- ✓ 未删除或改写任何 V2 测试 Base 记录/枚举选项
+- ✓ **已删除** 公开 HEAD 中 `reports/r5-enum-cleanup-summary.json` 的真实 Field ID `<REDACTED_FIELD_ID>`，替换为稳定别名 `V2_CUSTOMER_SOURCE_CHANNEL_FIELD_ALIAS`
+- ✓ 未提交真实 Base/Table/Field/record 标识、凭据、私有脚本或私有日志
+- ✓ 未启动 R6 或 MIGRATION_PILOT_001
+- ✓ 未自行 rewrite history 或 force push（历史清理方案仅文档化，NOT APPROVED，NOT EXECUTED）
+
 ---
 
 ## 10. 控制面最终状态
@@ -395,10 +484,10 @@
   "R2": "INDEPENDENTLY_VERIFIED_PASS",
   "R3": "INDEPENDENTLY_VERIFIED_PASS",
   "R4": "INDEPENDENTLY_VERIFIED_PASS",
-  "R5": "R5_REVIEW_PENDING (MVP_FAIL, remediation submitted, awaiting GPT re-review)",
+  "R5": "R5_REVIEW_PENDING (MVP_FAIL first review; R5 first fix batch submitted; R5 second fix batch submitted, awaiting GPT re-review)",
   "R6": "NOT_STARTED",
   "MIGRATION_PILOT_001": "NOT_APPROVED"
 }
 ```
 
-R5 修复批次提交后，控制面保持 `R5_REVIEW_PENDING`，等待 GPT 复审 R5 修复批次。R6 和 MIGRATION_PILOT_001 均未启动。
+R5 第二修复批次提交后，控制面保持 `R5_REVIEW_PENDING`，等待 GPT 复审 R5 第二修复批次。R6 和 MIGRATION_PILOT_001 均未启动。
