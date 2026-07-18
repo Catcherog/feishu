@@ -8,6 +8,8 @@
 > R5 audit status: `R5_REVIEW_PENDING` (GPT 2026-07-18, `MVP_FAIL`, remediation in progress per `docs/ai/tasks/TASK-003-R5-REVIEW-FIX-PACKET.md`)
 > Migration pilot: `NOT_APPROVED`
 > Current HEAD at R5 main batch closeout: `3df9fc5da09c751f28629d053951a50374138dda`
+> R5 fix main commit: `82d98866686d4b0f502ad450b34177ab9a770335`（P0-1/P0-2/P0-3 主体修复）
+> R5 fix backfill commit: 将在 backfill 后通过 `git rev-parse HEAD` 获取并单列
 > Tracked files at R5 main batch closeout: 140
 > This file is the phase-specific execution entrypoint. It overrides stale phase instructions in older prompts or chat history.
 
@@ -128,6 +130,7 @@ R5 v1.1 field validation was executed under `TASK-003-R5-V11-FIELD-VALIDATION-PA
 Independent evidence verified by GPT at review time:
 
 - `feishu-v2/` working tree clean on `master`; `HEAD == origin/master == 3df9fc5da09c751f28629d053951a50374138dda`.
+- R5 fix main commit `82d98866686d4b0f502ad450b34177ab9a770335` advances HEAD; final HEAD will be confirmed after R5 fix backfill commit (tracked files remain 140; security scan S0=0 S1=0 S2=0 on tracked and staged).
 - `node --test tests/migration-classifier.test.js`: 58/58 pass, 13 suites, exit 0.
 - bundled Python `-m unittest tests.test_generate_schema_diff`: 3/3 PASS, exit 0.
 - bundled Python `scripts/verify_public_repo.py` against tracked 140 files: `S0=0 S1=0 S2=0`, exit 0.

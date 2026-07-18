@@ -10,8 +10,8 @@
 > **R5 主批次最终 HEAD**：`3df9fc5da09c751f28629d053951a50374138dda`
 > **R5 复审结论**：`MVP_FAIL`（GPT 2026-07-18，3 个 P0 阻塞）
 > **R5 修复批次基线 HEAD**：`3df9fc5da09c751f28629d053951a50374138dda`
-> **R5 修复批次 commits**：将在 R5 fix backfill commit 后填入（含 P0-1/P0-2/P0-3 主体修复 + SHA backfill 两个 commit）
-> **R5 修复批次最终 HEAD**：将在 R5 fix backfill commit 后填入
+> **R5 修复批次 commits**（2 个）：`82d9886`（P0-1/P0-2/P0-3 主体修复）→ R5 fix backfill commit（SHA 引用回填，将在下方"审计包自引用策略"小节单列）
+> **R5 修复批次最终 HEAD**：将在 R5 fix backfill commit 后通过 `git rev-parse HEAD` 获取并回填到本节
 > **目标 Base 别名**：`V2_PILOT_BASE_ALIAS`
 
 ---
@@ -220,16 +220,18 @@
 
 | 文件路径 | 操作 | Commit SHA | Git blob SHA | 文件 SHA256 | 证据分级 |
 |---|---|---|---|---|---|
-| `reports/r5-enum-usage-count-summary.json` | 新建 | R5 fix main commit | 将在 R5 fix backfill commit 中回填 | `66ee014e96dfb2265cacd84809d35bb00533098c9c55fd1396c0e5afc02c6f81` | REPRODUCIBLE_FROM_PUBLIC_REPO（公开聚合 JSON）+ SELF_REPORTED（其中聚合计数依赖私有脚本扫描真实 Base） |
-| `reports/r5-enum-cleanup-summary.json` | 新建 | R5 fix main commit | 将在 R5 fix backfill commit 中回填 | `40a88e53f5195dd6fd8e3ae10892f81f6546cc5627bb3cf8a41eecd52ad40b00` | REPRODUCIBLE_FROM_PUBLIC_REPO（公开聚合 JSON）+ SELF_REPORTED（其中清理执行与 live 验证结果依赖私有脚本与真实 Base） |
-| `reports/phaseR5-v11-field-validation-gpt-audit-package.md`（本文件） | 新建 + R5 fix 修改 | `f373374` + `3df9fc5` + R5 fix main commit + R5 fix backfill commit | `cdcd7ec75b7e6aabd984b15fe8ce0da35333eb83`（R5 主批次 backfill 后的 pre-R5-fix blob）；R5 fix main commit 后的 pre-backfill blob 将在 R5 fix backfill commit 中回填；R5 fix backfill commit 后的最终 blob 由 `git rev-parse HEAD:reports/phaseR5-v11-field-validation-gpt-audit-package.md` 获取 | R5 fix main commit 后的 pre-backfill SHA256 将在 R5 fix backfill commit 中回填；R5 fix backfill commit 后的最终 SHA256 由 `sha256sum` 获取 | SELF_REPORTED |
+| `reports/r5-enum-usage-count-summary.json` | 新建 | `82d9886` | `359e993d022bb9ad3c627b51fe56d2b407bcdad6` | `66ee014e96dfb2265cacd84809d35bb00533098c9c55fd1396c0e5afc02c6f81` | REPRODUCIBLE_FROM_PUBLIC_REPO（公开聚合 JSON）+ SELF_REPORTED（其中聚合计数依赖私有脚本扫描真实 Base） |
+| `reports/r5-enum-cleanup-summary.json` | 新建 | `82d9886` | `bcd0f4dfe1c00f84b5fc4d7a2868e39c2ffd957c` | `40a88e53f5195dd6fd8e3ae10892f81f6546cc5627bb3cf8a41eecd52ad40b00` | REPRODUCIBLE_FROM_PUBLIC_REPO（公开聚合 JSON）+ SELF_REPORTED（其中清理执行与 live 验证结果依赖私有脚本与真实 Base） |
+| `reports/v1.1-field-write-path-report.md` | 新建 + R5 fix 修改 | `f373374` + `3df9fc5` + `82d9886` + R5 fix backfill commit | `530c359114c7cabb0dd02e0d65bb06f9d4ce2688`（R5 fix main commit `82d9886` 中）；R5 fix backfill commit 后的最终 blob 将在 backfill 后通过 `git rev-parse HEAD:reports/v1.1-field-write-path-report.md` 获取并单列 | `f217e28fa1692212fabd2acef7de577716000b3ba5f15fe84caf360c69d54b4f`（R5 fix main commit `82d9886` 中）；R5 fix backfill commit 后的最终 SHA256 将在 backfill 后通过 `sha256sum` 获取并单列 | REPRODUCIBLE_FROM_PUBLIC_REPO（公开报告）+ SELF_REPORTED（其中 live 字段写读结果依赖私有脚本与真实 Base） |
+| `PUBLIC_EXECUTION_ENTRYPOINT.md` | 修改 | `82d9886` + R5 fix backfill commit | `299b1aae83f410f4fb302d663acabe0e4a170761`（R5 fix main commit `82d9886` 中）；R5 fix backfill commit 后的最终 blob 将在 backfill 后单列 | `8fe22db1ee4f6fa4a37fca12db32ee31ce56a7386e07a92a896c7070b3b23e74`（R5 fix main commit `82d9886` 中）；R5 fix backfill commit 后的最终 SHA256 将在 backfill 后单列 | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `reports/phaseR5-v11-field-validation-gpt-audit-package.md`（本文件） | 新建 + R5 fix 修改 | `f373374` + `3df9fc5` + `82d9886` + R5 fix backfill commit | `cdcd7ec75b7e6aabd984b15fe8ce0da35333eb83`（R5 主批次 backfill 后的 pre-R5-fix blob）；`8a3a4bba3c440b7007f1352ded5b0f6c9143306b`（R5 fix main commit `82d9886` 中的 pre-backfill blob）；R5 fix backfill commit 后的最终 blob 由 `git rev-parse HEAD:reports/phaseR5-v11-field-validation-gpt-audit-package.md` 获取并单列 | `b9cf8dae01d4e276db025c3b702d67045e3afc0d416d3b472ab2e24ac5222515`（R5 fix main commit `82d9886` 中的 pre-backfill SHA256）；R5 fix backfill commit 后的最终 SHA256 由 `sha256sum` 获取并单列 | SELF_REPORTED |
 
 #### 审计包自引用策略
 
 为避免审计包 SHA 自引用的递归问题（审计包写入磁盘后才能计算其 SHA，但此 SHA 在 commit 后才被固定），采用 backfill commit 模式：
 
-1. R5 fix main commit：审计包内本节使用 placeholder（"将在 R5 fix backfill commit 中回填"）记录自引用。
-2. R5 fix backfill commit：填入 R5 fix main commit 中审计包的 pre-backfill blob/SHA256，并单列 R5 fix backfill commit 后的最终 blob（由 `git rev-parse HEAD:reports/phaseR5-v11-field-validation-gpt-audit-package.md` 获取）和最终 SHA256（由 `sha256sum` 获取）。
+1. R5 fix main commit (`82d9886`)：审计包内本节使用 placeholder（"将在 R5 fix backfill commit 中回填"）记录自引用。该 commit 中审计包的 pre-backfill blob = `8a3a4bba3c440b7007f1352ded5b0f6c9143306b`，pre-backfill SHA256 = `b9cf8dae01d4e276db025c3b702d67045e3afc0d416d3b472ab2e24ac5222515`。
+2. R5 fix backfill commit（本 commit）：填入 R5 fix main commit 中审计包的 pre-backfill blob/SHA256（已在第 5.1 节本文件行回填）。R5 fix backfill commit 后的最终 blob 由 `git rev-parse HEAD:reports/phaseR5-v11-field-validation-gpt-audit-package.md` 获取，最终 SHA256 由 `sha256sum` 获取，二者由 GPT 在复审时通过 Git 事实单列复核，不在本文件内自引用。
 3. 不得把 pre-backfill 与 post-backfill SHA 混写。
 
 ### 5.2 私有文件（gitignored，不入 Git）
@@ -283,7 +285,8 @@
 |---|---|---|---|
 | 公开仓库扫描（tracked） | `python scripts/verify_public_repo.py` | 0 | S0=0 S1=0 S2=0（R5 主批次 backfill 后 140 文件） |
 | Staged 扫描（Task 4 commit 前） | `python scripts/verify_public_repo.py --staged` | 0 | S0=0 S1=0 S2=0 |
-| R5 fix 修复批次扫描（tracked + staged） | 将在 R5 fix main commit 后运行 `python scripts/verify_public_repo.py` + `python scripts/verify_public_repo.py --staged` | 将在 R5 fix backfill commit 中回填 | 将在 R5 fix backfill commit 中回填 |
+| R5 fix 修复批次扫描（tracked） | `python scripts/verify_public_repo.py`（在 R5 fix main commit `82d9886` 前） | 0 | S0=0 S1=0 S2=0（140 文件） |
+| R5 fix 修复批次扫描（staged） | `python scripts/verify_public_repo.py --staged`（5 个 staged 文件） | 0 | S0=0 S1=0 S2=0 |
 
 ### 6.4 基线一致性
 
@@ -294,7 +297,8 @@
 | R5 主批次 Push 状态 | `git push origin master` | 0 | 成功（通过 VPN socks5h 代理 127.0.0.1:7890） |
 | R5 主批次 HEAD == origin/master | `git rev-parse HEAD` 与 `git rev-parse origin/master` | 0 | 均 `3df9fc5da09c751f28629d053951a50374138dda` |
 | R5 修复批次基线 HEAD | `git rev-parse HEAD` | 0 | `3df9fc5da09c751f28629d053951a50374138dda`（R5 fix 起始） |
-| R5 修复批次最终 HEAD | 将在 R5 fix backfill commit 后通过 `git rev-parse HEAD` 获取 | 将在 R5 fix backfill commit 中回填 | 将在 R5 fix backfill commit 中回填 |
+| R5 修复批次 main commit SHA | `git rev-parse HEAD`（R5 fix main commit 后） | 0 | `82d98866686d4b0f502ad450b34177ab9a770335` |
+| R5 修复批次最终 HEAD | `git rev-parse HEAD`（R5 fix backfill commit 后） | 0 | 将在 R5 fix backfill commit 后通过 `git rev-parse HEAD` 获取并单列（GPT 复审时由 Git 事实复核） |
 
 ---
 
@@ -312,7 +316,7 @@
 | AC6 | 所有枚举、默认值、合法写读和非法值拒绝已逐字段验证 | **不满足**（R5 主批次：source_channel 14 options 与 v1.1 spec 12 项不一致，违反 Stop Condition） | **满足（经修复批次关闭）** | R5 主批次 `reports/r5-field-validation-report.json` 35/35 read-back PASS + 8/8 illegal REJECTED + 35 default checks；R5 修复批次 `reports/r5-enum-cleanup-summary.json` `live_matches_v11: true` + 新 schema 快照 SHA256 `691e78a2244a6d44a7d02f44e603a3ed33c8e0b0cd457d4194c67aa414eeeefd`；REPRODUCIBLE_FROM_PUBLIC_REPO + SELF_REPORTED |
 | AC7 | 没有创建真实迁移记录，没有触碰生产 Base/V1 Base | 满足 | 满足 | 验证标记 `R5_VALIDATION_20260718`（非 `MIGRATION_PILOT_001`）；仅操作 V2 测试 Base 别名 `V2_PILOT_BASE_ALIAS`；通过 `config/resource-map.local.json` 别名确认 |
 | AC8 | 合成验证记录可追踪且已按 rollback plan 处理，无静默残留 | 满足 | 满足 | `reports/r5-rollback-drill-report.json` 6/6 DELETED + 6/6 verified NOT_FOUND_AS_EXPECTED；blob `0201fb6170191f639d0afbe15292eec4430189dc`；REPRODUCIBLE_FROM_PUBLIC_REPO + SELF_REPORTED |
-| AC9 | 公开仓库和 staged 安全扫描均为 `S0=0 S1=0 S2=0`；私有证据未被跟踪/暂存 | 满足 | 将在 R5 fix backfill commit 中回填 | R5 主批次 `verify_public_repo.py` tracked 140 files S0=0 S1=0 S2=0；私有文件在 gitignored 路径；R5 修复批次扫描结果将在 backfill commit 中回填 |
+| AC9 | 公开仓库和 staged 安全扫描均为 `S0=0 S1=0 S2=0`；私有证据未被跟踪/暂存 | 满足 | 满足 | R5 主批次 `verify_public_repo.py` tracked 140 files S0=0 S1=0 S2=0；R5 修复批次 tracked 140 files S0=0 S1=0 S2=0 + staged 5 files S0=0 S1=0 S2=0；私有文件在 gitignored 路径 |
 | AC10 | R5 审计包证据完整，工作树干净，提交已 push | **不满足**（R5 主批次：审计包有"见 git"占位、错误 HEAD、错误 commit 数、错误证据分级） | **满足（经修复批次关闭）** | R5 修复批次重写审计包，补齐所有 blob/SHA256、6 commit 链、正确证据分级、AC 逐条对齐；R5 fix commits + backfill 将在 push 后通过 `git rev-parse HEAD` 确认；SELF_REPORTED |
 | AC11 | 最终停在 R5 Review Gate；R6 与 Migration Pilot 均未启动 | 满足 | 满足 | `config/public-execution-manifest.json` `R5 = REVIEW_PENDING`、`R6 = NOT_STARTED`、`MIGRATION_PILOT_001 = NOT_APPROVED`；`PUBLIC_EXECUTION_ENTRYPOINT.md` Section 3.3 同步 |
 
