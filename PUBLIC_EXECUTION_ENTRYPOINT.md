@@ -2,9 +2,9 @@
 
 > Repository: `https://github.com/Catcherog/feishu`
 > Branch: `master`
-> Current execution state: `PHASE_1B3_REMEDIATION`
-> Current gate: `R2`
-> R2 audit status: `R2_INDEPENDENTLY_VERIFIED_PASS`
+> Current execution state: `PHASE_R5_V11_FIELD_VALIDATION`
+> Current gate: `R5`
+> R4 audit status: `R4_INDEPENDENTLY_VERIFIED_PASS` (GPT 2026-07-18, `MVP_PASS_WITH_DEBT`)
 > Migration pilot: `NOT_APPROVED`
 > This file is the phase-specific execution entrypoint. It overrides stale phase instructions in older prompts or chat history.
 
@@ -57,9 +57,9 @@ The latest gate decisions are:
 ```text
 GATE_R1 = INDEPENDENTLY_VERIFIED_PASS
 GATE_R2 = INDEPENDENTLY_VERIFIED_PASS
-GATE_R3 = NOT_STARTED
-GATE_R4 = NOT_STARTED
-GATE_R5 = NOT_STARTED
+GATE_R3 = INDEPENDENTLY_VERIFIED_PASS
+GATE_R4 = INDEPENDENTLY_VERIFIED_PASS (MVP_PASS_WITH_DEBT, 2026-07-18)
+GATE_R5 = NOT_STARTED (about to start per TASK-003)
 GATE_R6 = NOT_STARTED
 MIGRATION_PILOT_001 = NOT_APPROVED
 ```
@@ -88,6 +88,35 @@ R2 has been independently reviewed by GPT (see `reports/phaseR2-independent-gpt-
 Based on the independent review outcome and the P0 remediation, all 10 acceptance criteria of TASK-001 are satisfied. Manifest `gate_status.R2` and `audit_status` are advanced to `INDEPENDENTLY_VERIFIED_PASS` and `R2_INDEPENDENTLY_VERIFIED_PASS` respectively. `migration_pilot_status` remains `NOT_APPROVED`.
 
 R3 remains `NOT_STARTED`. Per user instruction, R3 must not auto-start; it will be established and executed only after explicit user approval.
+
+## 3.2 R3+R4 independent review outcome (2026-07-18)
+
+R3+R4 has been independently reviewed by GPT. The full review conclusion and R5 execution constraints are written to `docs/ai/tasks/TASK-003-R5-V11-FIELD-VALIDATION-PACKET.md`. Review outcome: `MVP_PASS_WITH_DEBT`.
+
+Independent evidence verified by GPT:
+
+- `feishu-v2/` working tree clean on `master`; `HEAD == origin/master == 82365a0436aff554e8f7bd5318518caeab993208`.
+- R3+R4 P0/P1 fix commits: `402cb6e9dc96c98a7a2d3037bf7035fa532aa8a6` (main fix) and `82365a0...` (SHA backfill).
+- `node --test tests/migration-classifier.test.js`: 58/58 pass, 13 suites, exit 0.
+- `scripts/verify_public_repo.py` against tracked 134 files: `S0=0 S1=0 S2=0`, exit 0.
+- R4 classification accounting CLI ran twice on 304 private V1 records; all four entity buckets and overall totals reconcile exactly.
+- Private matrix SHA256 stable across two runs: `9401ba56f0d812e3f41e47a5450b0bbcf4f2aa25502cf15959e8bdfbb96200f2`.
+- Public summary SHA256 stable across two runs: `548077756b9e50b883e2674c2268926849d67e86b13494b90b06673e2c49e632`.
+- 3 private paths are gitignored and untracked.
+
+All 5 P0 blockers from `TASK-002-R4-FIX-PACKET.md` are closed:
+
+- P0-1: `budget.js` D-025 prefix-symbol direction (e.g., `<3000` parsed, `3000<` ambiguous).
+- P0-2: `classifier.js` D-020 customer status inference propagates any unclear project status.
+- P0-3: `PROJECT_STATUS_DIRECT_MAP` added `已交付` / `已归档`.
+- P0-4: `customerMissingIdentity` added `has_valid_need_summary` identity path.
+- P0-5: Joint R3+R4 audit package rewritten to satisfy AC17/AC19.
+
+P1 doc debt (non-blocking, deferred to R5 Task 1): `reports/classifier-test-report.md` Section 2 suite counts were mis-aligned with the TAP output. Fixed in this R5 Task 1 control-plane closeout: the suite table now matches the real TAP output exactly (1+2+10+4+6+3+16+3+2+2+3+4+2 = 58 tests across 13 suites). Section 5 invariant references and Section 9 final gate status are also updated.
+
+Based on the independent review outcome and the P1 closeout, manifest `gate_status.R3` and `gate_status.R4` are advanced to `INDEPENDENTLY_VERIFIED_PASS`; `audit_status` is set to `R4_INDEPENDENTLY_VERIFIED_PASS_R5_PENDING_START`. `migration_pilot_status` remains `NOT_APPROVED`.
+
+R5 remains `NOT_STARTED` at the closeout boundary. R5 v1.1 field validation will be executed under `TASK-003-R5-V11-FIELD-VALIDATION-PACKET.md`; Trae must stop at `R5_REVIEW_PENDING` and must not auto-continue to R6 or `MIGRATION_PILOT_001`.
 
 ## 4. Approved work
 
