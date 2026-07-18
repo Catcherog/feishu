@@ -10,8 +10,8 @@
 > **R6 主体基线 HEAD**：`8448e9ba74d792f5b227cf78c3399d1253ebe4c6`（R5 第三修复批次 backfill commit）
 > **R6 main commit**：`0f3fb108c790b054251e67940761f99705a76c18`（pre-backfill，含本审计包的 PLACEHOLDER 版本）
 > **R6 backfill commit**：`d1b2d0544eb6216b583a56667a0484ecccb38003`（SHA backfill，已 push；HEAD == origin/master == d1b2d054）
-> **R6 fix main commit**：`PENDING_PLACEHOLDER_TO_BE_FILLED_BY_BACKFILL`（P0-1 projection.js + P0-2 d026-evaluator.js + 51 合成测试 + threshold judgement schema v1.1 + entrypoint/manifest/审计包同步；PLACEHOLDER 由后续 SHA backfill commit 替换为真实 SHA）
-> **R6 fix backfill commit**：`PENDING_PLACEHOLDER_TO_BE_FILLED_BY_BACKFILL`（SHA backfill for R6 fix main commit；遵循 R5/R6 相同策略）
+> **R6 fix main commit**：`7b4d5c5368f3f03bc058327cc38dd85618429e81`（P0-1 projection.js + P0-2 d026-evaluator.js + 51 合成测试 + threshold judgement schema v1.1 + entrypoint/manifest/审计包同步；本审计包此版本的 blob SHA 在 Section 5.3 中记录）
+> **R6 fix backfill commit**：`PENDING_PLACEHOLDER_TO_BE_FILLED_BY_BACKFILL`（SHA backfill for R6 fix main commit；遵循 R5/R6 相同策略；GPT 复审时通过 `git log --oneline -2 7b4d5c53` 确认 backfill commit 紧随其后）
 > **目标 Base 别名**：`V2_PILOT_BASE_ALIAS`（R6 不写入 V2 测试 Base，仅读取私有 V1 导出）
 
 ---
@@ -296,17 +296,17 @@
 | `PUBLIC_EXECUTION_ENTRYPOINT.md` | 修改 | SHA backfill（R6 backfill commit 实际 SHA + R6 final HEAD） | `d738d0a9b7da49c8929f4ec45fdbbad676713ec5` | （由 GPT 复审时通过 `git show d1b2d054:PUBLIC_EXECUTION_ENTRYPOINT.md \| sha256sum` 复核） | REPRODUCIBLE_FROM_PUBLIC_REPO |
 | `reports/phaseR6-read-only-dry-run-gpt-audit-package.md` | 修改 | SHA backfill（main commit SHA + blob/SHA256 in audit table） | `61db77da428339df01fd76faf74e4f2e69e18cef` | （PLACEHOLDER 版本已被本修订版替换） | REPRODUCIBLE_FROM_PUBLIC_REPO |
 
-### 5.3 R6 fix main commit（`PENDING_PLACEHOLDER_TO_BE_FILLED_BY_BACKFILL`）
+### 5.3 R6 fix main commit (`7b4d5c5368f3f03bc058327cc38dd85618429e81`)
 
 | 文件路径 | 操作 | 说明 | Git blob SHA | 文件 SHA256 | 证据分级 |
 |---|---|---|---|---|---|
-| `src/migration/projection.js` | 新建 | P0-1 迁移投影纯函数模块 + 5 个显式 schema 默认字段 | PENDING_BACKFILL | `13097e78b2e718f1d0512f57f47f4a0be5d4b0045b3ec1d5f6c48b9457bb2f46` | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `src/migration/d026-evaluator.js` | 新建 | P0-2 D-026 evaluator 纯函数 + Project-Customer 关联校验 | PENDING_BACKFILL | `bb8d7b9dfdb8728c8a175d35c5a7ce000089cd0a3e811b4d513c3a4f81eefbdc` | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `tests/migration-projection.test.js` | 新建 | P0-1+P0-2 合成测试（51 tests / 11 suites） | PENDING_BACKFILL | `9376271e5eac7767cdf74b843789974e3744e7771f7a43da101b6dca0fe5ee53` | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `reports/r6-quantity-threshold-judgement.json` | 修改 | D-026 evaluator v1.1 输出（schema 升级 + association_check） | PENDING_BACKFILL | `d3387113332d241a96870f8b49570ab014d6a8852aa5d0566aa9b5e47abb89f3` | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `PUBLIC_EXECUTION_ENTRYPOINT.md` | 修改 | tracked 152→153→156 修正 + Section 3.8 R6 fix batch | PENDING_BACKFILL | `fc0a8bcb940e1ffcfc6220aefde2ac8429b198917a0b2d5378c51dd075f74f83` | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `config/public-execution-manifest.json` | 修改 | authoritative_files 11→41 项 + r6_fix_batch_submission revision_history | PENDING_BACKFILL | `47984a910f8496b5cba80408c1489869f93a661f9f187a35a966c9a907d5dcfa` | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `reports/phaseR6-read-only-dry-run-gpt-audit-package.md` | 修改 | R6 修订版审计包（本文件） | PENDING_BACKFILL（非自引用，遵循 R5/R6 相同策略） | `20948a918d1029f0bb1ba0249180dc75375a3525d9c14091d7ac93e8dad6b15c` | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `src/migration/projection.js` | 新建 | P0-1 迁移投影纯函数模块 + 5 个显式 schema 默认字段 | `b9156a58bbd9835218a712065e01726f8afd0cb1` | `13097e78b2e718f1d0512f57f47f4a0be5d4b0045b3ec1d5f6c48b9457bb2f46` | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `src/migration/d026-evaluator.js` | 新建 | P0-2 D-026 evaluator 纯函数 + Project-Customer 关联校验 | `fb11648317ab4cfe1bb35c6c59a801793f667a9c` | `bb8d7b9dfdb8728c8a175d35c5a7ce000089cd0a3e811b4d513c3a4f81eefbdc` | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `tests/migration-projection.test.js` | 新建 | P0-1+P0-2 合成测试（51 tests / 11 suites） | `f65afb664272d2745e0ca102389b9447a724d50b` | `9376271e5eac7767cdf74b843789974e3744e7771f7a43da101b6dca0fe5ee53` | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `reports/r6-quantity-threshold-judgement.json` | 修改 | D-026 evaluator v1.1 输出（schema 升级 + association_check） | `abdabe365b356655e6276d0a938041a8b5d3408a` | `d3387113332d241a96870f8b49570ab014d6a8852aa5d0566aa9b5e47abb89f3` | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `PUBLIC_EXECUTION_ENTRYPOINT.md` | 修改 | tracked 152→153→156 修正 + Section 3.8 R6 fix batch | `49f9e377bbafb06508df7afb404f11f50941744a` | `fc0a8bcb940e1ffcfc6220aefde2ac8429b198917a0b2d5378c51dd075f74f83` | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `config/public-execution-manifest.json` | 修改 | authoritative_files 11→41 项 + r6_fix_batch_submission revision_history | `273e898c841b65979aeb08acb67837750905a629` | `47984a910f8496b5cba80408c1489869f93a661f9f187a35a966c9a907d5dcfa` | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `reports/phaseR6-read-only-dry-run-gpt-audit-package.md` | 修改 | R6 修订版审计包（本文件，pre-backfill 版本） | `14fc40c212fb747ff44971b5cc8005ba36ee4451`（pre-backfill blob；最终版本在 backfill commit 中，GPT 复审时通过 `git show <fix-backfill>:reports/phaseR6-read-only-dry-run-gpt-audit-package.md \| sha256sum` 复核） | `20948a918d1029f0bb1ba0249180dc75375a3525d9c14091d7ac93e8dad6b15c`（pre-backfill SHA256） | REPRODUCIBLE_FROM_PUBLIC_REPO |
 
 ### 5.4 R6 fix backfill commit（`PENDING_PLACEHOLDER_TO_BE_FILLED_BY_BACKFILL`）
 

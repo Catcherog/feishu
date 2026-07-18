@@ -18,7 +18,7 @@
 > R6 main commit: `0f3fb108c790b054251e67940761f99705a76c18`（R6 read-only Dry Run 主体提交：R5 closeout + P1 scanner debt + 全量分类 + 审计包 PLACEHOLDER 版本）
 > R6 backfill commit: `d1b2d0544eb6216b583a56667a0484ecccb38003`（SHA backfill for R6 main commit；遵循 R5 第三修复批次相同策略）
 > R6 final HEAD after backfill: `d1b2d0544eb6216b583a56667a0484ecccb38003`（已 push，HEAD == origin/master == d1b2d054）
-> R6 fix main commit: `PENDING_PLACEHOLDER_TO_BE_FILLED_BY_BACKFILL`（R6 fix batch 主体提交：P0-1 projection.js + P0-2 d026-evaluator.js + 51 合成测试 + threshold judgement schema v1.1 + entrypoint/manifest/审计包同步；PLACEHOLDER 由后续 SHA backfill commit 替换为真实 SHA）
+> R6 fix main commit: `7b4d5c5368f3f03bc058327cc38dd85618429e81`（R6 fix batch 主体提交：P0-1 projection.js + P0-2 d026-evaluator.js + 51 合成测试 + threshold judgement schema v1.1 + entrypoint/manifest/审计包同步）
 > R6 fix backfill commit: `PENDING_PLACEHOLDER_TO_BE_FILLED_BY_BACKFILL`（SHA backfill for R6 fix main commit；遵循 R5/R6 相同策略）
 > This file is the phase-specific execution entrypoint. It overrides stale phase instructions in older prompts or chat history.
 

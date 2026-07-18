@@ -283,7 +283,7 @@
       "action": "r6_fix_batch_submission",
       "review_packet": "docs/ai/tasks/TASK-004-R6-REVIEW-FIX-PACKET.md",
       "baseline_head": "d1b2d0544eb6216b583a56667a0484ecccb38003",
-      "main_commit": "PENDING_PLACEHOLDER_TO_BE_FILLED_BY_BACKFILL",
+      "main_commit": "7b4d5c5368f3f03bc058327cc38dd85618429e81",
       "backfill_commit": "PENDING_PLACEHOLDER_TO_BE_FILLED_BY_BACKFILL",
       "final_head": "PENDING_PLACEHOLDER_TO_BE_FILLED_BY_BACKFILL",
       "audit_outcome": "PENDING_REVIEW",
