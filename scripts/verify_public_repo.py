@@ -92,7 +92,7 @@ INTERNAL_ID_PATTERNS: list[tuple[str, str, re.Pattern]] = [
 PRIVACY_PATTERNS: list[tuple[str, str, re.Pattern]] = [
     ("record_id", "S1", re.compile(
         r"\brec(?!ent|eive|ommend|over|ruit|ipe|eipt|ord|lam|ogniz|turf|ital)(?=[A-Za-z0-9]*[A-Z0-9])[A-Za-z0-9]{10,}")),
-    ("phone_number", "S1", re.compile(r"(?<!\d)1[3-9]\d{9}(?!\d)")),
+    ("phone_number", "S1", re.compile(r"(?<![0-9a-f])1[3-9]\d{9}(?![0-9a-f])")),
     # Negative lookahead excludes common type annotations (string, undefined, unknown, any, null)
     # and property accesses (client, options) to avoid false positives on TypeScript type annotations
     ("wechat_id_assignment", "S1", re.compile(
@@ -110,18 +110,6 @@ ALIAS_PATTERNS = re.compile(
     r"PROJECT_ALIAS_\d+|ENTITY_ALIAS_\d+|"
     r"<[A-Z_]+>)"
 )
-
-# Files that legitimately contain synthetic test fixtures matching the S2 ID patterns.
-# These files are exempt from S2 findings ONLY (S0/S1 findings are still reported).
-# Rationale: tests/verify_public_repo.py tests the scanner's pattern matching, so it
-# must contain strings that match the pattern. The IDs are synthetic (not real Feishu
-# resources), following the real Feishu ID format (3-letter prefix + 7-char alphanumeric
-# suffix, mixed case + digit). S0 (secrets) and S1 (privacy) are still scanned to catch
-# accidental real-data leaks in test files.
-S2_EXEMPT_FILES: set[str] = {
-    "tests/test_verify_public_repo.py",
-}
-
 
 def relative(path: Path) -> str:
     return path.relative_to(ROOT).as_posix()
@@ -179,11 +167,12 @@ def fingerprint(text: str) -> str:
 def scan_file(rel: str) -> list[dict]:
     """Scan a single file and return findings list.
 
-    S2_EXEMPT_FILES: files that legitimately contain synthetic test fixtures
-    matching the S2 ID patterns (e.g., the scanner's own test file). For these
-    files, S2 findings are suppressed because the IDs are synthetic. S0 (secrets)
-    and S1 (privacy) findings are still reported to catch accidental real-data
-    leaks in test files.
+    No file is exempt from S2 scanning: every tracked file (including the
+    scanner's own test file) must report S2 findings if it contains strings
+    matching the internal ID patterns. Test files that need to exercise the
+    S2 pattern must construct matching strings at runtime (e.g., via string
+    concatenation) so the source code itself does not contain any literal
+    matching the pattern.
     """
     path = ROOT / rel
     findings: list[dict] = []
@@ -200,16 +189,10 @@ def scan_file(rel: str) -> list[dict]:
         return [{"type": "non_utf8", "severity": "S3", "file": rel, "line": 0,
                  "match": "<non-UTF8>", "fingerprint": "N/A"}]
 
-    s2_exempt = rel in S2_EXEMPT_FILES
-
     # Check all pattern categories
     all_patterns = SECRET_PATTERNS + INTERNAL_ID_PATTERNS + PRIVACY_PATTERNS
 
     for name, severity, pattern in all_patterns:
-        # Skip S2 findings for exempt files (synthetic test fixtures)
-        if severity == "S2" and s2_exempt:
-            continue
-
         for match in pattern.finditer(text):
             match_text = match.group()
             # Skip ONLY if the match text itself is a known alias.

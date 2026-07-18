@@ -159,8 +159,8 @@
 ## Planning_Document 新字段验证
 
 本次测试验证了 Phase 1B-1 前置创建的两个新字段：
-- `risk_notes` (fldwH8D7AE)：多行文本，写入成功
-- `approved_by` (fldpny6QoG)：人员，字段创建成功
+- `risk_notes` (<REDACTED_FIELD_ID>)：多行文本，写入成功
+- `approved_by` (<REDACTED_FIELD_ID>)：人员，字段创建成功
 
 ## 结论
 

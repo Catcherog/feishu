@@ -204,7 +204,7 @@
 | trigger_control_list | �?已配�?|
 | 是否启用 | �?声称已启用（未验证） |
 
-**已知问题**�?- 2026-06-27 修复：filter 条件�?`$.trigger_3.fldhZ7UC6X` 修正�?`$.trigger_3.record`
+**已知问题**�?- 2026-06-27 修复：filter 条件�?`$.trigger_3.<REDACTED_FIELD_ID>` 修正�?`$.trigger_3.record`
 
 **未验证项**：反向查找是否正确、素材状态是否成功更�?
 **建议**：V2 首期不迁移（内容发布模块二期�?
