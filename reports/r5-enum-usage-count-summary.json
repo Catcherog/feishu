@@ -1,0 +1,26 @@
+{
+  "summary_version": "r5-enum-usage-count-summary-v1.0",
+  "captured_at": "2026-07-18T05:20:36.606Z",
+  "target_base_alias": "V2_PILOT_BASE_ALIAS",
+  "target_table_alias": "V2_CUSTOMER_TABLE_ALIAS",
+  "source_channel_field_name": "来源渠道",
+  "v11_spec_options_count": 12,
+  "live_options_count": 14,
+  "extra_options_in_live_not_in_v11": [
+    "微信",
+    "不存在的渠道XYZ"
+  ],
+  "extra_options_count": 2,
+  "total_records_read": 5,
+  "extra_option_usage_counts": {
+    "微信": 1,
+    "不存在的渠道XYZ": 0
+  },
+  "record_level_data_redacted": true,
+  "full_value_distribution": {
+    "小红书": 1,
+    "转介绍": 1,
+    "微信": 1,
+    "(empty)": 2
+  }
+}

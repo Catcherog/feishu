@@ -1,0 +1,61 @@
+{
+  "summary_version": "r5-enum-cleanup-summary-v1.1",
+  "captured_at": "2026-07-18T05:32:45.465Z",
+  "target_base_alias": "V2_PILOT_BASE_ALIAS",
+  "target_table_alias": "V2_CUSTOMER_TABLE_ALIAS",
+  "source_channel_field_name": "来源渠道",
+  "source_channel_field_id": "fldh8itrXU",
+  "user_decision": "cleanup_converge_to_v1.1",
+  "extra_options_removed": [
+    "微信",
+    "不存在的渠道XYZ"
+  ],
+  "remap_from": "微信",
+  "remap_to": "微信私聊",
+  "operations_executed_in_prior_run": {
+    "description": "First run of r5_enum_cleanup.js executed the actual cleanup. Script failed at Step 5 verification due to API cache latency, but field-update had already succeeded. Second run (idempotent) confirmed live options == v1.1 spec.",
+    "records_remap_attempted": 1,
+    "records_remap_succeeded": 1,
+    "records_remap_failed": 0,
+    "field_update_applied": true,
+    "field_update_target_options_count": 12,
+    "field_update_succeeded": true
+  },
+  "options_before_count": 14,
+  "options_after_count": 12,
+  "options_after": [
+    "小红书",
+    "官网",
+    "小程序",
+    "转介绍",
+    "其他",
+    "抖音",
+    "视频号",
+    "朋友圈",
+    "微信公众号",
+    "微信私聊",
+    "线下活动",
+    "未知"
+  ],
+  "v11_spec_options_count": 12,
+  "v11_spec_options": [
+    "小红书",
+    "抖音",
+    "视频号",
+    "朋友圈",
+    "微信公众号",
+    "微信私聊",
+    "官网",
+    "小程序",
+    "转介绍",
+    "线下活动",
+    "其他",
+    "未知"
+  ],
+  "live_matches_v11": true,
+  "verification_method": "field-get re-read with retry; live options sorted set == v1.1 spec sorted set",
+  "schema_snapshot_path": "backups/private/r5-v2-schema-snapshot-after-enum-cleanup.json",
+  "schema_snapshot_sha256": "691e78a2244a6d44a7d02f44e603a3ed33c8e0b0cd457d4194c67aa414eeeefd",
+  "record_level_data_redacted": true,
+  "notes": "1 test record previously referenced '微信' (not in v1.1 spec). Remapped to '微信私聊' (closest v1.1 match by business semantics) before deleting the '微信' option. '不存在的渠道XYZ' had 0 references and was deleted directly."
+}

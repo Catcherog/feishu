@@ -2,10 +2,13 @@
 
 > Repository: `https://github.com/Catcherog/feishu`
 > Branch: `master`
-> Current execution state: `PHASE_R5_V11_FIELD_VALIDATION`
+> Current execution state: `PHASE_R5_V11_FIELD_VALIDATION_REMEDIATION`
 > Current gate: `R5`
 > R4 audit status: `R4_INDEPENDENTLY_VERIFIED_PASS` (GPT 2026-07-18, `MVP_PASS_WITH_DEBT`)
+> R5 audit status: `R5_REVIEW_PENDING` (GPT 2026-07-18, `MVP_FAIL`, remediation in progress per `docs/ai/tasks/TASK-003-R5-REVIEW-FIX-PACKET.md`)
 > Migration pilot: `NOT_APPROVED`
+> Current HEAD at R5 main batch closeout: `3df9fc5da09c751f28629d053951a50374138dda`
+> Tracked files at R5 main batch closeout: 140
 > This file is the phase-specific execution entrypoint. It overrides stale phase instructions in older prompts or chat history.
 
 ## 1. Bootstrap
@@ -59,7 +62,7 @@ GATE_R1 = INDEPENDENTLY_VERIFIED_PASS
 GATE_R2 = INDEPENDENTLY_VERIFIED_PASS
 GATE_R3 = INDEPENDENTLY_VERIFIED_PASS
 GATE_R4 = INDEPENDENTLY_VERIFIED_PASS (MVP_PASS_WITH_DEBT, 2026-07-18)
-GATE_R5 = NOT_STARTED (about to start per TASK-003)
+GATE_R5 = R5_REVIEW_PENDING (MVP_FAIL, 2026-07-18; remediation in progress per TASK-003-R5-REVIEW-FIX-PACKET.md)
 GATE_R6 = NOT_STARTED
 MIGRATION_PILOT_001 = NOT_APPROVED
 ```
@@ -117,6 +120,35 @@ P1 doc debt (non-blocking, deferred to R5 Task 1): `reports/classifier-test-repo
 Based on the independent review outcome and the P1 closeout, manifest `gate_status.R3` and `gate_status.R4` are advanced to `INDEPENDENTLY_VERIFIED_PASS`; `audit_status` is set to `R4_INDEPENDENTLY_VERIFIED_PASS_R5_PENDING_START`. `migration_pilot_status` remains `NOT_APPROVED`.
 
 R5 remains `NOT_STARTED` at the closeout boundary. R5 v1.1 field validation will be executed under `TASK-003-R5-V11-FIELD-VALIDATION-PACKET.md`; Trae must stop at `R5_REVIEW_PENDING` and must not auto-continue to R6 or `MIGRATION_PILOT_001`.
+
+## 3.3 R5 independent review outcome (2026-07-18)
+
+R5 v1.1 field validation was executed under `TASK-003-R5-V11-FIELD-VALIDATION-PACKET.md` across 6 commits (`7051a7f` → `c3d7e87` → `f21b347` → `9b63e8b` → `f373374` → `3df9fc5` SHA backfill). R5 was independently reviewed by GPT (see `reports/phaseR5-v11-field-validation-gpt-audit-package.md`). Review outcome: `MVP_FAIL`.
+
+Independent evidence verified by GPT at review time:
+
+- `feishu-v2/` working tree clean on `master`; `HEAD == origin/master == 3df9fc5da09c751f28629d053951a50374138dda`.
+- `node --test tests/migration-classifier.test.js`: 58/58 pass, 13 suites, exit 0.
+- bundled Python `-m unittest tests.test_generate_schema_diff`: 3/3 PASS, exit 0.
+- bundled Python `scripts/verify_public_repo.py` against tracked 140 files: `S0=0 S1=0 S2=0`, exit 0.
+- 35 write/read field validations, 8 illegal-write rejections, and 6 synthetic-record rollback drill reports all exist.
+
+P0 blockers identified by GPT:
+
+- P0-1: Live V2 test Base `source_channel` had 14 options vs v1.1 spec 12; extra options `微信` and `不存在的渠道XYZ`. Execution continued after detecting the discrepancy, violating TASK-003 Stop Condition.
+- P0-2: R5 audit package contained unbackfilled placeholders ("见 git"), wrong final HEAD (`f373374` instead of `3df9fc5`), wrong commit count (5 instead of 6), and mis-classified evidence levels (real-Base execution results labeled as `REPRODUCIBLE_FROM_PUBLIC_REPO`).
+- P0-3: This file (`PUBLIC_EXECUTION_ENTRYPOINT.md`) still showed `GATE_R5 = NOT_STARTED`, conflicting with manifest `R5_REVIEW_PENDING`.
+
+Fix packet: `docs/ai/tasks/TASK-003-R5-REVIEW-FIX-PACKET.md`.
+
+Remediation scope (in progress):
+
+- P0-1 Step 1 (read-only count): `微信` 1 reference, `不存在的渠道XYZ` 0 references. Public output: `reports/r5-enum-usage-count-summary.json`.
+- P0-1 Step 2 (user-approved cleanup): User decision `cleanup_converge_to_v1.1`. Remapped 1 test record from `微信` to `微信私聊`, then deleted both extra options. Live options now 12, matching v1.1 spec. New schema snapshot SHA256: `691e78a2244a6d44a7d02f44e603a3ed33c8e0b0cd457d4194c67aa414eeeefd`. Public output: `reports/r5-enum-cleanup-summary.json`.
+- P0-2: Rewriting R5 audit package with complete blob/SHA256, correct 6-commit chain, correct evidence classification (private/real-Base results labeled `PRIVATE_EVIDENCE_NOT_PUBLIC` / `SELF_REPORTED`), and AC table aligned to TASK-003 Section 6.
+- P0-3: This file updated to `R5_REVIEW_PENDING (MVP_FAIL, remediation in progress)`.
+
+Control plane must remain at `R5_REVIEW_PENDING` until GPT re-reviews the remediation. R6 and `MIGRATION_PILOT_001` must remain `NOT_STARTED` / `NOT_APPROVED`.
 
 ## 4. Approved work
 
