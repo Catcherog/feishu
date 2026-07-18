@@ -2,16 +2,17 @@
 
 > Repository: `https://github.com/Catcherog/feishu`
 > Branch: `master`
-> Current execution state: `PHASE_R5_V11_FIELD_VALIDATION_REMEDIATION_THIRD_FIX`
+> Current execution state: `PHASE_R5_INDEPENDENTLY_VERIFIED_PASS`
 > Current gate: `R5`
 > R4 audit status: `R4_INDEPENDENTLY_VERIFIED_PASS` (GPT 2026-07-18, `MVP_PASS_WITH_DEBT`)
-> R5 audit status: `R5_REVIEW_PENDING` (GPT 2026-07-18 first review `MVP_FAIL`; R5 first fix batch submitted; R5 second fix batch submitted; R5 third fix batch submitted per user instructions)
+> R5 audit status: `R5_INDEPENDENTLY_VERIFIED_PASS` (GPT 2026-07-18 third fix batch review, `MVP_PASS_WITH_DEBT`; P1 scanner debt to be addressed before R6 audit package finalization)
 > Migration pilot: `NOT_APPROVED`
 > Current HEAD at R5 main batch closeout: `3df9fc5da09c751f28629d053951a50374138dda`
 > R5 first fix main commit: `82d98866686d4b0f502ad450b34177ab9a770335`（P0-1/P0-2/P0-3 主体修复）
 > R5 first fix backfill commit: `672ed78640895e6a01f294c15d9b82ad270b60be`（SHA backfill for R5 first fix batch）
 > R5 second fix batch commits: `8dcd9fdcba7e27e3275fd4b1c805f9a160d42a52`（R5 second fix main commit）+ `13dee7175f99e3c0577aa8267ad0e1440f4ebaf3`（R5 second fix backfill commit）
-> R5 third fix batch commits: `ea18cb69c9eee3ef798ba0bffb45b468c4ddc495`（R5 third fix main commit）+ R5 third fix backfill commit（SHA 待回填，详见审计包 Section 5 "R5 第三修复批次自引用策略"）
+> R5 third fix batch commits: `ea18cb69c9eee3ef798ba0bffb45b468c4ddc495`（R5 third fix main commit）+ `8448e9ba74d792f5b227cf78c3399d1253ebe4c6`（R5 third fix backfill commit）
+> R5 final HEAD after third fix backfill: `8448e9ba74d792f5b227cf78c3399d1253ebe4c6`
 > Tracked files at R5 main batch closeout: 140; at R5 first fix batch closeout: 142; at R5 second fix batch closeout: 146; at R5 third fix batch closeout: 146
 > This file is the phase-specific execution entrypoint. It overrides stale phase instructions in older prompts or chat history.
 
@@ -66,7 +67,7 @@ GATE_R1 = INDEPENDENTLY_VERIFIED_PASS
 GATE_R2 = INDEPENDENTLY_VERIFIED_PASS
 GATE_R3 = INDEPENDENTLY_VERIFIED_PASS
 GATE_R4 = INDEPENDENTLY_VERIFIED_PASS (MVP_PASS_WITH_DEBT, 2026-07-18)
-GATE_R5 = R5_REVIEW_PENDING (MVP_FAIL, 2026-07-18; remediation in progress per TASK-003-R5-REVIEW-FIX-PACKET.md)
+GATE_R5 = INDEPENDENTLY_VERIFIED_PASS (MVP_PASS_WITH_DEBT, 2026-07-18; P1 scanner debt pending before R6 audit finalization)
 GATE_R6 = NOT_STARTED
 MIGRATION_PILOT_001 = NOT_APPROVED
 ```
@@ -201,14 +202,37 @@ After R5 second fix batch submission, review remained `MVP_FAIL`. A restricted t
    - After sanitization, tracked scan went from `S0=0 S1=0 S2=340` to **`S0=0 S1=0 S2=0`**, satisfying AC9 without lowering it.
 5. **No history rewrite / force push**: History cleanup remains `NOT_APPROVED`, `NOT_EXECUTED`. Pre-existing V1 field ID exposures still exist in old commits, but the current HEAD has zero S2 exposures.
 6. **Re-ran all tests and scans**: 58/58 migration-classifier + 17/17 verify_public_repo + 3/3 schema_diff all PASS; tracked 146 files `S0=0 S1=0 S2=0`; staged 8 files `S0=0 S1=0 S2=0`.
-7. **Stopped at R5_REVIEW_PENDING**: Control plane remains `R5_REVIEW_PENDING`. R6 and `MIGRATION_PILOT_001` remain `NOT_STARTED` / `NOT_APPROVED`.
+7. **Stopped at R5_REVIEW_PENDING**: Control plane remained at `R5_REVIEW_PENDING` pending GPT independent review. R6 and `MIGRATION_PILOT_001` remain `NOT_STARTED` / `NOT_APPROVED`.
 
 ### 3.5.1 AC9 / AC10 status after R5 third fix batch
 
 - **AC9** (公开仓库和 staged 安全扫描均为 `S0=0 S1=0 S2=0`): **满足（经 R5 第三修复批次关闭）**. Tracked 146 files `S0=0 S1=0 S2=0` + staged 8 files `S0=0 S1=0 S2=0`. No exemption mechanism, no S2 exposures.
-- **AC10** (R5 审计包证据完整，工作树干净，提交已 push): **满足（待 push）**. Audit package updated to reflect S2_EXEMPT_FILES removal + V1 sanitization + AC9 satisfaction. R5 third fix main commit = `ea18cb69c9eee3ef798ba0bffb45b468c4ddc495`; R5 third fix backfill commit SHA 由 `git rev-parse HEAD` 在 backfill commit 后获取并由 GPT 复审时通过 Git 事实单列复核（不在本文件内自引用）。
+- **AC10** (R5 审计包证据完整，工作树干净，提交已 push): **满足**. Audit package updated to reflect S2_EXEMPT_FILES removal + V1 sanitization + AC9 satisfaction. R5 third fix main commit = `ea18cb69c9eee3ef798ba0bffb45b468c4ddc495`; R5 third fix backfill commit = `8448e9ba74d792f5b227cf78c3399d1253ebe4c6`（已 push，HEAD == origin/master == 8448e9b）。
 
-R5 third fix batch main commit SHA = `ea18cb69c9eee3ef798ba0bffb45b468c4ddc495`. R5 third fix backfill commit SHA + final HEAD will be confirmed by GPT via Git facts at review time. Control plane remains `R5_REVIEW_PENDING`. R6 and `MIGRATION_PILOT_001` remain `NOT_STARTED` / `NOT_APPROVED`.
+R5 third fix batch main commit SHA = `ea18cb69c9eee3ef798ba0bffb45b468c4ddc495`. R5 third fix backfill commit SHA = `8448e9ba74d792f5b227cf78c3399d1253ebe4c6`. R5 final HEAD after third fix backfill = `8448e9ba74d792f5b227cf78c3399d1253ebe4c6`. Control plane at this point remained `R5_REVIEW_PENDING` pending GPT independent review.
+
+## 3.6 R5 independent review outcome (2026-07-18)
+
+R5 third fix batch was independently reviewed by GPT. Review outcome: `MVP_PASS_WITH_DEBT`. R5 is advanced to `INDEPENDENTLY_VERIFIED_PASS`.
+
+Independent evidence verified by GPT at review time:
+
+- `feishu-v2/` working tree clean on `master`; `HEAD == origin/master == 8448e9ba74d792f5b227cf78c3399d1253ebe4c6`.
+- R5 third fix batch commits: `ea18cb69c9eee3ef798ba0bffb45b468c4ddc495` (main fix) + `8448e9ba74d792f5b227cf78c3399d1253ebe4c6` (SHA backfill).
+- `node --test tests/migration-classifier.test.js`: 58/58 pass, 13 suites, exit 0.
+- `python -m unittest tests.test_verify_public_repo tests.test_generate_schema_diff`: 17/17 + 3/3 pass, exit 0.
+- `python scripts/verify_public_repo.py` against tracked 146 files: `S0=0 S1=0 S2=0`, exit 0.
+- All 11 acceptance criteria of TASK-003 satisfied (AC9 and AC10 closed by R5 third fix batch; AC6 closed by R5 first fix batch via source_channel enum convergence).
+
+P1 debt approved for R6 (to be addressed in P1 scanner debt batch before R6 audit package finalization):
+
+- `phone_number` S1 pattern hex-aware boundary currently lower-case only `[0-9a-f]`. To be upgraded to case-insensitive `[0-9A-Fa-f]` so that uppercase SHA/blob hashes (e.g., PowerShell `Get-FileHash` output) are also correctly excluded from false positives.
+- Add regression tests verifying (a) uppercase SHA/blob hash substrings are not flagged as phone numbers; (b) standalone real phone numbers are still flagged.
+- No restoration of any whole-file or path exemption mechanism.
+
+Based on the independent review outcome, manifest `gate_status.R5` and `audit_status` are advanced to `INDEPENDENTLY_VERIFIED_PASS` and `R5_INDEPENDENTLY_VERIFIED_PASS` respectively. `migration_pilot_status` remains `NOT_APPROVED`.
+
+R6 remains `NOT_STARTED` at the closeout boundary. R6 read-only Dry Run will be executed under `docs/ai/tasks/TASK-004-R6-READ-ONLY-DRY-RUN-PACKET.md`; Trae must stop at `R6_REVIEW_PENDING` and must not auto-continue to `MIGRATION_PILOT_001`.
 
 ## 4. Approved work
 

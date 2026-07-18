@@ -1,0 +1,28 @@
+{
+  "schema_version": "r6-duplicate-candidates-summary-v1.0",
+  "generated_for": "R6_READ_ONLY_DRY_RUN",
+  "decision_reference": "D-022 (DECISION_LOG.md)",
+  "note": "Aggregate counts only. No real record_id, customer name, or PII is disclosed.",
+  "by_entity": {
+    "customer": {
+      "records_with_unresolved_duplicate": 0,
+      "total_duplicate_candidates": 0
+    },
+    "project": {
+      "records_with_unresolved_duplicate": 0,
+      "total_duplicate_candidates": 0
+    },
+    "model": {
+      "records_with_unresolved_duplicate": 0,
+      "total_duplicate_candidates": 0
+    },
+    "makeup": {
+      "records_with_unresolved_duplicate": 0,
+      "total_duplicate_candidates": 0
+    }
+  },
+  "overall": {
+    "records_with_unresolved_duplicate": 0,
+    "total_duplicate_candidates": 0
+  }
+}

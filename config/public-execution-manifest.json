@@ -2,16 +2,16 @@
   "manifest_version": "1.0.0",
   "repository": "Catcherog/feishu",
   "branch": "master",
-  "current_phase": "PHASE_R5_V11_FIELD_VALIDATION",
+  "current_phase": "PHASE_R5_INDEPENDENTLY_VERIFIED_PASS",
   "current_gate": "R5",
-  "audit_status": "R5_REVIEW_PENDING",
+  "audit_status": "R5_INDEPENDENTLY_VERIFIED_PASS",
   "migration_pilot_status": "NOT_APPROVED",
   "gate_status": {
     "R1": "INDEPENDENTLY_VERIFIED_PASS",
     "R2": "INDEPENDENTLY_VERIFIED_PASS",
     "R3": "INDEPENDENTLY_VERIFIED_PASS",
     "R4": "INDEPENDENTLY_VERIFIED_PASS",
-    "R5": "REVIEW_PENDING",
+    "R5": "INDEPENDENTLY_VERIFIED_PASS",
     "R6": "NOT_STARTED"
   },
   "entrypoint": "PUBLIC_EXECUTION_ENTRYPOINT.md",
@@ -148,7 +148,79 @@
       },
       "audit_package": "reports/phaseR5-v11-field-validation-gpt-audit-package.md",
       "field_write_path_report": "reports/v1.1-field-write-path-report.md",
-      "notes": "R5_REVIEW_PENDING. R6=NOT_STARTED. MIGRATION_PILOT_001=NOT_APPROVED. Validation marker R5_VALIDATION_20260718 (not MIGRATION_PILOT_001). 5 schema defaults not applied at Base layer due to lark-cli field-create limitation; migration scripts must set defaults explicitly."
+      "notes": "Initial R5 submission; subsequently went through three fix batches. R5_REVIEW_PENDING at this point. R6=NOT_STARTED. MIGRATION_PILOT_001=NOT_APPROVED. Validation marker R5_VALIDATION_20260718 (not MIGRATION_PILOT_001). 5 schema defaults not applied at Base layer due to lark-cli field-create limitation; migration scripts must set defaults explicitly."
+    },
+    {
+      "date": "2026-07-18",
+      "gate": "R5",
+      "action": "r5_first_fix_batch_submission",
+      "baseline_head": "3df9fc5da09c751f28629d053951a50374138dda",
+      "commits": ["82d9886", "672ed78"],
+      "final_head": "672ed78640895e6a01f294c15d9b82ad270b60be",
+      "fix_packet": "docs/ai/tasks/TASK-003-R5-REVIEW-FIX-PACKET.md",
+      "audit_outcome": "PENDING_REVIEW",
+      "fixes_applied": [
+        "P0-1: source_channel enum convergence (cleanup_converge_to_v1.1)",
+        "P0-2: rewrote audit package with full blob/SHA256, 6-commit chain, correct evidence levels",
+        "P0-3: PUBLIC_EXECUTION_ENTRYPOINT.md synced with manifest"
+      ],
+      "notes": "R5_REVIEW_PENDING retained. R6=NOT_STARTED. MIGRATION_PILOT_001=NOT_APPROVED. History cleanup NOT_APPROVED, NOT_EXECUTED."
+    },
+    {
+      "date": "2026-07-18",
+      "gate": "R5",
+      "action": "r5_second_fix_batch_submission",
+      "baseline_head": "672ed78640895e6a01f294c15d9b82ad270b60be",
+      "commits": ["8dcd9fd", "13dee71"],
+      "final_head": "13dee7175f99e3c0577aa8267ad0e1440f4ebaf3",
+      "audit_outcome": "PENDING_REVIEW",
+      "fixes_applied": [
+        "Redacted real Field ID from public HEAD (V2_CUSTOMER_SOURCE_CHANNEL_FIELD_ALIAS)",
+        "Fixed verify_public_repo.py false negatives (INTERNAL_ID_PATTERNS {8,}->{6,}, removed ALIAS context skip)",
+        "Added 11 regression tests",
+        "TASK-003 task packets added to public repo",
+        "Field ID exposure history documented"
+      ],
+      "notes": "R5_REVIEW_PENDING retained. Tracked scan: S0=0 S1=0 S2=340 (340 V1 pre-existing exposures). R6=NOT_STARTED. MIGRATION_PILOT_001=NOT_APPROVED. History cleanup NOT_APPROVED, NOT_EXECUTED."
+    },
+    {
+      "date": "2026-07-18",
+      "gate": "R5",
+      "action": "r5_third_fix_batch_submission",
+      "baseline_head": "13dee7175f99e3c0577aa8267ad0e1440f4ebaf3",
+      "commits": ["ea18cb6", "8448e9b"],
+      "final_head": "8448e9ba74d792f5b227cf78c3399d1253ebe4c6",
+      "audit_outcome": "PENDING_REVIEW",
+      "fixes_applied": [
+        "Removed S2_EXEMPT_FILES whole-file exemption mechanism",
+        "Test synthetic Feishu IDs converted to runtime string concatenation",
+        "Added 9 regression tests (NoS2Exemption 3 + S0S1Scanning 3 + PhoneNumberBoundary 3)",
+        "phone_number S1 pattern tightened to hex-aware boundary (?<![0-9a-f])...(?![0-9a-f])",
+        "Sanitized 3 V1 files (340 S2 → 0 S2): docs/current-base-schema-export.json (338 field IDs), reports/phase1b-write-path-test-report.md (2), docs/current-automation-audit.md (1)",
+        "No history rewrite / force push"
+      ],
+      "test_results": "58/58 migration-classifier + 17/17 verify_public_repo + 3/3 schema_diff = 78 PASS",
+      "scan_results": "tracked 146 files S0=0 S1=0 S2=0; staged 8 files S0=0 S1=0 S2=0",
+      "notes": "R5_REVIEW_PENDING retained pending GPT independent review. R6=NOT_STARTED. MIGRATION_PILOT_001=NOT_APPROVED. History cleanup NOT_APPROVED, NOT_EXECUTED."
+    },
+    {
+      "date": "2026-07-18",
+      "gate": "R5",
+      "action": "independent_review_closeout",
+      "reviewer": "GPT",
+      "audit_outcome": "MVP_PASS_WITH_DEBT",
+      "baseline_head": "8448e9ba74d792f5b227cf78c3399d1253ebe4c6",
+      "final_head": "8448e9ba74d792f5b227cf78c3399d1253ebe4c6",
+      "independent_evidence": [
+        "58/58 tests pass (13 suites, exit 0)",
+        "tracked 146 files: S0=0 S1=0 S2=0",
+        "78 total tests across classifier + scanner + schema-diff"
+      ],
+      "p1_debt_approved_for_r6": [
+        "phone_number S1 pattern hex-aware boundary currently lower-case only [0-9a-f]; to be upgraded to case-insensitive [0-9A-Fa-f] in P1 scanner debt batch"
+      ],
+      "next_gate": "R6",
+      "notes": "R5 advanced to INDEPENDENTLY_VERIFIED_PASS (MVP_PASS_WITH_DEBT). P1 scanner debt (phone_number hex boundary case-insensitivity + regression tests) to be addressed in a separate P1 batch before R6 audit package finalization. R6=NOT_STARTED (about to start per TASK-004). MIGRATION_PILOT_001=NOT_APPROVED."
     }
   ],
   "stop_after_completion": true

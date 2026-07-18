@@ -1,0 +1,34 @@
+{
+  "schema_version": "r6-quantity-threshold-judgement-v1.0",
+  "generated_for": "R6_READ_ONLY_DRY_RUN",
+  "decision_reference": "D-026 (DECISION_LOG.md)",
+  "description": "D-026 Phase 1B-3 启动前置条件：Customer >= 5 MIGRATABLE / Project >= 5 MIGRATABLE / Model >= 10 MIGRATABLE / Makeup >= 10 MIGRATABLE. Migration pilot MUST NOT start until ALL thresholds are met.",
+  "all_thresholds_met": false,
+  "judgement": "FAIL — One or more D-026 quantity thresholds not met. MIGRATION_PILOT_001 MUST NOT start. Review NEEDS_REVIEW / BLOCKED records and apply remediation (D-022 duplicate resolution, D-023 orphan handling, status / source / budget / project_type mapping).",
+  "thresholds": {
+    "customer": {
+      "required_migratable": 5,
+      "actual_migratable": 0,
+      "threshold_met": false,
+      "shortfall": 5
+    },
+    "project": {
+      "required_migratable": 5,
+      "actual_migratable": 0,
+      "threshold_met": false,
+      "shortfall": 5
+    },
+    "model": {
+      "required_migratable": 10,
+      "actual_migratable": 3,
+      "threshold_met": false,
+      "shortfall": 7
+    },
+    "makeup": {
+      "required_migratable": 10,
+      "actual_migratable": 5,
+      "threshold_met": false,
+      "shortfall": 5
+    }
+  }
+}

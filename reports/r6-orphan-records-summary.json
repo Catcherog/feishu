@@ -1,0 +1,29 @@
+{
+  "schema_version": "r6-orphan-records-summary-v1.0",
+  "generated_for": "R6_READ_ONLY_DRY_RUN",
+  "decision_reference": "D-023 (DECISION_LOG.md)",
+  "note": "Aggregate counts only. ORPHAN_PROJECT and CUSTOMER_UNRESOLVED counts include both primary and secondary occurrences. No real record_id is disclosed.",
+  "by_entity": {
+    "customer": {
+      "orphan_records": 0,
+      "reason_breakdown": {}
+    },
+    "project": {
+      "orphan_records": 47,
+      "reason_breakdown": {
+        "ORPHAN_PROJECT": 22
+      }
+    },
+    "model": {
+      "orphan_records": 0,
+      "reason_breakdown": {}
+    },
+    "makeup": {
+      "orphan_records": 0,
+      "reason_breakdown": {}
+    }
+  },
+  "overall": {
+    "orphan_records": 47
+  }
+}

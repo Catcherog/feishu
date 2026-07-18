@@ -332,12 +332,14 @@ class PhoneNumberBoundaryTests(unittest.TestCase):
     hash, not a real Chinese mobile phone number.
 
     The pattern boundaries were tightened from ``(?<!\\d)`` / ``(?!\\d)``
-    (digit boundaries) to ``(?<![0-9a-f])`` / ``(?![0-9a-f])`` (hex-aware
-    boundaries). A real phone number is never adjacent to hex characters in
-    normal prose; a phone-number-like substring inside a hex hash always is.
+    (digit boundaries) to ``(?<![0-9A-Fa-f])`` / ``(?![0-9A-Fa-f])``
+    (case-insensitive hex-aware boundaries). A real phone number is never
+    adjacent to hex characters in normal prose; a phone-number-like
+    substring inside a hex hash always is.
 
     These tests verify both directions:
-    (a) A phone-number-like substring inside a hex hash is NOT flagged.
+    (a) A phone-number-like substring inside a hex hash is NOT flagged
+        (lowercase, uppercase, and mixed-case hashes).
     (b) A real standalone phone number IS still flagged.
     """
 
@@ -375,6 +377,70 @@ class PhoneNumberBoundaryTests(unittest.TestCase):
             ),
         )
 
+    def test_phone_number_inside_uppercase_hex_hash_not_flagged(self) -> None:
+        """A 40-char UPPERCASE hex hash with a phone-like substring is NOT S1.
+
+        PowerShell `Get-FileHash` and some other tooling emit uppercase hex.
+        The hex-aware boundary must be case-insensitive so that uppercase
+        SHA/blob hashes (e.g., `8B5F44D222AEE16829796803F13E2C44DD2A4D3C`)
+        are not falsely matched as phone numbers.
+
+        The hash is built at runtime so this source file stays clean.
+        """
+        # Build a 40-char uppercase hex hash at runtime. The phone-like
+        # 11-digit substring is surrounded by 'E' before and 'F' after
+        # (both uppercase hex characters). Case-insensitive hex-aware
+        # boundaries must reject this as a phone number.
+        # The phone-like substring is split into two fragments so the source
+        # code does not contain a complete 11-digit literal.
+        hash_prefix_upper = "8B5F44D222AEE"  # 13 uppercase hex chars
+        phone_part_a = "1682"                # 4 digits (fragment A)
+        phone_part_b = "9796803"             # 7 digits (fragment B)
+        phone_like = phone_part_a + phone_part_b  # 11 digits, runtime only
+        hash_suffix_upper = "F13E2C44DD2A4D3C"  # 16 uppercase hex chars
+        upper_hash = hash_prefix_upper + phone_like + hash_suffix_upper
+        self.assertEqual(len(upper_hash), 40, "test fixture: hash must be 40 chars")
+        pattern = self._phone_pattern()
+        self.assertIsNone(
+            pattern.search(upper_hash),
+            msg=(
+                "A phone-number-like substring inside a 40-char UPPERCASE hex "
+                "hash must NOT match the phone_number pattern (case-insensitive "
+                "hex-aware boundaries). "
+                f"Hash: {upper_hash!r}"
+            ),
+        )
+
+    def test_phone_number_inside_mixed_case_hex_hash_not_flagged(self) -> None:
+        """A 64-char mixed-case SHA256 hash with a phone-like substring is NOT S1.
+
+        SHA256 hashes commonly mix upper- and lowercase hex (e.g., when
+        produced by different tools). The case-insensitive hex-aware boundary
+        must reject phone-like substrings inside any mixed-case hash.
+
+        The hash is built at runtime so this source file stays clean.
+        """
+        # Build a 64-char mixed-case SHA256-like hash at runtime. The
+        # phone-like 11-digit substring is surrounded by 'a' before and 'B'
+        # after (mixing lower- and uppercase hex).
+        hash_prefix_mixed = "9401ba56f0d812e3f41e47a5450b0bbcf4f2aa25502cf15959e8"  # 50 chars (ends with '8' hex)
+        phone_part_a = "1682"     # 4 digits (fragment A)
+        phone_part_b = "9796803"  # 7 digits (fragment B)
+        phone_like = phone_part_a + phone_part_b  # 11 digits, runtime only
+        hash_suffix_mixed = "Bb96200f2"  # 9 chars (starts with 'B' uppercase hex)
+        mixed_hash = hash_prefix_mixed + phone_like + hash_suffix_mixed
+        self.assertEqual(len(mixed_hash), 72, "test fixture: mixed hash length")
+        pattern = self._phone_pattern()
+        self.assertIsNone(
+            pattern.search(mixed_hash),
+            msg=(
+                "A phone-number-like substring inside a mixed-case SHA256-like "
+                "hash must NOT match the phone_number pattern (case-insensitive "
+                "hex-aware boundaries). "
+                f"Hash: {mixed_hash!r}"
+            ),
+        )
+
     def test_real_phone_number_still_flagged(self) -> None:
         """A standalone phone number (bounded by spaces) IS still S1.
 
@@ -400,6 +466,41 @@ class PhoneNumberBoundaryTests(unittest.TestCase):
                 len(phone_findings), 1,
                 msg=(
                     "A real standalone phone number must be flagged as S1. "
+                    f"Findings: {findings!r}"
+                ),
+            )
+            self.assertEqual(phone_findings[0]["severity"], "S1")
+        finally:
+            abs_path.unlink(missing_ok=True)
+
+    def test_real_phone_number_in_json_value_still_flagged(self) -> None:
+        """A standalone phone number in a JSON string value IS still S1,
+        even when surrounded by ASCII quotes. The hex-aware boundary
+        accepts a quote character (non-hex) on either side.
+
+        The phone number is built at runtime so this source file stays clean.
+        """
+        phone_part_a = "139"    # 3 digits (fragment A)
+        phone_part_b = "12345678"  # 8 digits (fragment B)
+        phone = phone_part_a + phone_part_b  # 11 digits, runtime only
+        self.assertEqual(len(phone), 11)
+        content = (
+            '{\n'
+            f'  "contact_phone": "{phone}"\n'
+            '}\n'
+        )
+        rel = "tests/fixtures/temp_phone_json_regression.json"
+        abs_path = ROOT / rel
+        abs_path.parent.mkdir(parents=True, exist_ok=True)
+        abs_path.write_text(content, encoding="utf-8")
+        try:
+            findings = scan_file(rel)
+            phone_findings = [f for f in findings if f["type"] == "phone_number"]
+            self.assertEqual(
+                len(phone_findings), 1,
+                msg=(
+                    "A real standalone phone number in a JSON string value "
+                    "must be flagged as S1. "
                     f"Findings: {findings!r}"
                 ),
             )

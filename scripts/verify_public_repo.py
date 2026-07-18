@@ -92,7 +92,7 @@ INTERNAL_ID_PATTERNS: list[tuple[str, str, re.Pattern]] = [
 PRIVACY_PATTERNS: list[tuple[str, str, re.Pattern]] = [
     ("record_id", "S1", re.compile(
         r"\brec(?!ent|eive|ommend|over|ruit|ipe|eipt|ord|lam|ogniz|turf|ital)(?=[A-Za-z0-9]*[A-Z0-9])[A-Za-z0-9]{10,}")),
-    ("phone_number", "S1", re.compile(r"(?<![0-9a-f])1[3-9]\d{9}(?![0-9a-f])")),
+    ("phone_number", "S1", re.compile(r"(?<![0-9A-Fa-f])1[3-9]\d{9}(?![0-9A-Fa-f])")),
     # Negative lookahead excludes common type annotations (string, undefined, unknown, any, null)
     # and property accesses (client, options) to avoid false positives on TypeScript type annotations
     ("wechat_id_assignment", "S1", re.compile(
