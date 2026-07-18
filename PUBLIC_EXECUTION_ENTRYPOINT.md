@@ -14,10 +14,12 @@
 > R5 second fix batch commits: `8dcd9fdcba7e27e3275fd4b1c805f9a160d42a52`（R5 second fix main commit）+ `13dee7175f99e3c0577aa8267ad0e1440f4ebaf3`（R5 second fix backfill commit）
 > R5 third fix batch commits: `ea18cb69c9eee3ef798ba0bffb45b468c4ddc495`（R5 third fix main commit）+ `8448e9ba74d792f5b227cf78c3399d1253ebe4c6`（R5 third fix backfill commit）
 > R5 final HEAD after third fix backfill: `8448e9ba74d792f5b227cf78c3399d1253ebe4c6`
-> Tracked files at R5 main batch closeout: 140; at R5 first fix batch closeout: 142; at R5 second fix batch closeout: 146; at R5 third fix batch closeout: 146; at R6 batch closeout: 152
+> Tracked files at R5 main batch closeout: 140; at R5 first fix batch closeout: 142; at R5 second fix batch closeout: 146; at R5 third fix batch closeout: 146; at R6 main batch closeout: 153 (header previously mis-stated as 152; corrected in R6 fix batch per TASK-004 P1-3); at R6 fix batch closeout: 156
 > R6 main commit: `0f3fb108c790b054251e67940761f99705a76c18`（R6 read-only Dry Run 主体提交：R5 closeout + P1 scanner debt + 全量分类 + 审计包 PLACEHOLDER 版本）
-> R6 backfill commit: SHA backfill commit，不自引用——待 GPT 复审时通过 `git log --oneline -2 0f3fb108` 确认（backfill commit 紧随 main commit 之后，遵循 R5 第三修复批次相同策略）
-> R6 final HEAD: 即 backfill commit SHA，待 GPT 复审时通过 `git rev-parse HEAD` 确认
+> R6 backfill commit: `d1b2d0544eb6216b583a56667a0484ecccb38003`（SHA backfill for R6 main commit；遵循 R5 第三修复批次相同策略）
+> R6 final HEAD after backfill: `d1b2d0544eb6216b583a56667a0484ecccb38003`（已 push，HEAD == origin/master == d1b2d054）
+> R6 fix main commit: `PENDING_PLACEHOLDER_TO_BE_FILLED_BY_BACKFILL`（R6 fix batch 主体提交：P0-1 projection.js + P0-2 d026-evaluator.js + 51 合成测试 + threshold judgement schema v1.1 + entrypoint/manifest/审计包同步；PLACEHOLDER 由后续 SHA backfill commit 替换为真实 SHA）
+> R6 fix backfill commit: `PENDING_PLACEHOLDER_TO_BE_FILLED_BY_BACKFILL`（SHA backfill for R6 fix main commit；遵循 R5/R6 相同策略）
 > This file is the phase-specific execution entrypoint. It overrides stale phase instructions in older prompts or chat history.
 
 ## 1. Bootstrap
@@ -282,6 +284,84 @@ Independent evidence verified by Trae at submission:
 - Classification accounting CLI ran twice on 304 private V1 records; all four entity buckets and overall totals reconcile exactly; SHA256 stable across runs.
 
 Control plane is at `R6_REVIEW_PENDING`. `MIGRATION_PILOT_001` remains `NOT_APPROVED`. R6 audit package: `reports/phaseR6-read-only-dry-run-gpt-audit-package.md`.
+
+## 3.8 R6 fix batch — P0/P1 remediation (2026-07-18)
+
+After R6 main + backfill submission, GPT independently reviewed and returned `FAIL_REMEDIATION_REQUIRED` (see `docs/ai/tasks/TASK-004-R6-REVIEW-FIX-PACKET.md`). Two implementation-level blockers (P0) and three evidence/control-plane accuracy issues (P1) were identified. This batch closes all P0/P1 items in a single commit pair (main-fix + SHA backfill), per TASK-004 Section 5 single-batch execution scope.
+
+### 3.8.1 P0-1: Migration projection module (5 explicit schema defaults)
+
+Added `src/migration/projection.js` — pure function, no I/O, no Feishu API calls. Produces V2 Customer/Project payloads for records classified as `MIGRATABLE`. The 5 schema-default fields that the `lark-cli +field-create` limitation could not apply at the Base layer (per R5 Task 4 finding and TASK-004 P0-1) are populated explicitly by constants:
+
+- `customer.budget_parse_rule_version = 'budget-map-v1.0'` (D-025)
+- `customer.source_channel_mapping_version = 'source-map-v1.0'` (D-021)
+- `customer.status_mapping_rule_version = 'status-map-v1.0'` (D-020)
+- `project.currency = 'CNY'` (D-024)
+- `project.status_mapping_rule_version = 'status-map-v1.0'` (D-020)
+
+Non-MIGRATABLE records return `null` payload — callers MUST NOT write a null payload to the V2 Base. `model` and `makeup` entities are not projected by this module (resource migration uses a separate projection module). Synthetic test suite `tests/migration-projection.test.js` (51 tests, 11 suites) asserts:
+
+- The 5 explicit defaults are always present in MIGRATABLE customer/project payloads.
+- Non-MIGRATABLE records (NEEDS_REVIEW, BLOCKED) never produce a writable payload.
+- `projectCustomer` / `projectProject` reject mismatched `record_key`, mismatched `entity_type`, and missing classification.
+- `projectBatch` is deterministic (output order matches input order).
+
+### 3.8.2 P0-2: D-026 evaluator with Project-Customer association check
+
+Added `src/migration/d026-evaluator.js` — versioned pure function. Replaces the ad-hoc `buildThresholdJudgement()` previously inlined in `src/scripts/temp/r6_aggregations.js`. Output schema upgraded from `r6-quantity-threshold-judgement-v1.0` to `r6-quantity-threshold-judgement-v1.1` with the new `project_association_check` field.
+
+The new evaluator verifies ALL D-026 conditions:
+
+1. customer MIGRATABLE >= 5
+2. project MIGRATABLE >= 5
+3. **At least 5 MIGRATABLE projects have `fields.linked_customer_key` pointing to a MIGRATABLE customer in this same batch** (NEW — previously missing)
+4. model MIGRATABLE >= 10
+5. makeup MIGRATABLE >= 10
+
+The output is fully anonymized: only aggregate counts, no record keys, no record IDs, no names, no linked-customer detail. The evaluator only reads `fields.linked_customer_key` on MIGRATABLE projects; no other source field is accessed.
+
+Synthetic reverse-test suite (4 scenarios in `tests/migration-projection.test.js`):
+
+- Scenario A: 5+5+10+10 with 5 projects linking to MIGRATABLE customers → PASS.
+- Scenario B: 5 MIGRATABLE + 5 BLOCKED customers, 5 MIGRATABLE projects all linking to BLOCKED customers → FAIL on association (0/5), even though all per-entity counts are met.
+- Scenario C: 5 MIGRATABLE projects without `linked_customer_key` → FAIL on association.
+- Scenario D: Mirrors the real R6 distribution (customer 0/5, project 0/5, model 3/10, makeup 5/10) → FAIL on all four counts and on association.
+
+The real R6 data still produces `FAIL` with the new evaluator: customer 0/5, project 0/5, model 3/10, makeup 5/10, association 0/5. `MIGRATION_PILOT_001` remains `NOT_APPROVED`.
+
+### 3.8.3 P1-1: Test count corrected (132 PASS)
+
+The original R6 audit package used inconsistent test count phrasing (e.g. "23/23 verify_public_repo + schema_diff (20 verify + 3 schema_diff)" double-counted). Per TASK-004 P1-1, the canonical count is:
+
+- `node --test tests/migration-classifier.test.js` → 58/58 PASS (13 suites, exit 0)
+- `python -m unittest tests.test_verify_public_repo` → 20/20 PASS (exit 0)
+- `python -m unittest tests.test_generate_schema_diff` → 3/3 PASS (exit 0)
+- `node --test tests/migration-projection.test.js` → 51/51 PASS (11 suites, exit 0) — NEW in R6 fix batch
+- **Total: 132 PASS** (was 81 PASS before adding the new P0-1/P0-2 test suite).
+
+### 3.8.4 P1-2: Git blob SHA added to R6 public evidence
+
+Per `.trae/rules/_gpt_audit.md` Section "证据元数据", every public evidence file must record its Git commit SHA, Git blob SHA, file SHA256, generation command, exit code, and evidence classification. The original R6 audit package Section 5 had commit SHA and file SHA256 but was missing Git blob SHA. The revised R6 audit package (in this batch) adds blob SHA for all R6 main commit (`0f3fb108...`) and R6 backfill commit (`d1b2d054...`) public evidence files. The audit package itself follows the non-self-reference convention: its own blob SHA in the R6 fix main commit is recorded in the subsequent SHA backfill commit.
+
+### 3.8.5 P1-3: Stale control plane metadata corrected
+
+- This file's header previously mis-stated `R6 closeout tracked files = 152`; corrected to `153` (the R6 closeout was actually 153 — independently verified by GPT in TASK-004 Section 1). After this R6 fix batch adds 3 new files (projection.js, d026-evaluator.js, migration-projection.test.js), the new tracked count is `156`.
+- `config/public-execution-manifest.json` `authoritative_files` previously stopped at R3/R4; expanded to include TASK-004 task packets, R5/R6 audit packages, R6 aggregation reports, and R6 fix batch code files.
+- Manifest `revision_history` adds a new `r6_fix_batch_submission` entry covering P0-1/P0-2/P1-1/P1-2/P1-3.
+- Manifest `test_results` phrasing standardized to `58 classifier + 20 scanner + 3 schema_diff + 51 projection/evaluator = 132 PASS`.
+
+### 3.8.6 R6 fix batch verification evidence
+
+- `feishu-v2/` working tree clean before staging; `HEAD == origin/master == d1b2d0544eb6216b583a56667a0484ecccb38003`.
+- `node --test tests/migration-projection.test.js`: 51/51 PASS, 11 suites, exit 0.
+- `node --test tests/migration-classifier.test.js`: 58/58 PASS, 13 suites, exit 0 (regression — no behavior change).
+- `python -m unittest tests.test_verify_public_repo tests.test_generate_schema_diff`: 23/23 PASS (20 scanner + 3 schema_diff), exit 0 (regression).
+- `node scripts/run_classification_accounting.js` ×2: private matrix SHA256 `9401ba56f0d812e3f41e47a5450b0bbcf4f2aa25502cf15959e8bdfbb96200f2` and public summary SHA256 `548077756b9e50b883e2674c2268926849d67e86b13494b90b06673e2c49e632` — both stable across two consecutive runs, identical to R3+R4 first-run values.
+- `node src/scripts/temp/r6_aggregations.js` ×2: threshold judgement SHA256 `D3387113332D241A96870F8B49570AB014D6A8852AA5D0566AA9B5E47ABB89F3` stable across two consecutive runs; schema_version `r6-quantity-threshold-judgement-v1.1`; `all_thresholds_met: false`; `project_association_check: 0/5 (met=false)`.
+- `python scripts/verify_public_repo.py` against tracked 153 files (pre-staging): `S0=0 S1=0 S2=0`, exit 0.
+- `python scripts/verify_public_repo.py --staged` against staged 4 files (3 new code/test files + 1 modified threshold judgement): `S0=0 S1=0 S2=0`, exit 0.
+
+Control plane remains `R6_REVIEW_PENDING`. `MIGRATION_PILOT_001` remains `NOT_APPROVED`. R6 fix main commit + SHA backfill commit SHAs are filled in by the backfill commit (non-self-reference convention).
 
 ## 4. Approved work
 

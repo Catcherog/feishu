@@ -1,10 +1,9 @@
 {
-  "schema_version": "r6-quantity-threshold-judgement-v1.0",
-  "generated_for": "R6_READ_ONLY_DRY_RUN",
+  "schema_version": "r6-quantity-threshold-judgement-v1.1",
   "decision_reference": "D-026 (DECISION_LOG.md)",
-  "description": "D-026 Phase 1B-3 启动前置条件：Customer >= 5 MIGRATABLE / Project >= 5 MIGRATABLE / Model >= 10 MIGRATABLE / Makeup >= 10 MIGRATABLE. Migration pilot MUST NOT start until ALL thresholds are met.",
+  "description": "D-026 Phase 1B-3 启动前置条件：Customer >= 5 MIGRATABLE / Project >= 5 MIGRATABLE / 至少 5 个 MIGRATABLE Project 关联到本轮 MIGRATABLE Customer / Model >= 10 MIGRATABLE / Makeup >= 10 MIGRATABLE. Migration pilot MUST NOT start until ALL thresholds are met.",
   "all_thresholds_met": false,
-  "judgement": "FAIL — One or more D-026 quantity thresholds not met. MIGRATION_PILOT_001 MUST NOT start. Review NEEDS_REVIEW / BLOCKED records and apply remediation (D-022 duplicate resolution, D-023 orphan handling, status / source / budget / project_type mapping).",
+  "judgement": "FAIL — One or more D-026 thresholds not met. MIGRATION_PILOT_001 MUST NOT start. Either MIGRATABLE counts are short, or fewer than 5 MIGRATABLE projects link to MIGRATABLE customers in this batch.",
   "thresholds": {
     "customer": {
       "required_migratable": 5,
@@ -30,5 +29,11 @@
       "threshold_met": false,
       "shortfall": 5
     }
+  },
+  "project_association_check": {
+    "required_migratable_with_migratable_customer": 5,
+    "actual_migratable_with_migratable_customer": 0,
+    "met": false,
+    "shortfall": 5
   }
 }
