@@ -1,0 +1,53 @@
+{
+  "summary_version": "r5-apply-summary-v1.0",
+  "completed_at": "2026-07-18T04:03:44.730Z",
+  "baseline_head": "7051a7f",
+  "target_base_alias": "V2_PILOT_BASE_ALIAS",
+  "operations_summary": {
+    "add_field": {
+      "created": 29,
+      "no_op": 6,
+      "failed": 0
+    },
+    "extend_enum": {
+      "extended": 1,
+      "no_op": 0,
+      "failed": 0
+    },
+    "add_view": {
+      "created": 4,
+      "no_op": 0,
+      "failed": 0
+    },
+    "total_operations": 40,
+    "total_failures": 0
+  },
+  "post_apply_snapshot": {
+    "path": "backups/private/r5-v2-schema-snapshot-after.json",
+    "sha256": "2a4432d798942f51c5f254286e84737223f7663d215e395165377514fec65364"
+  },
+  "private_apply_log": {
+    "path": "backups/private/r5-apply-log.json",
+    "sha256": "95ab830a66dc156b1816970ad8499bd7e7f69a967fb359cb1d67b56e63ef24d9"
+  },
+  "field_count_changes": {
+    "customer": {
+      "before": 23,
+      "after": 37,
+      "delta": 14,
+      "expected_delta": true
+    },
+    "project": {
+      "before": 23,
+      "after": 37,
+      "delta": 14,
+      "expected_delta": true
+    },
+    "resource": {
+      "before": 23,
+      "after": 30,
+      "delta": 7,
+      "expected_delta": true
+    }
+  }
+}
