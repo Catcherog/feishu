@@ -12,6 +12,8 @@
 > **R6 backfill commit**：`d1b2d0544eb6216b583a56667a0484ecccb38003`（SHA backfill，已 push；HEAD == origin/master == d1b2d054）
 > **R6 fix main commit**：`7b4d5c5368f3f03bc058327cc38dd85618429e81`（P0-1 projection.js + P0-2 d026-evaluator.js + 51 合成测试 + threshold judgement schema v1.1 + entrypoint/manifest/审计包同步；本审计包此版本的 blob SHA 在 Section 5.3 中记录）
 > **R6 fix backfill commit**：`3e8fd993b9648357719a6ef7aa08cbe0a8b21021`（SHA backfill for R6 fix main commit；已 push；HEAD == origin/master == 3e8fd99 at end of R6 fix batch；父提交 = `7b4d5c5`，可通过 `git log --oneline -2 HEAD` 或 `git show -s --format=%P HEAD` 在该 backfill commit 复核父子链）
+> **R6 minimum final fix main commit**：`e1d10869cd350d933be899600b27f8023993dc76`（R6 最小最终修复批次主体提交：projection.js fail-closed validators + 13 reverse-tests + 控制文件 stale placeholder 清理；父提交 = `3e8fd99`，可通过 `git show -s --format=%P e1d1086` 复核）
+> **R6 minimum final fix backfill commit**：NOT_EMBEDDED（非自引用字段约定——本 backfill commit 的自身 SHA 不嵌入本审计包，由 `git rev-parse HEAD` 或 `git log --oneline -1 HEAD` 在 push 后独立复核；指向 main-fix commit 的引用为非自引用字段，分类 EXTERNALLY_VERIFIED_NOT_EMBEDDED）
 > **目标 Base 别名**：`V2_PILOT_BASE_ALIAS`（R6 不写入 V2 测试 Base，仅读取私有 V1 导出）
 
 ---
@@ -419,6 +421,16 @@
   - `7b4d5c5` 的父提交 = `d1b2d05`（R6 backfill commit）
   - 三段链路：`d1b2d05` (R6 backfill) → `7b4d5c5` (R6 fix main) → `3e8fd99` (R6 fix backfill)
 - `HEAD == origin/master == 3e8fd993b9648357719a6ef7aa08cbe0a8b21021`（R6 fix backfill commit；本批次 R6 最小最终修复批次开始前的 baseline HEAD）
+- 证据分级：REPRODUCIBLE_FROM_PUBLIC_REPO（公开仓库可独立复核）；非自引用字段分类为 EXTERNALLY_VERIFIED_NOT_EMBEDDED
+
+### 6.12 R6 minimum final fix batch Git 事实验证
+
+- 命令：`git show -s --format=%P e1d10869cd350d933be899600b27f8023993dc76`
+- 输出：`3e8fd993b9648357719a6ef7aa08cbe0a8b21021`（父提交 = R6 fix backfill commit）
+- 四段链路：`d1b2d05` (R6 backfill) → `7b4d5c5` (R6 fix main) → `3e8fd99` (R6 fix backfill) → `e1d1086` (R6 minimum final fix main)
+- 本批次 main-fix commit SHA = `e1d10869cd350d933be899600b27f8023993dc76`（已嵌入本审计包 header 行 15 + Section 5；非自引用字段，分类 EXTERNALLY_VERIFIED_NOT_EMBEDDED）
+- 本批次 backfill commit SHA = NOT_EMBEDDED（非自引用字段约定——本 backfill commit 的自身 SHA 不嵌入本审计包；push 后由 `git rev-parse HEAD` 或 `git log --oneline -1 HEAD` 独立复核）
+- 控制文件中本批次 main-fix commit SHA 已显式写明；backfill commit SHA 字段标记为 NOT_EMBEDDED（参见 `config/public-execution-manifest.json` `revision_history[r6_minimum_final_fix_batch_submission]`）
 - 证据分级：REPRODUCIBLE_FROM_PUBLIC_REPO（公开仓库可独立复核）；非自引用字段分类为 EXTERNALLY_VERIFIED_NOT_EMBEDDED
 
 ---

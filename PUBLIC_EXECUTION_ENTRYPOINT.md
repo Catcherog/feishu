@@ -21,6 +21,8 @@
 > R6 fix main commit: `7b4d5c5368f3f03bc058327cc38dd85618429e81`（R6 fix batch 主体提交：P0-1 projection.js + P0-2 d026-evaluator.js + 51 合成测试 + threshold judgement schema v1.1 + entrypoint/manifest/审计包同步）
 > R6 fix backfill commit: `3e8fd993b9648357719a6ef7aa08cbe0a8b21021`（SHA backfill for R6 fix main commit；已 push，HEAD == origin/master == 3e8fd99）
 > R6 fix final HEAD after backfill: `3e8fd993b9648357719a6ef7aa08cbe0a8b21021`
+> R6 minimum final fix main commit: `e1d10869cd350d933be899600b27f8023993dc76`（R6 最小最终修复批次主体提交：projection.js fail-closed validators + 13 reverse-tests + 控制文件 stale placeholder 清理；parent = `3e8fd99`）
+> R6 minimum final fix backfill commit: NOT_EMBEDDED（非自引用字段约定——本 backfill commit 的自身 SHA 不嵌入控制文件，由 `git rev-parse HEAD` 或 `git log --oneline -1 HEAD` 在 push 后独立复核；指向 main-fix commit 的引用为非自引用字段，分类 EXTERNALLY_VERIFIED_NOT_EMBEDDED）
 > This file is the phase-specific execution entrypoint. It overrides stale phase instructions in older prompts or chat history.
 
 ## 1. Bootstrap

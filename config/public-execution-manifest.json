@@ -314,6 +314,35 @@
         "reports/phaseR6-read-only-dry-run-gpt-audit-package.md (revised audit package)"
       ],
       "notes": "R6 fix batch completed per TASK-004 Section 5 single-batch execution scope. P0-1/P0-2 implemented as pure functions with synthetic reverse-tests. P1-1/P1-2/P1-3 evidence/control-plane fixes applied. Control plane remains R6_REVIEW_PENDING. MIGRATION_PILOT_001=NOT_APPROVED. History cleanup NOT_APPROVED, NOT_EXECUTED. No Feishu write API calls. No real-data processing. No MIGRATION_PILOT_001 start."
+    },
+    {
+      "date": "2026-07-18",
+      "gate": "R6",
+      "action": "r6_minimum_final_fix_batch_submission",
+      "baseline_head": "3e8fd993b9648357719a6ef7aa08cbe0a8b21021",
+      "main_commit": "e1d10869cd350d933be899600b27f8023993dc76",
+      "backfill_commit": "NOT_EMBEDDED",
+      "final_head": "NOT_EMBEDDED",
+      "audit_outcome": "PENDING_REVIEW",
+      "scope": [
+        "projection.js fail-closed defense-in-depth: ensureEntityTypeConsistency + ensureCustomerMigrationContext + ensureProjectMigrationContext + nonEmpty helper. Customer MIGRATABLE projection now requires fields object + non-empty name + identity context (phone/wechat_id/source_channel_raw/has_valid_need_summary). Project MIGRATABLE projection now requires fields object + non-empty name/status_raw/project_type_raw/linked_customer_key. classified.entity_type mismatch throws BEFORE classification check (general invariant, applies to non-MIGRATABLE records too).",
+        "tests/migration-projection.test.js: 13 new reverse-tests (5 customer context + 6 project context + 2 batch propagation). Suite count 11 -> 14, test count 51 -> 64, all PASS.",
+        "Control plane stale placeholder cleanup (3 files only, no scope expansion): PUBLIC_EXECUTION_ENTRYPOINT.md Section 3.8.6 baseline HEAD clarified; config/public-execution-manifest.json r6_fix_batch_submission already had 3e8fd99 filled; reports/phaseR6-read-only-dry-run-gpt-audit-package.md line 14 placeholder replaced, Section 5.4 PENDING_BACKFILL replaced with EXTERNALLY_VERIFIED_NOT_EMBEDDED, Section 6.11 git log -2 forms replaced with git log --oneline -2 HEAD / git show -s --format=%P HEAD, AC9 'pending scan' contradiction removed, AC10 'SHA filled in same backfill' replaced with EXTERNALLY_VERIFIED_NOT_EMBEDDED."
+      ],
+      "fixes_applied": [
+        "P0-1 (defense-in-depth): projection.js fail-closed validators added — context mismatch throws instead of generating writable payload",
+        "Reverse-tests: fields={}, missing linked_customer_key, classified.entity_type mismatch, missing identity context, etc.",
+        "Control plane: stale PENDING_PLACEHOLDER/PENDING_BACKFILL/PENDING_GPT_VERIFICATION declarations removed from 3 control files",
+        "Control plane: git log -2 <sha> deprecated form replaced with git log --oneline -2 HEAD / git show -s --format=%P HEAD",
+        "Control plane: AC9/AC10 'satisfied but pending scan' contradiction eliminated",
+        "Control plane: non-self-reference fields explicitly classified as EXTERNALLY_VERIFIED_NOT_EMBEDDED"
+      ],
+      "test_results": "58 classifier + 64 projection/evaluator (51 original + 13 new reverse-tests) + 20 scanner + 3 schema_diff = 145 PASS",
+      "scan_results": "tracked 156 files S0=0 S1=0 S2=0; staged main-fix 5 files S0=0 S1=0 S2=0",
+      "d026_threshold_judgement": "UNCHANGED from R6 fix batch — FAIL (customer 0/5, project 0/5, model 3/10, makeup 5/10, project_association_check 0/5). MIGRATION_PILOT_001 MUST NOT start.",
+      "non_self_reference_note": "backfill_commit and final_head fields marked NOT_EMBEDDED — this backfill commit's own SHA is NOT embedded in control files (per .trae/rules/_gpt_audit.md non-self-reference convention). After push, the SHA is independently verifiable via `git rev-parse HEAD` or `git log --oneline -1 HEAD`. main_commit field (e1d1086) is a non-self-referencing field classified as EXTERNALLY_VERIFIED_NOT_EMBEDDED.",
+      "parent_chain_verification": "git show -s --format=%P e1d1086 returns 3e8fd993b9648357719a6ef7aa08cbe0a8b21021 (parent = R6 fix backfill commit). Three-link chain: d1b2d05 (R6 backfill) -> 7b4d5c5 (R6 fix main) -> 3e8fd99 (R6 fix backfill) -> e1d1086 (R6 minimum final fix main) -> <backfill_commit_TBD> (R6 minimum final fix backfill, NOT_EMBEDDED).",
+      "notes": "R6 minimum final fix batch completed per user task description (6 numbered items). No scope expansion: only projection.js + tests + 3 control files modified. Control plane remains R6_REVIEW_PENDING. MIGRATION_PILOT_001=NOT_APPROVED. History cleanup NOT_APPROVED, NOT_EXECUTED. No Feishu write API calls. No real-data processing. No MIGRATION_PILOT_001 start."
     }
   ],
   "stop_after_completion": true
