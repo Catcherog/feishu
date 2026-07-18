@@ -10,7 +10,7 @@
 > Current HEAD at R5 main batch closeout: `3df9fc5da09c751f28629d053951a50374138dda`
 > R5 first fix main commit: `82d98866686d4b0f502ad450b34177ab9a770335`（P0-1/P0-2/P0-3 主体修复）
 > R5 first fix backfill commit: `672ed78640895e6a01f294c15d9b82ad270b60be`（SHA backfill for R5 first fix batch）
-> R5 second fix batch commits:将在 R5 second fix batch commit 后通过 `git rev-parse HEAD` 获取并单列（见 Section 3.4）
+> R5 second fix batch commits: `8dcd9fdcba7e27e3275fd4b1c805f9a160d42a52`（R5 second fix main commit）+ R5 second fix backfill commit SHA（将在 backfill 后通过 `git rev-parse HEAD` 获取并由 GPT 复审时通过 Git 事实单列复核）
 > Tracked files at R5 main batch closeout: 140; at R5 first fix batch closeout: 142; at R5 second fix batch closeout: 146
 > This file is the phase-specific execution entrypoint. It overrides stale phase instructions in older prompts or chat history.
 
