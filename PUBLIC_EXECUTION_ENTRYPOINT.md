@@ -19,7 +19,8 @@
 > R6 backfill commit: `d1b2d0544eb6216b583a56667a0484ecccb38003`（SHA backfill for R6 main commit；遵循 R5 第三修复批次相同策略）
 > R6 final HEAD after backfill: `d1b2d0544eb6216b583a56667a0484ecccb38003`（已 push，HEAD == origin/master == d1b2d054）
 > R6 fix main commit: `7b4d5c5368f3f03bc058327cc38dd85618429e81`（R6 fix batch 主体提交：P0-1 projection.js + P0-2 d026-evaluator.js + 51 合成测试 + threshold judgement schema v1.1 + entrypoint/manifest/审计包同步）
-> R6 fix backfill commit: `PENDING_PLACEHOLDER_TO_BE_FILLED_BY_BACKFILL`（SHA backfill for R6 fix main commit；遵循 R5/R6 相同策略）
+> R6 fix backfill commit: `3e8fd993b9648357719a6ef7aa08cbe0a8b21021`（SHA backfill for R6 fix main commit；已 push，HEAD == origin/master == 3e8fd99）
+> R6 fix final HEAD after backfill: `3e8fd993b9648357719a6ef7aa08cbe0a8b21021`
 > This file is the phase-specific execution entrypoint. It overrides stale phase instructions in older prompts or chat history.
 
 ## 1. Bootstrap
@@ -352,7 +353,7 @@ Per `.trae/rules/_gpt_audit.md` Section "证据元数据", every public evidence
 
 ### 3.8.6 R6 fix batch verification evidence
 
-- `feishu-v2/` working tree clean before staging; `HEAD == origin/master == d1b2d0544eb6216b583a56667a0484ecccb38003`.
+- `feishu-v2/` working tree clean before staging; baseline HEAD at start of R6 fix batch = `d1b2d0544eb6216b583a56667a0484ecccb38003` (R6 backfill commit, pre-fix-batch baseline).
 - `node --test tests/migration-projection.test.js`: 51/51 PASS, 11 suites, exit 0.
 - `node --test tests/migration-classifier.test.js`: 58/58 PASS, 13 suites, exit 0 (regression — no behavior change).
 - `python -m unittest tests.test_verify_public_repo tests.test_generate_schema_diff`: 23/23 PASS (20 scanner + 3 schema_diff), exit 0 (regression).
@@ -360,8 +361,10 @@ Per `.trae/rules/_gpt_audit.md` Section "证据元数据", every public evidence
 - `node src/scripts/temp/r6_aggregations.js` ×2: threshold judgement SHA256 `D3387113332D241A96870F8B49570AB014D6A8852AA5D0566AA9B5E47ABB89F3` stable across two consecutive runs; schema_version `r6-quantity-threshold-judgement-v1.1`; `all_thresholds_met: false`; `project_association_check: 0/5 (met=false)`.
 - `python scripts/verify_public_repo.py` against tracked 153 files (pre-staging): `S0=0 S1=0 S2=0`, exit 0.
 - `python scripts/verify_public_repo.py --staged` against staged 4 files (3 new code/test files + 1 modified threshold judgement): `S0=0 S1=0 S2=0`, exit 0.
+- R6 fix main commit = `7b4d5c5368f3f03bc058327cc38dd85618429e81`; R6 fix backfill commit = `3e8fd993b9648357719a6ef7aa08cbe0a8b21021` (final HEAD after R6 fix batch, already pushed; HEAD == origin/master == 3e8fd99 at end of R6 fix batch).
+- Parent-child chain verification (use `git log --oneline -2 HEAD` or `git show -s --format=%P HEAD` at the R6 fix backfill commit `3e8fd99`): parent = `7b4d5c5` (R6 fix main commit), grandparent = `d1b2d05` (R6 backfill commit). The deprecated `git log -2 7b4d5c53` form is no longer used.
 
-Control plane remains `R6_REVIEW_PENDING`. `MIGRATION_PILOT_001` remains `NOT_APPROVED`. R6 fix main commit + SHA backfill commit SHAs are filled in by the backfill commit (non-self-reference convention).
+Control plane remains `R6_REVIEW_PENDING`. `MIGRATION_PILOT_001` remains `NOT_APPROVED`. R6 fix main commit SHA (`7b4d5c5...`) and R6 fix backfill commit SHA (`3e8fd99...`) are already embedded in this file's header (lines 21-23) and in `config/public-execution-manifest.json` `revision_history[r6_fix_batch_submission]` — these are non-self-referencing fields and are classified as `EXTERNALLY_VERIFIED_NOT_EMBEDDED` per `.trae/rules/_gpt_audit.md` (the values are independently verifiable from `git log` and are not embedded in their own commit's blob SHA).
 
 ## 4. Approved work
 

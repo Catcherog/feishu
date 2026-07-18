@@ -66,6 +66,10 @@ function str(v) {
   return String(v).trim();
 }
 
+function nonEmpty(v) {
+  return str(v).length > 0;
+}
+
 function ensureKeyMatch(record, classified) {
   if (!record || !classified) {
     throw new Error('projection requires both record and classified');
@@ -82,6 +86,19 @@ function ensureKeyMatch(record, classified) {
   }
 }
 
+// Fail-closed: classified.entity_type MUST match record.entity_type. A
+// mismatch indicates the classified object belongs to a different record
+// (bug in caller). This check runs BEFORE the classification check so
+// that even non-MIGRATABLE records with mismatched entity_type throw
+// instead of silently returning null.
+function ensureEntityTypeConsistency(record, classified) {
+  if (record.entity_type !== classified.entity_type) {
+    throw new Error(
+      `projection: ${record.record_key} entity_type mismatch (record=${record.entity_type}, classified=${classified.entity_type})`,
+    );
+  }
+}
+
 function ensureClassification(record, classified, requiredClass) {
   if (classified.classification !== requiredClass) {
     throw new Error(
@@ -94,6 +111,77 @@ function ensureEntityType(record, expected) {
   if (record.entity_type !== expected) {
     throw new Error(
       `projection: ${record.record_key} expected entity_type ${expected}, got ${record.entity_type}`,
+    );
+  }
+}
+
+// Fail-closed context validation for MIGRATABLE customer projection.
+// Even if the classifier marked the record MIGRATABLE, the projection
+// re-verifies the minimum fields needed to write a valid V2 Customer
+// record. If any check fails, throw — never generate a writable payload
+// from incomplete context.
+//
+// Required:
+//   - fields must be a non-null object (not undefined/null/array)
+//   - name must be non-empty (re-verify MISSING_NAME criteria)
+//   - identity context: at least one of phone, wechat_id,
+//     source_channel_raw, or has_valid_need_summary=true (re-verify
+//     MISSING_IDENTITY criteria from classifier.js customerMissingIdentity)
+function ensureCustomerMigrationContext(record) {
+  const f = record.fields;
+  if (!f || typeof f !== 'object' || Array.isArray(f)) {
+    throw new Error(
+      `projection: ${record.record_key} customer fields must be a non-null object`,
+    );
+  }
+  if (!nonEmpty(f.name)) {
+    throw new Error(
+      `projection: ${record.record_key} customer name must be non-empty`,
+    );
+  }
+  const hasIdentity = nonEmpty(f.phone)
+    || nonEmpty(f.wechat_id)
+    || nonEmpty(f.source_channel_raw)
+    || f.has_valid_need_summary === true;
+  if (!hasIdentity) {
+    throw new Error(
+      `projection: ${record.record_key} customer identity context missing (phone, wechat_id, source_channel_raw, or has_valid_need_summary required)`,
+    );
+  }
+}
+
+// Fail-closed context validation for MIGRATABLE project projection.
+// Required:
+//   - fields must be a non-null object
+//   - name must be non-empty
+//   - status_raw must be non-empty
+//   - project_type_raw must be non-empty
+//   - linked_customer_key must be non-empty
+function ensureProjectMigrationContext(record) {
+  const f = record.fields;
+  if (!f || typeof f !== 'object' || Array.isArray(f)) {
+    throw new Error(
+      `projection: ${record.record_key} project fields must be a non-null object`,
+    );
+  }
+  if (!nonEmpty(f.name)) {
+    throw new Error(
+      `projection: ${record.record_key} project name must be non-empty`,
+    );
+  }
+  if (!nonEmpty(f.status_raw)) {
+    throw new Error(
+      `projection: ${record.record_key} project status_raw must be non-empty`,
+    );
+  }
+  if (!nonEmpty(f.project_type_raw)) {
+    throw new Error(
+      `projection: ${record.record_key} project project_type_raw must be non-empty`,
+    );
+  }
+  if (!nonEmpty(f.linked_customer_key)) {
+    throw new Error(
+      `projection: ${record.record_key} project linked_customer_key must be non-empty`,
     );
   }
 }
@@ -120,8 +208,16 @@ function ensureEntityType(record, expected) {
  */
 function projectCustomer(record, classified) {
   ensureKeyMatch(record, classified);
+  // Fail-closed: entity_type consistency is a general invariant — even
+  // non-MIGRATABLE records must not be paired with a classified object
+  // belonging to a different record. A mismatch indicates a caller bug.
+  ensureEntityTypeConsistency(record, classified);
   if (classified.classification !== 'MIGRATABLE') return null;
   ensureEntityType(record, 'customer');
+  // Fail-closed: re-verify the minimum fields needed to write a valid
+  // V2 Customer record. The classifier already checked these criteria,
+  // but projection is the last defense before payload generation.
+  ensureCustomerMigrationContext(record);
 
   const f = record.fields || {};
   const budget = parseBudget(f.budget_range_raw);
@@ -167,8 +263,14 @@ function projectCustomer(record, classified) {
  */
 function projectProject(record, classified) {
   ensureKeyMatch(record, classified);
+  // Fail-closed: entity_type consistency is a general invariant.
+  ensureEntityTypeConsistency(record, classified);
   if (classified.classification !== 'MIGRATABLE') return null;
   ensureEntityType(record, 'project');
+  // Fail-closed: re-verify the minimum fields needed to write a valid
+  // V2 Project record. linked_customer_key is required so D-026
+  // association check has the source data it needs at migration time.
+  ensureProjectMigrationContext(record);
 
   const f = record.fields || {};
 

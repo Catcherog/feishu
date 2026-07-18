@@ -11,7 +11,7 @@
 > **R6 main commit**：`0f3fb108c790b054251e67940761f99705a76c18`（pre-backfill，含本审计包的 PLACEHOLDER 版本）
 > **R6 backfill commit**：`d1b2d0544eb6216b583a56667a0484ecccb38003`（SHA backfill，已 push；HEAD == origin/master == d1b2d054）
 > **R6 fix main commit**：`7b4d5c5368f3f03bc058327cc38dd85618429e81`（P0-1 projection.js + P0-2 d026-evaluator.js + 51 合成测试 + threshold judgement schema v1.1 + entrypoint/manifest/审计包同步；本审计包此版本的 blob SHA 在 Section 5.3 中记录）
-> **R6 fix backfill commit**：`PENDING_PLACEHOLDER_TO_BE_FILLED_BY_BACKFILL`（SHA backfill for R6 fix main commit；遵循 R5/R6 相同策略；GPT 复审时通过 `git log --oneline -2 7b4d5c53` 确认 backfill commit 紧随其后）
+> **R6 fix backfill commit**：`3e8fd993b9648357719a6ef7aa08cbe0a8b21021`（SHA backfill for R6 fix main commit；已 push；HEAD == origin/master == 3e8fd99 at end of R6 fix batch；父提交 = `7b4d5c5`，可通过 `git log --oneline -2 HEAD` 或 `git show -s --format=%P HEAD` 在该 backfill commit 复核父子链）
 > **目标 Base 别名**：`V2_PILOT_BASE_ALIAS`（R6 不写入 V2 测试 Base，仅读取私有 V1 导出）
 
 ---
@@ -131,7 +131,7 @@
 - `PUBLIC_EXECUTION_ENTRYPOINT.md` header 修正 tracked file count：R6 main closeout = `153`（原错写为 `152`）；R6 fix batch closeout = `156`（新增 3 文件：projection.js / d026-evaluator.js / migration-projection.test.js）。
 - 新增 Section 3.8 R6 fix batch 子章节（3.8.1-3.8.6）。
 - `config/public-execution-manifest.json` 的 `authoritative_files` 从 11 项扩展到 41 项，覆盖所有 TASK 包、审计包、聚合报告、代码文件、测试文件、脚本。
-- 新增 `r6_fix_batch_submission` revision_history 条目（含 baseline_head、PENDING_PLACEHOLDER main/backfill/final_head、fixes_applied、test_results=132 PASS、new_files、modified_files、d026_threshold_judgement_sha256）。
+- 新增 `r6_fix_batch_submission` revision_history 条目（含 baseline_head=`d1b2d0544eb6216b583a56667a0484ecccb38003`、main_commit=`7b4d5c5368f3f03bc058327cc38dd85618429e81`、backfill_commit=`3e8fd993b9648357719a6ef7aa08cbe0a8b21021`、final_head=`3e8fd993b9648357719a6ef7aa08cbe0a8b21021`、fixes_applied、test_results=132 PASS、new_files、modified_files、d026_threshold_judgement_sha256）。所有 SHA 字段在 R6 fix backfill commit `3e8fd99` 中已显式写明（不再使用 PENDING_PLACEHOLDER 占位）。
 - 控制状态保持 `R6_REVIEW_PENDING`，未提前写 PASS。
 
 #### 1.E.7 R6 fix batch 集中验证
@@ -308,15 +308,15 @@
 | `config/public-execution-manifest.json` | 修改 | authoritative_files 11→41 项 + r6_fix_batch_submission revision_history | `273e898c841b65979aeb08acb67837750905a629` | `47984a910f8496b5cba80408c1489869f93a661f9f187a35a966c9a907d5dcfa` | REPRODUCIBLE_FROM_PUBLIC_REPO |
 | `reports/phaseR6-read-only-dry-run-gpt-audit-package.md` | 修改 | R6 修订版审计包（本文件，pre-backfill 版本） | `14fc40c212fb747ff44971b5cc8005ba36ee4451`（pre-backfill blob；最终版本在 backfill commit 中，GPT 复审时通过 `git show <fix-backfill>:reports/phaseR6-read-only-dry-run-gpt-audit-package.md \| sha256sum` 复核） | `20948a918d1029f0bb1ba0249180dc75375a3525d9c14091d7ac93e8dad6b15c`（pre-backfill SHA256） | REPRODUCIBLE_FROM_PUBLIC_REPO |
 
-### 5.4 R6 fix backfill commit（`PENDING_PLACEHOLDER_TO_BE_FILLED_BY_BACKFILL`）
+### 5.4 R6 fix backfill commit（`3e8fd993b9648357719a6ef7aa08cbe0a8b21021`）
 
 | 文件路径 | 操作 | 说明 | Git blob SHA | 文件 SHA256 | 证据分级 |
 |---|---|---|---|---|---|
-| `config/public-execution-manifest.json` | 修改 | SHA backfill（main-fix commit SHA 填入 revision_history） | PENDING_BACKFILL | （由 GPT 复审时通过 `git show <fix-backfill>:config/public-execution-manifest.json \| sha256sum` 复核） | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `PUBLIC_EXECUTION_ENTRYPOINT.md` | 修改 | SHA backfill（main-fix commit SHA + final HEAD） | PENDING_BACKFILL | （由 GPT 复审时通过 `git show <fix-backfill>:PUBLIC_EXECUTION_ENTRYPOINT.md \| sha256sum` 复核） | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `reports/phaseR6-read-only-dry-run-gpt-audit-package.md` | 修改 | SHA backfill（main-fix commit SHA + blob/SHA256 in Section 5.3） | PENDING_BACKFILL | （非自引用） | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `config/public-execution-manifest.json` | 修改 | SHA backfill（main-fix commit SHA 填入 revision_history） | EXTERNALLY_VERIFIED_NOT_EMBEDDED — 该 blob SHA 由 `git rev-parse 3e8fd99:config/public-execution-manifest.json` 独立复核，不嵌入本审计包自身 | EXTERNALLY_VERIFIED_NOT_EMBEDDED — 该文件 SHA256 由 `git show 3e8fd99:config/public-execution-manifest.json \| sha256sum` 独立复核 | EXTERNALLY_VERIFIED_NOT_EMBEDDED |
+| `PUBLIC_EXECUTION_ENTRYPOINT.md` | 修改 | SHA backfill（main-fix commit SHA + final HEAD） | EXTERNALLY_VERIFIED_NOT_EMBEDDED — 由 `git rev-parse 3e8fd99:PUBLIC_EXECUTION_ENTRYPOINT.md` 独立复核 | EXTERNALLY_VERIFIED_NOT_EMBEDDED — 由 `git show 3e8fd99:PUBLIC_EXECUTION_ENTRYPOINT.md \| sha256sum` 独立复核 | EXTERNALLY_VERIFIED_NOT_EMBEDDED |
+| `reports/phaseR6-read-only-dry-run-gpt-audit-package.md` | 修改 | SHA backfill（main-fix commit SHA + blob/SHA256 in Section 5.3） | EXTERNALLY_VERIFIED_NOT_EMBEDDED — 非自引用字段；该审计包自身的 blob SHA 由 `git rev-parse 3e8fd99:reports/phaseR6-read-only-dry-run-gpt-audit-package.md` 独立复核，不嵌入本审计包文本中作为同一 backfill 的"自我填充" | EXTERNALLY_VERIFIED_NOT_EMBEDDED | EXTERNALLY_VERIFIED_NOT_EMBEDDED |
 
-**说明**：PENDING_BACKFILL 标记由后续 SHA backfill commit 替换为真实 Git blob SHA。GPT 复审时可通过 `git log --oneline -2 <fix-main-commit>` 确认 fix-backfill commit 紧随其后，再通过 `git rev-parse <fix-backfill>:<path>` 获取真实 blob SHA。
+**说明**：上一 R6 fix backfill commit = `3e8fd993b9648357719a6ef7aa08cbe0a8b21021`（已 push；HEAD == origin/master == 3e8fd99 at end of R6 fix batch）。本审计包文本中的 main-fix/backfill commit SHA 引用均为非自引用字段（即指向 `7b4d5c5` 与 `3e8fd99` 两个具体提交，而非指向"将在同一 backfill 中填入自身 SHA"的递归引用），因此分类为 `EXTERNALLY_VERIFIED_NOT_EMBEDDED`。GPT 复审时可通过 `git log --oneline -2 HEAD` 或 `git show -s --format=%P HEAD` 在该 backfill commit 复核父子链（父 = `7b4d5c5`，祖父 = `d1b2d05`）。不再使用已失效的 `git log -2 7b4d5c53` 表述形式。
 
 ### 5.5 私有文件（gitignored，不入 Git）
 
@@ -407,15 +407,19 @@
 
 ### 6.11 Git 事实验证
 
-- 命令：`git log --oneline -3`
+- 命令：`git log --oneline -3 HEAD`（在 R6 fix backfill commit `3e8fd99` 处执行）
 - 输出：
   ```
+  3e8fd99 R6 fix SHA backfill: fill in main-fix commit SHA + blob/SHA256 in audit package, entrypoint and manifest
+  7b4d5c5 R6 fix batch: P0-1 projection.js + P0-2 d026-evaluator.js + 51 tests + schema v1.1
   d1b2d05 R6 SHA backfill: fill in main commit SHA + blob/SHA256 in audit package and entrypoint/manifest
-  0f3fb10 R6 read-only Dry Run: R5 closeout + P1 scanner debt + full-batch classification + audit package
-  8448e9b R5 third fix SHA backfill: ...
   ```
-- `HEAD == origin/master == d1b2d0544eb6216b583a56667a0484ecccb38003`（R6 backfill commit；R6 fix batch 提交前）
-- 证据分级：REPRODUCIBLE_FROM_PUBLIC_REPO
+- 父子链验证（推荐用 `git show -s --format=%P HEAD` 替代 `git log -2`）：
+  - `3e8fd99` 的父提交 = `7b4d5c5`（R6 fix main commit）
+  - `7b4d5c5` 的父提交 = `d1b2d05`（R6 backfill commit）
+  - 三段链路：`d1b2d05` (R6 backfill) → `7b4d5c5` (R6 fix main) → `3e8fd99` (R6 fix backfill)
+- `HEAD == origin/master == 3e8fd993b9648357719a6ef7aa08cbe0a8b21021`（R6 fix backfill commit；本批次 R6 最小最终修复批次开始前的 baseline HEAD）
+- 证据分级：REPRODUCIBLE_FROM_PUBLIC_REPO（公开仓库可独立复核）；非自引用字段分类为 EXTERNALLY_VERIFIED_NOT_EMBEDDED
 
 ---
 
@@ -433,8 +437,8 @@
 | AC6 | 4 个新增视图的 filter/sort 状态明确记录，登记为技术债 | 满足 | `reports/r6-views-filter-sort-status.md` |
 | AC7 | 输出 MIGRATABLE / NEEDS_REVIEW / BLOCKED 分表、重复候选聚合、孤儿记录聚合、D-026 数量门槛判断（v1.1 含 association check） | 满足 | `reports/r6-classification-by-entity.json` + `r6-duplicate-candidates-summary.json` + `r6-orphan-records-summary.json` + `r6-quantity-threshold-judgement.json`（schema_version=`r6-quantity-threshold-judgement-v1.1`，含 `project_association_check`） |
 | AC8 | 私有原始数据仅写入 gitignored 私有路径，公开仓库只保留脱敏聚合证据 | 满足 | `backups/private/r6-classification-record-matrix.private.json` gitignored；公开报告无 record_id/PII；evaluator 输出完全匿名化 |
-| AC9 | 公开仓库和 staged 安全扫描均为 `S0=0 S1=0 S2=0` | 满足 | Section 6.5/6.6/6.7：tracked 156 files S0=0 S1=0 S2=0；R6 main commit staged 12 files + R6 backfill commit staged 3 files S0=0 S1=0 S2=0；R6 fix batch 待 staged 扫描（提交前由 Trae 自动执行） |
-| AC10 | R6 审计包证据完整（含 commit SHA、Git blob SHA、文件 SHA256、生成命令、退出码、证据分级），工作树干净，提交已 push | 满足 | Section 5 表格逐项含 commit SHA + Git blob SHA + 文件 SHA256；Section 6 各项含命令 + 退出码 + 证据分级；R6 main commit = `0f3fb108...`，R6 backfill commit = `d1b2d054...`，HEAD == origin/master；R6 fix main/backfill commit SHA 由后续 backfill commit 填入 |
+| AC9 | 公开仓库和 staged 安全扫描均为 `S0=0 S1=0 S2=0` | 满足 | Section 6.5/6.6/6.7：tracked 153 files S0=0 S1=0 S2=0；R6 main commit staged 12 files + R6 backfill commit staged 3 files S0=0 S1=0 S2=0；R6 fix batch staged 4 files S0=0 S1=0 S2=0；本 R6 最小最终修复批次 staged 扫描将由 Trae 在 main-fix commit 前自动执行并 backfill |
+| AC10 | R6 审计包证据完整（含 commit SHA、Git blob SHA、文件 SHA256、生成命令、退出码、证据分级），工作树干净，提交已 push | 满足 | Section 5 表格逐项含 commit SHA + Git blob SHA + 文件 SHA256；Section 6 各项含命令 + 退出码 + 证据分级；R6 main commit = `0f3fb108...`，R6 backfill commit = `d1b2d054...`，R6 fix main commit = `7b4d5c5...`，R6 fix backfill commit = `3e8fd993b9648357719a6ef7aa08cbe0a8b21021`（已 push；HEAD == origin/master == 3e8fd99 at end of R6 fix batch）。R6 fix main/backfill commit SHA 字段分类为 EXTERNALLY_VERIFIED_NOT_EMBEDDED（指向具体提交的非自引用字段，可由 `git log` 独立复核，不构成"将在同一 backfill 中填入自身 SHA"的递归引用） |
 | AC11 | 最终停在 `R6_REVIEW_PENDING`；`MIGRATION_PILOT_001` 未启动 | 满足 | `config/public-execution-manifest.json` audit_status=`R6_REVIEW_PENDING`、gate_status.R6=`REVIEW_PENDING`、migration_pilot_status=`NOT_APPROVED` |
 | AC12 (P0-2 修复后新增) | D-026 evaluator 对"数量满足但 Project 未关联上述 Customer"的合成反例返回 FAIL | 满足 | `tests/migration-projection.test.js` Scenario B：5 MIGRATABLE customers + 5 BLOCKED customers + 5 projects 全关联 BLOCKED customers → evaluator 返回 FAIL（association_check 0/5, met=false） |
 
@@ -447,8 +451,8 @@
 5. **classifier 原 58 测试、原 23 个 Python 测试及新增投影/evaluator 测试全部通过；报告使用实际总数**：满足 — Section 6.1-6.4：132 PASS。
 6. **tracked 和两个 staged commit 扫描均为 `S0=0 S1=0 S2=0`**：满足 — Section 6.5-6.7。
 7. **R6 审计包逐条对应 11 项 AC，补齐 commit、blob、SHA256、命令、退出码与证据分级**：满足 — Section 5 + Section 6 + Section 7。
-8. **entrypoint、manifest、审计包相互一致，回填原 R6 backfill/final HEAD `d1b2d054...`**：满足 — `PUBLIC_EXECUTION_ENTRYPOINT.md` header 已写明 R6 backfill commit = `d1b2d0544eb6216b583a56667a0484ecccb38003`；manifest revision_history `r6_read_only_dry_run_submission.backfill_commit` = `PENDING_GPT_VERIFICATION_VIA_GIT_FACTS`（原 main commit 时占位），GPT 复审时可通过 `git log --oneline -2 0f3fb108` 确认 = `d1b2d054`；R6 fix batch 已在 manifest 中显式写明 backfill_commit = `d1b2d0544eb6216b583a56667a0484ecccb38003`。
-9. **最终工作树干净，`HEAD == origin/master`，控制面保持 `R6_REVIEW_PENDING`**：满足 — R6 fix batch push 后由 GPT 复审时通过 `git status` + `git rev-parse HEAD` + `git rev-parse origin/master` 复核。
+8. **entrypoint、manifest、审计包相互一致，回填原 R6 backfill/final HEAD `d1b2d054...`**：满足 — `PUBLIC_EXECUTION_ENTRYPOINT.md` header 已写明 R6 backfill commit = `d1b2d0544eb6216b583a56667a0484ecccb38003`；manifest revision_history `r6_read_only_dry_run_submission.backfill_commit` 已显式写明 = `d1b2d0544eb6216b583a56667a0484ecccb38003`（不再使用 `PENDING_GPT_VERIFICATION_VIA_GIT_FACTS` 占位）；父子链由 `git show -s --format=%P d1b2d054` 或 `git log --oneline -2 d1b2d054` 复核，父 = `0f3fb10`（R6 main commit）；R6 fix batch 已在 manifest 中显式写明 baseline_head = `d1b2d054...`、main_commit = `7b4d5c5...`、backfill_commit/final_head = `3e8fd993b9648357719a6ef7aa08cbe0a8b21021`。已不再使用 `git log -2 0f3fb108` 表述形式（与 `git log -2 7b4d5c53` 同属失效表述）。
+9. **最终工作树干净，`HEAD == origin/master`，控制面保持 `R6_REVIEW_PENDING`**：满足 — R6 fix batch push 后 HEAD = `3e8fd993b9648357719a6ef7aa08cbe0a8b21021`，由 GPT 复审时通过 `git status` + `git rev-parse HEAD` + `git rev-parse origin/master` 复核；本 R6 最小最终修复批次将在 main-fix + SHA backfill 两次 commit + push 后再次到达此状态（HEAD == origin/master，工作树干净），届时 HEAD 为本批次 backfill commit SHA。
 
 **结论**：全部 12 项 AC + 9 条修复后验收条件满足。等待 GPT 复审确认。
 

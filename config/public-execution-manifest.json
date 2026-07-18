@@ -284,8 +284,8 @@
       "review_packet": "docs/ai/tasks/TASK-004-R6-REVIEW-FIX-PACKET.md",
       "baseline_head": "d1b2d0544eb6216b583a56667a0484ecccb38003",
       "main_commit": "7b4d5c5368f3f03bc058327cc38dd85618429e81",
-      "backfill_commit": "PENDING_PLACEHOLDER_TO_BE_FILLED_BY_BACKFILL",
-      "final_head": "PENDING_PLACEHOLDER_TO_BE_FILLED_BY_BACKFILL",
+      "backfill_commit": "3e8fd993b9648357719a6ef7aa08cbe0a8b21021",
+      "final_head": "3e8fd993b9648357719a6ef7aa08cbe0a8b21021",
       "audit_outcome": "PENDING_REVIEW",
       "fixes_applied": [
         "P0-1: Added src/migration/projection.js pure function generating 5 explicit schema-default fields for MIGRATABLE Customer/Project payloads (budget_parse_rule_version, source_channel_mapping_version, status_mapping_rule_version, currency, project.status_mapping_rule_version). Non-MIGRATABLE records return null. Model/makeup not projected by this module.",

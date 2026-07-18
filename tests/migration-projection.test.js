@@ -627,3 +627,181 @@ describe('P0-2: D-026 evaluator — output schema', () => {
     assert.match(result.judgement, /^FAIL/);
   });
 });
+
+// ---------------------------------------------------------------------------
+// R6 minimum final fix batch: fail-closed reverse tests
+//
+// Verifies the new fail-closed validators added to projectCustomer /
+// projectProject:
+//   - classified.entity_type MUST match record.entity_type (general invariant,
+//     checked before MIGRATABLE filter).
+//   - Customer MIGRATABLE projection requires: fields object, non-empty name,
+//     and identity context (phone / wechat_id / source_channel_raw /
+//     has_valid_need_summary=true).
+//   - Project MIGRATABLE projection requires: fields object, non-empty
+//     name / status_raw / project_type_raw / linked_customer_key.
+//   - Missing context MUST throw — never generate a writable payload.
+// ---------------------------------------------------------------------------
+
+describe('R6 fail-closed: projectCustomer rejects incomplete context', () => {
+  it('throws when fields is empty object {} (no name, no identity)', () => {
+    const record = {
+      record_key: 'CUSTOMER_ALIAS_R6_REV_001',
+      entity_type: 'customer',
+      fields: {},
+    };
+    const classified = makeClassified('CUSTOMER_ALIAS_R6_REV_001', 'customer', 'MIGRATABLE');
+    assert.throws(
+      () => projectCustomer(record, classified),
+      /name must be non-empty|identity context missing|fields must be a non-null object/,
+    );
+  });
+
+  it('throws when customer identity context is missing (all four identity sources null/false)', () => {
+    const record = makeCustomer('CUSTOMER_ALIAS_R6_REV_002', {
+      name: 'fixture-customer',
+      phone: null,
+      wechat_id: null,
+      source_channel_raw: null,
+      has_valid_need_summary: false,
+    });
+    const classified = makeClassified('CUSTOMER_ALIAS_R6_REV_002', 'customer', 'MIGRATABLE');
+    assert.throws(
+      () => projectCustomer(record, classified),
+      /identity context missing/,
+    );
+  });
+
+  it('throws when classified.entity_type does not match record.entity_type', () => {
+    // record is customer, classified is project — mismatch
+    const record = makeCustomer('CUSTOMER_ALIAS_R6_REV_003', {});
+    const classified = makeClassified('CUSTOMER_ALIAS_R6_REV_003', 'project', 'MIGRATABLE');
+    assert.throws(
+      () => projectCustomer(record, classified),
+      /entity_type mismatch/,
+    );
+  });
+
+  it('throws when fields is undefined', () => {
+    const record = {
+      record_key: 'CUSTOMER_ALIAS_R6_REV_004',
+      entity_type: 'customer',
+      fields: undefined,
+    };
+    const classified = makeClassified('CUSTOMER_ALIAS_R6_REV_004', 'customer', 'MIGRATABLE');
+    assert.throws(
+      () => projectCustomer(record, classified),
+      /fields must be a non-null object/,
+    );
+  });
+
+  it('throws when fields is an array (not a plain object)', () => {
+    const record = {
+      record_key: 'CUSTOMER_ALIAS_R6_REV_005',
+      entity_type: 'customer',
+      fields: [],
+    };
+    const classified = makeClassified('CUSTOMER_ALIAS_R6_REV_005', 'customer', 'MIGRATABLE');
+    assert.throws(
+      () => projectCustomer(record, classified),
+      /fields must be a non-null object/,
+    );
+  });
+});
+
+describe('R6 fail-closed: projectProject rejects incomplete context', () => {
+  it('throws when fields is empty object {} (no name, no status_raw, no project_type_raw, no linked_customer_key)', () => {
+    const record = {
+      record_key: 'PROJECT_ALIAS_R6_REV_001',
+      entity_type: 'project',
+      fields: {},
+    };
+    const classified = makeClassified('PROJECT_ALIAS_R6_REV_001', 'project', 'MIGRATABLE');
+    assert.throws(
+      () => projectProject(record, classified),
+      /name must be non-empty|status_raw must be non-empty|project_type_raw must be non-empty|linked_customer_key must be non-empty/,
+    );
+  });
+
+  it('throws when linked_customer_key is null (missing)', () => {
+    const record = makeProject('PROJECT_ALIAS_R6_REV_002', {
+      linked_customer_key: null,
+    });
+    const classified = makeClassified('PROJECT_ALIAS_R6_REV_002', 'project', 'MIGRATABLE');
+    assert.throws(
+      () => projectProject(record, classified),
+      /linked_customer_key must be non-empty/,
+    );
+  });
+
+  it('throws when linked_customer_key is empty string', () => {
+    const record = makeProject('PROJECT_ALIAS_R6_REV_003', {
+      linked_customer_key: '',
+    });
+    const classified = makeClassified('PROJECT_ALIAS_R6_REV_003', 'project', 'MIGRATABLE');
+    assert.throws(
+      () => projectProject(record, classified),
+      /linked_customer_key must be non-empty/,
+    );
+  });
+
+  it('throws when classified.entity_type does not match record.entity_type', () => {
+    // record is project, classified is customer — mismatch
+    const record = makeProject('PROJECT_ALIAS_R6_REV_004', {
+      linked_customer_key: 'CUSTOMER_ALIAS_X',
+    });
+    const classified = makeClassified('PROJECT_ALIAS_R6_REV_004', 'customer', 'MIGRATABLE');
+    assert.throws(
+      () => projectProject(record, classified),
+      /entity_type mismatch/,
+    );
+  });
+
+  it('throws when status_raw is empty (with linked_customer_key present)', () => {
+    const record = makeProject('PROJECT_ALIAS_R6_REV_005', {
+      status_raw: '',
+      linked_customer_key: 'CUSTOMER_ALIAS_X',
+    });
+    const classified = makeClassified('PROJECT_ALIAS_R6_REV_005', 'project', 'MIGRATABLE');
+    assert.throws(
+      () => projectProject(record, classified),
+      /status_raw must be non-empty/,
+    );
+  });
+
+  it('throws when project_type_raw is empty (with status_raw and linked_customer_key present)', () => {
+    const record = makeProject('PROJECT_ALIAS_R6_REV_006', {
+      project_type_raw: '',
+      linked_customer_key: 'CUSTOMER_ALIAS_X',
+    });
+    const classified = makeClassified('PROJECT_ALIAS_R6_REV_006', 'project', 'MIGRATABLE');
+    assert.throws(
+      () => projectProject(record, classified),
+      /project_type_raw must be non-empty/,
+    );
+  });
+});
+
+describe('R6 fail-closed: projectBatch propagates projection errors', () => {
+  it('projectBatch throws when a MIGRATABLE project in the batch has no linked_customer_key', () => {
+    const record = makeProject('PROJECT_ALIAS_R6_REV_BATCH_001', {});
+    const classified = makeClassified('PROJECT_ALIAS_R6_REV_BATCH_001', 'project', 'MIGRATABLE');
+    assert.throws(
+      () => projectBatch([record], [classified]),
+      /linked_customer_key must be non-empty/,
+    );
+  });
+
+  it('projectBatch throws when a MIGRATABLE customer in the batch has fields={}', () => {
+    const record = {
+      record_key: 'CUSTOMER_ALIAS_R6_REV_BATCH_001',
+      entity_type: 'customer',
+      fields: {},
+    };
+    const classified = makeClassified('CUSTOMER_ALIAS_R6_REV_BATCH_001', 'customer', 'MIGRATABLE');
+    assert.throws(
+      () => projectBatch([record], [classified]),
+      /name must be non-empty|identity context missing/,
+    );
+  });
+});
