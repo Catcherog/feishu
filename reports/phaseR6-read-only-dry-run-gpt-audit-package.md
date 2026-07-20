@@ -14,7 +14,7 @@
 > **R6 fix backfill commit**：`3e8fd993b9648357719a6ef7aa08cbe0a8b21021`（SHA backfill for R6 fix main commit；已 push；HEAD == origin/master == 3e8fd99 at end of R6 fix batch；父提交 = `7b4d5c5`，可通过 `git log --oneline -2 HEAD` 或 `git show -s --format=%P HEAD` 在该 backfill commit 复核父子链）
 > **R6 minimum final fix main commit**：`e1d10869cd350d933be899600b27f8023993dc76`（R6 最小最终修复批次主体提交：projection.js fail-closed validators + 13 reverse-tests + 控制文件 stale placeholder 清理；父提交 = `3e8fd99`，可通过 `git show -s --format=%P e1d1086` 复核）
 > **R6 minimum final fix backfill commit**：NOT_EMBEDDED（非自引用字段约定——本 backfill commit 的自身 SHA 不嵌入本审计包，由 `git rev-parse HEAD` 或 `git log --oneline -1 HEAD` 在 push 后独立复核；指向 main-fix commit 的引用为非自引用字段，分类 EXTERNALLY_VERIFIED_NOT_EMBEDDED）
-> **R6 minimum final fix 02 main commit**：PENDING_BACKFILL_02（R6 最小最终修复 02 批次主体提交：TASK-004-R6-REVIEW-FIX-PACKET.md 恢复到公开仓库（dangling reference 修复）+ projectBatch entity_type 一致性检查 BEFORE classification 分支（BLOCKED/NEEDS_REVIEW 错配也 throw）+ 4 new reverse-tests + 3 控制文件更新；父提交 = `e443a14`，可通过 `git show -s --format=%P <main_fix_02_commit>` 复核；将由后续 SHA backfill commit 回填）
+> **R6 minimum final fix 02 main commit**：`1b592eee453aaa7d1f619afc743e7c83ac0a22a1`（R6 最小最终修复 02 批次主体提交：TASK-004-R6-REVIEW-FIX-PACKET.md 恢复到公开仓库（dangling reference 修复）+ projectBatch entity_type 一致性检查 BEFORE classification 分支（BLOCKED/NEEDS_REVIEW 错配也 throw）+ 4 new reverse-tests + 3 控制文件更新；父提交 = `e443a14`，可通过 `git show -s --format=%P 1b592ee` 复核；本 SHA 已在 SHA backfill commit 中回填到所有控制文件，原占位 `PENDING_BACKFILL_02` 已替换）
 > **R6 minimum final fix 02 backfill commit**：NOT_EMBEDDED（非自引用字段约定——本 backfill commit 的自身 SHA 不嵌入本审计包；指向 main-fix 02 commit 的引用为非自引用字段，分类 EXTERNALLY_VERIFIED_NOT_EMBEDDED）
 > **目标 Base 别名**：`V2_PILOT_BASE_ALIAS`（R6 不写入 V2 测试 Base，仅读取私有 V1 导出）
 
@@ -160,7 +160,7 @@
 - **测试总数**：145 PASS（58 classifier + 64 projection/evaluator + 20 scanner + 3 schema_diff）。
 - **Git 事实**：父提交 = `3e8fd99` (R6 fix backfill)；main-fix commit SHA = `e1d10869cd350d933be899600b27f8023993dc76`；backfill commit SHA = NOT_EMBEDDED（非自引用字段约定）。
 
-### 1.G R6 minimum final fix 02 batch（R6 minimum final fix 02 main commit `PENDING_BACKFILL_02`）
+### 1.G R6 minimum final fix 02 batch（R6 minimum final fix 02 main commit `1b592eee453aaa7d1f619afc743e7c83ac0a22a1`）
 
 按用户任务 `R6-MINIMUM-FINAL-FIX-02` 修复 GPT 复审追加的最小最终修复 02 阻塞项：
 
@@ -206,14 +206,14 @@
 
 #### 1.G.5 修复项 6：控制文件更新
 
-- **`config/public-execution-manifest.json`**：新增 `revision_history[r6_minimum_final_fix_02_batch_submission]` 条目，含 baseline_head=`e443a14`、main_commit=`PENDING_BACKFILL_02`、backfill_commit=`NOT_EMBEDDED`、final_head=`NOT_EMBEDDED`、完整 scope/fixes_applied 数组、test_results=`58 classifier + 68 projection/evaluator (51 original + 13 R6 minimum final fix + 4 R6 minimum final fix 02) + 20 scanner + 3 schema_diff = 149 PASS`、new_files/modified_files 清单、notes。
+- **`config/public-execution-manifest.json`**：新增 `revision_history[r6_minimum_final_fix_02_batch_submission]` 条目，含 baseline_head=`e443a14`、main_commit=`1b592eee453aaa7d1f619afc743e7c83ac0a22a1`（已 backfilled；原占位 `PENDING_BACKFILL_02` 已在 SHA backfill commit 中替换）、backfill_commit=`NOT_EMBEDDED`、final_head=`NOT_EMBEDDED`、完整 scope/fixes_applied 数组、test_results=`58 classifier + 68 projection/evaluator (51 original + 13 R6 minimum final fix + 4 R6 minimum final fix 02) + 20 scanner + 3 schema_diff = 149 PASS`、new_files/modified_files 清单、notes。
 - **`PUBLIC_EXECUTION_ENTRYPOINT.md`**：header 新增 R6 minimum final fix 02 main/backfill commit 行；tracked file count 添加 `at R6 minimum final fix 02 batch closeout: 157 (added docs/ai/tasks/TASK-004-R6-REVIEW-FIX-PACKET.md)`；新增 Section 3.9 R6 minimum final fix 02 batch 子章节（含 3.9.1 验证证据）。
 - **`reports/phaseR6-read-only-dry-run-gpt-audit-package.md`**（本文件）：header 新增 R6 minimum final fix 02 main/backfill commit 行；新增 Section 1.G、Section 2.9、Section 5.6、Section 6.13、Section 7 AC13。
 
 #### 1.G.6 修复项 7+8+9：Git 提交策略 + 最终状态 + 完成包
 
 - **Git 提交策略**：采用 main-fix commit + SHA backfill commit 两段式。
-  - main-fix commit：本批次所有修改（TASK-004 文件 + projection.js + 测试 + 3 控制文件），SHA 占位为 `PENDING_BACKFILL_02`，由后续 backfill commit 回填。
+  - main-fix commit：本批次所有修改（TASK-004 文件 + projection.js + 测试 + 3 控制文件），SHA = `1b592eee453aaa7d1f619afc743e7c83ac0a22a1`。控制文件中的 main_commit 字段先使用占位 `PENDING_BACKFILL_02`，由后续 backfill commit 回填为实际 SHA。
   - backfill commit：将 main-fix commit 实际 SHA 回填到 manifest / entrypoint / 审计包中的 `PENDING_BACKFILL_02` 占位；backfill commit 自身 SHA 不嵌入控制文件（非自引用字段约定 `EXTERNALLY_VERIFIED_NOT_EMBEDDED`）。
 - **最终状态**：`audit_status=R6_REVIEW_PENDING`、`migration_pilot_status=NOT_APPROVED`、`stop_after_completion=true`。R6 Gate 未推进为 PASS，MIGRATION_PILOT_001 未启动。
 - **完成包**：输出新的 R6 完成包到 `C:\Users\Catcher\Desktop\协作文件夹\SOP-collab-completion.md`，供 Web GPT 审查。
@@ -405,16 +405,16 @@
 
 **说明**：上一 R6 fix backfill commit = `3e8fd993b9648357719a6ef7aa08cbe0a8b21021`（已 push；HEAD == origin/master == 3e8fd99 at end of R6 fix batch）。本审计包文本中的 main-fix/backfill commit SHA 引用均为非自引用字段（即指向 `7b4d5c5` 与 `3e8fd99` 两个具体提交，而非指向"将在同一 backfill 中填入自身 SHA"的递归引用），因此分类为 `EXTERNALLY_VERIFIED_NOT_EMBEDDED`。GPT 复审时可通过 `git log --oneline -2 HEAD` 或 `git show -s --format=%P HEAD` 在该 backfill commit 复核父子链（父 = `7b4d5c5`，祖父 = `d1b2d05`）。不再使用已失效的 `git log -2 7b4d5c53` 表述形式。
 
-### 5.5 R6 minimum final fix 02 main commit（`PENDING_BACKFILL_02`，将由后续 backfill commit 回填实际 SHA）
+### 5.5 R6 minimum final fix 02 main commit（`1b592eee453aaa7d1f619afc743e7c83ac0a22a1`，已 backfilled）
 
 | 文件路径 | 操作 | 说明 | Git blob SHA | 文件 SHA256 | 证据分级 |
 |---|---|---|---|---|---|
-| `docs/ai/tasks/TASK-004-R6-REVIEW-FIX-PACKET.md` | 新建 | R6 fix batch GPT 修复任务包（dangling reference 修复，从父 SOP 仓库恢复到 feishu-v2） | 将由 `git rev-parse <main_fix_02_commit>:docs/ai/tasks/TASK-004-R6-REVIEW-FIX-PACKET.md` 独立复核 | 将由 `git show <main_fix_02_commit>:docs/ai/tasks/TASK-004-R6-REVIEW-FIX-PACKET.md \| sha256sum` 独立复核 | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `src/migration/projection.js` | 修改 | `projectBatch` 在 classification 分支之前添加 `ensureEntityTypeConsistency(r, c)` 调用；BLOCKED / NEEDS_REVIEW 类型错配也 throw | 将由 `git rev-parse <main_fix_02_commit>:src/migration/projection.js` 独立复核 | 将由 `git show <main_fix_02_commit>:src/migration/projection.js \| sha256sum` 独立复核 | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `tests/migration-projection.test.js` | 修改 | 新增 describe 块 `R6-MINIMUM-FINAL-FIX-02: projectBatch entity_type consistency for non-MIGRATABLE records`，4 条测试（2 任务要求 + 2 sanity check） | 将由 `git rev-parse <main_fix_02_commit>:tests/migration-projection.test.js` 独立复核 | 将由 `git show <main_fix_02_commit>:tests/migration-projection.test.js \| sha256sum` 独立复核 | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `config/public-execution-manifest.json` | 修改 | 新增 `revision_history[r6_minimum_final_fix_02_batch_submission]` 条目，含 baseline_head/main_commit/backfill_commit/final_head/scope/fixes_applied/test_results/new_files/modified_files/notes | 将由 `git rev-parse <main_fix_02_commit>:config/public-execution-manifest.json` 独立复核 | 将由 `git show <main_fix_02_commit>:config/public-execution-manifest.json \| sha256sum` 独立复核 | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `PUBLIC_EXECUTION_ENTRYPOINT.md` | 修改 | header 新增 R6 minimum final fix 02 main/backfill commit 行；tracked file count 添加 `at R6 minimum final fix 02 batch closeout: 157`；新增 Section 3.9 R6 minimum final fix 02 batch 子章节 | 将由 `git rev-parse <main_fix_02_commit>:PUBLIC_EXECUTION_ENTRYPOINT.md` 独立复核 | 将由 `git show <main_fix_02_commit>:PUBLIC_EXECUTION_ENTRYPOINT.md \| sha256sum` 独立复核 | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `reports/phaseR6-read-only-dry-run-gpt-audit-package.md` | 修改 | 本审计包修订版（pre-backfill 版本）：header 新增 main/backfill commit 行；新增 Section 1.F + 1.G + 2.9 + 5.6 + 6.13 + AC13 | 将由 `git rev-parse <main_fix_02_commit>:reports/phaseR6-read-only-dry-run-gpt-audit-package.md` 独立复核（pre-backfill blob） | 将由 `git show <main_fix_02_commit>:reports/phaseR6-read-only-dry-run-gpt-audit-package.md \| sha256sum` 独立复核（pre-backfill SHA256） | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `docs/ai/tasks/TASK-004-R6-REVIEW-FIX-PACKET.md` | 新建 | R6 fix batch GPT 修复任务包（dangling reference 修复，从父 SOP 仓库恢复到 feishu-v2） | 由 `git rev-parse 1b592ee:docs/ai/tasks/TASK-004-R6-REVIEW-FIX-PACKET.md` 独立复核 | 由 `git show 1b592ee:docs/ai/tasks/TASK-004-R6-REVIEW-FIX-PACKET.md \| sha256sum` 独立复核 | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `src/migration/projection.js` | 修改 | `projectBatch` 在 classification 分支之前添加 `ensureEntityTypeConsistency(r, c)` 调用；BLOCKED / NEEDS_REVIEW 类型错配也 throw | 由 `git rev-parse 1b592ee:src/migration/projection.js` 独立复核 | 由 `git show 1b592ee:src/migration/projection.js \| sha256sum` 独立复核 | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `tests/migration-projection.test.js` | 修改 | 新增 describe 块 `R6-MINIMUM-FINAL-FIX-02: projectBatch entity_type consistency for non-MIGRATABLE records`，4 条测试（2 任务要求 + 2 sanity check） | 由 `git rev-parse 1b592ee:tests/migration-projection.test.js` 独立复核 | 由 `git show 1b592ee:tests/migration-projection.test.js \| sha256sum` 独立复核 | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `config/public-execution-manifest.json` | 修改 | 新增 `revision_history[r6_minimum_final_fix_02_batch_submission]` 条目，含 baseline_head/main_commit/backfill_commit/final_head/scope/fixes_applied/test_results/new_files/modified_files/notes | 由 `git rev-parse 1b592ee:config/public-execution-manifest.json` 独立复核（pre-backfill 版本，main_commit 字段为 PENDING_BACKFILL_02 占位） | 由 `git show 1b592ee:config/public-execution-manifest.json \| sha256sum` 独立复核 | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `PUBLIC_EXECUTION_ENTRYPOINT.md` | 修改 | header 新增 R6 minimum final fix 02 main/backfill commit 行；tracked file count 添加 `at R6 minimum final fix 02 batch closeout: 157`；新增 Section 3.9 R6 minimum final fix 02 batch 子章节 | 由 `git rev-parse 1b592ee:PUBLIC_EXECUTION_ENTRYPOINT.md` 独立复核（pre-backfill 版本，main_commit 字段为 PENDING_BACKFILL_02 占位） | 由 `git show 1b592ee:PUBLIC_EXECUTION_ENTRYPOINT.md \| sha256sum` 独立复核 | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `reports/phaseR6-read-only-dry-run-gpt-audit-package.md` | 修改 | 本审计包修订版（pre-backfill 版本）：header 新增 main/backfill commit 行；新增 Section 1.F + 1.G + 2.9 + 5.6 + 6.13 + AC13 | 由 `git rev-parse 1b592ee:reports/phaseR6-read-only-dry-run-gpt-audit-package.md` 独立复核（pre-backfill blob） | 由 `git show 1b592ee:reports/phaseR6-read-only-dry-run-gpt-audit-package.md \| sha256sum` 独立复核（pre-backfill SHA256） | REPRODUCIBLE_FROM_PUBLIC_REPO |
 
 ### 5.6 R6 minimum final fix 02 backfill commit（`NOT_EMBEDDED`）
 
@@ -424,7 +424,7 @@
 | `PUBLIC_EXECUTION_ENTRYPOINT.md` | 修改 | SHA backfill（main-fix 02 commit 实际 SHA + final HEAD） | EXTERNALLY_VERIFIED_NOT_EMBEDDED — 由 `git rev-parse <backfill_02_commit>:PUBLIC_EXECUTION_ENTRYPOINT.md` 独立复核 | EXTERNALLY_VERIFIED_NOT_EMBEDDED — 由 `git show <backfill_02_commit>:PUBLIC_EXECUTION_ENTRYPOINT.md \| sha256sum` 独立复核 | EXTERNALLY_VERIFIED_NOT_EMBEDDED |
 | `reports/phaseR6-read-only-dry-run-gpt-audit-package.md` | 修改 | SHA backfill（main-fix 02 commit 实际 SHA 填入 Section 5.5 表头 + header 行，替换 `PENDING_BACKFILL_02` 占位） | EXTERNALLY_VERIFIED_NOT_EMBEDDED — 非自引用字段；该审计包自身的 blob SHA 由 `git rev-parse <backfill_02_commit>:reports/phaseR6-read-only-dry-run-gpt-audit-package.md` 独立复核，不嵌入本审计包文本中作为同一 backfill 的"自我填充" | EXTERNALLY_VERIFIED_NOT_EMBEDDED | EXTERNALLY_VERIFIED_NOT_EMBEDDED |
 
-**说明**：本 R6 minimum final fix 02 main-fix commit SHA = `PENDING_BACKFILL_02`（pre-backfill 占位），将由后续 SHA backfill commit 替换为实际 SHA。backfill commit 自身 SHA = `NOT_EMBEDDED`（非自引用字段约定——本 backfill commit 的自身 SHA 不嵌入控制文件，由 `git rev-parse HEAD` 或 `git log --oneline -1 HEAD` 在 push 后独立复核）。指向 main-fix commit 的引用为非自引用字段，分类 `EXTERNALLY_VERIFIED_NOT_EMBEDDED`。GPT 复审时可通过 `git show -s --format=%P HEAD` 在该 backfill commit 复核父子链（父 = main-fix 02 commit，祖父 = `e443a14` 即 R6 minimum final fix backfill）。
+**说明**：本 R6 minimum final fix 02 main-fix commit SHA = `1b592eee453aaa7d1f619afc743e7c83ac0a22a1`（pre-backfill 占位 `PENDING_BACKFILL_02` 已在 SHA backfill commit 中替换为实际 SHA）。backfill commit 自身 SHA = `NOT_EMBEDDED`（非自引用字段约定——本 backfill commit 的自身 SHA 不嵌入控制文件，由 `git rev-parse HEAD` 或 `git log --oneline -1 HEAD` 在 push 后独立复核）。指向 main-fix commit 的引用为非自引用字段，分类 `EXTERNALLY_VERIFIED_NOT_EMBEDDED`。GPT 复审时可通过 `git show -s --format=%P HEAD` 在该 backfill commit 复核父子链（父 = `1b592ee` main-fix 02 commit，祖父 = `e443a14` 即 R6 minimum final fix backfill）。
 
 ### 5.7 私有文件（gitignored，不入 Git）
 
@@ -557,14 +557,14 @@
 - 注：pre-staging tracked 文件计数为 156（基线状态，TASK-004 文件尚未在 working tree 中）；staging TASK-004 后 tracked = 157（git 视 staged 文件为 tracked）；main-fix commit 后 tracked 稳定为 157。
 - 证据分级：REPRODUCIBLE_FROM_PUBLIC_REPO（所有命令均可在公开仓库独立运行复核）
 
-### 6.14 R6 minimum final fix 02 batch Git 事实验证（pre-backfill）
+### 6.14 R6 minimum final fix 02 batch Git 事实验证（post-backfill）
 
-- 命令（pre-backfill，将由 backfill commit 后复核）：`git show -s --format=%P <main_fix_02_commit>`
-- 预期输出：`e1d10869cd350d933be899600b27f8023993dc76`（父提交 = R6 minimum final fix main commit `e1d1086`，即 R6 minimum final fix batch 的 main-fix commit）
-- 五段链路：`d1b2d05` (R6 backfill) → `7b4d5c5` (R6 fix main) → `3e8fd99` (R6 fix backfill) → `e1d1086` (R6 minimum final fix main) → `<main_fix_02_commit>` (R6 minimum final fix 02 main) → `<backfill_02_commit>` (R6 minimum final fix 02 backfill)
-- 本批次 main-fix commit SHA = `PENDING_BACKFILL_02`（pre-backfill 占位），将由后续 SHA backfill commit 替换为实际 SHA
-- 本批次 backfill commit SHA = NOT_EMBEDDED（非自引用字段约定）
-- 控制文件中本批次 main-fix commit SHA 字段当前为 `PENDING_BACKFILL_02`（pre-backfill），将由 backfill commit 回填；backfill commit SHA 字段标记为 NOT_EMBEDDED（参见 `config/public-execution-manifest.json` `revision_history[r6_minimum_final_fix_02_batch_submission]`）
+- 命令：`git show -s --format=%P 1b592ee`
+- 输出：`e443a142ca6dfa774759118f21c2716844f1ba0e`（父提交 = R6 minimum final fix backfill commit `e443a14`，即本批次 baseline HEAD）
+- 五段链路：`d1b2d05` (R6 backfill) → `7b4d5c5` (R6 fix main) → `3e8fd99` (R6 fix backfill) → `e1d1086` (R6 minimum final fix main) → `e443a14` (R6 minimum final fix backfill, baseline of this batch) → `1b592ee` (R6 minimum final fix 02 main) → `<backfill_02_commit>` (R6 minimum final fix 02 backfill, NOT_EMBEDDED)
+- 本批次 main-fix commit SHA = `1b592eee453aaa7d1f619afc743e7c83ac0a22a1`（已 backfilled 到所有控制文件；原占位 `PENDING_BACKFILL_02` 已在 SHA backfill commit 中替换为实际 SHA）
+- 本批次 backfill commit SHA = NOT_EMBEDDED（非自引用字段约定——本 backfill commit 的自身 SHA 不嵌入控制文件，由 `git rev-parse HEAD` 或 `git log --oneline -1 HEAD` 在 push 后独立复核）
+- 控制文件中本批次 main-fix commit SHA 字段已显式写明为 `1b592eee453aaa7d1f619afc743e7c83ac0a22a1`；backfill commit SHA 字段标记为 NOT_EMBEDDED（参见 `config/public-execution-manifest.json` `revision_history[r6_minimum_final_fix_02_batch_submission]`）
 - 证据分级：REPRODUCIBLE_FROM_PUBLIC_REPO（公开仓库可独立复核）；非自引用字段分类为 EXTERNALLY_VERIFIED_NOT_EMBEDDED
 
 ---

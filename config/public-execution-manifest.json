@@ -349,7 +349,7 @@
       "gate": "R6",
       "action": "r6_minimum_final_fix_02_batch_submission",
       "baseline_head": "e443a14",
-      "main_commit": "PENDING_BACKFILL_02",
+      "main_commit": "1b592eee453aaa7d1f619afc743e7c83ac0a22a1",
       "backfill_commit": "NOT_EMBEDDED",
       "final_head": "NOT_EMBEDDED",
       "audit_outcome": "PENDING_REVIEW",
@@ -368,8 +368,8 @@
       "test_results": "58 classifier + 68 projection/evaluator (51 original + 13 R6 minimum final fix + 4 R6 minimum final fix 02) + 20 scanner + 3 schema_diff = 149 PASS",
       "scan_results": "tracked 157 files (after staging TASK-004-R6-REVIEW-FIX-PACKET.md, git treats staged file as tracked) S0=0 S1=0 S2=0; staged 6 files (all 6 R6 minimum final fix 02 batch files: TASK-004 + projection.js + migration-projection.test.js + manifest + entrypoint + audit package) S0=0 S1=0 S2=0; tracked 157 files (after main-fix commit, verifiable via `git ls-files | wc -l`) S0=0 S1=0 S2=0 (will be re-verified by GPT after push)",
       "d026_threshold_judgement": "UNCHANGED — FAIL (customer 0/5, project 0/5, model 3/10, makeup 5/10, project_association_check 0/5). MIGRATION_PILOT_001 MUST NOT start. No D-026 evaluator code changes in this batch.",
-      "non_self_reference_note": "backfill_commit and final_head fields marked NOT_EMBEDDED — this backfill commit's own SHA is NOT embedded in control files (per .trae/rules/_gpt_audit.md non-self-reference convention). After push, the SHA is independently verifiable via `git rev-parse HEAD` or `git log --oneline -1 HEAD`. main_commit field (PENDING_BACKFILL_02 placeholder in this revision_history entry; will be replaced by the actual main-fix commit SHA in the subsequent SHA backfill commit) is a non-self-referencing field classified as EXTERNALLY_VERIFIED_NOT_EMBEDDED.",
-      "parent_chain_verification": "git show -s --format=%P <main_fix_02_commit> returns e443a14... (parent = R6 minimum final fix backfill commit, the baseline HEAD at start of this batch). Chain: ... -> e1d1086 (R6 minimum final fix main) -> e443a14 (R6 minimum final fix backfill, baseline of this batch) -> <main_fix_02_commit_TBD> (R6 minimum final fix 02 main, PENDING_BACKFILL_02) -> <backfill_commit_TBD> (R6 minimum final fix 02 backfill, NOT_EMBEDDED).",
+      "non_self_reference_note": "backfill_commit and final_head fields marked NOT_EMBEDDED — this backfill commit's own SHA is NOT embedded in control files (per .trae/rules/_gpt_audit.md non-self-reference convention). After push, the SHA is independently verifiable via `git rev-parse HEAD` or `git log --oneline -1 HEAD`. main_commit field (was PENDING_BACKFILL_02 placeholder in main-fix commit; replaced by actual SHA 1b592eee453aaa7d1f619afc743e7c83ac0a22a1 in the subsequent SHA backfill commit) is a non-self-referencing field classified as EXTERNALLY_VERIFIED_NOT_EMBEDDED.",
+      "parent_chain_verification": "git show -s --format=%P 1b592ee returns e443a14... (parent = R6 minimum final fix backfill commit, the baseline HEAD at start of this batch). Chain: ... -> e1d1086 (R6 minimum final fix main) -> e443a14 (R6 minimum final fix backfill, baseline of this batch) -> 1b592ee (R6 minimum final fix 02 main, actual SHA backfilled from PENDING_BACKFILL_02 placeholder) -> <backfill_commit_TBD> (R6 minimum final fix 02 backfill, NOT_EMBEDDED).",
       "new_files": [
         "docs/ai/tasks/TASK-004-R6-REVIEW-FIX-PACKET.md"
       ],
