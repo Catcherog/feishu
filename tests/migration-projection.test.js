@@ -616,9 +616,9 @@ describe('P0-2: D-026 evaluator — Scenario D: current-like quantity shortfall 
 // ---------------------------------------------------------------------------
 
 describe('P0-2: D-026 evaluator — output schema', () => {
-  it('output schema_version is r6-quantity-threshold-judgement-v1.1', () => {
+  it('output schema_version is r6-quantity-threshold-judgement-v1.2 (R1)', () => {
     const result = evaluateD026Threshold([], new Map());
-    assert.equal(result.schema_version, 'r6-quantity-threshold-judgement-v1.1');
+    assert.equal(result.schema_version, 'r6-quantity-threshold-judgement-v1.2');
     assert.equal(result.decision_reference, 'D-026 (DECISION_LOG.md)');
   });
 
@@ -626,6 +626,24 @@ describe('P0-2: D-026 evaluator — output schema', () => {
     const result = evaluateD026Threshold([], new Map());
     assert.equal(result.all_thresholds_met, false);
     assert.match(result.judgement, /^FAIL/);
+  });
+
+  it('R1: empty input reports zero detection coverage (checked_relation_count = 0)', () => {
+    const result = evaluateD026Threshold([], new Map());
+    assert.equal(result.entity_type_correctness_check.checked_relation_count, 0);
+    assert.equal(result.entity_type_correctness_check.unresolved_relation_count, 0);
+    assert.equal(result.entity_type_correctness_check.type_mismatch_count, 0);
+    assert.equal(result.entity_type_correctness_check.actual_mismatches, 0);
+    // 0 mismatches with 0 relations checked is NOT a positive verification,
+    // but the gate still passes the type-correctness check (no mismatches found).
+    assert.equal(result.entity_type_correctness_check.met, true);
+  });
+
+  it('R1: empty input reports source_match_check with zero projects', () => {
+    const result = evaluateD026Threshold([], new Map());
+    assert.equal(result.source_match_check.matched_project_count, 0);
+    assert.equal(result.source_match_check.match_not_found_project_count, 0);
+    assert.equal(result.source_match_check.total_project_count, 0);
   });
 });
 
@@ -1190,5 +1208,370 @@ describe('PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01: D-026 split association ch
     assert.equal(result.project_association_check.met, true);
     assert.equal(result.all_thresholds_met, true);
     assert.match(result.judgement, /^PASS/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R1: per-type 100% completeness
+//
+// GPT verdict (R1 Required Fixes item 5 & 6):
+//   "5 个正确样片 + 1 个缺 Customer 的客片 → D-026 association FAIL"
+//   "5 个正确客片 + 1 个缺 Model 的样片 → D-026 association FAIL"
+//
+// The combined threshold (>= 5 pairs) would PASS in both cases, but the
+// per-type 100% completeness gate must FAIL because one type has a
+// defective association that the combined threshold masks.
+//
+// "缺 Customer 的客片" is modeled as: a MIGRATABLE 客片 whose
+// linked_customer_key points to a BLOCKED (non-MIGRATABLE) customer.
+// The classifier still marks it MIGRATABLE (the customer exists in the
+// batch, so it is not ORPHAN_PROJECT), but the D-026 per-type
+// completeness check detects that the pair does not resolve to a
+// MIGRATABLE customer.
+// ---------------------------------------------------------------------------
+
+describe('PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R1: per-type completeness gate', () => {
+  // R1 test 5: 5 correct 样片 + 1 客片 with non-MIGRATABLE Customer → FAIL
+  it('R1-5: 5 correct 样片 + 1 客片 missing MIGRATABLE Customer → D-026 association FAIL', () => {
+    const classified = [];
+    const sourceByKey = new Map();
+    // 5 MIGRATABLE customers (for customer threshold; only 1 is referenced
+    // by the defective 客片, and that one is BLOCKED, not MIGRATABLE)
+    for (let i = 0; i < 5; i++) {
+      const ck = `CUSTOMER_ALIAS_R1_5_MIG_${i}`;
+      const c = makeCustomer(ck, {});
+      classified.push(makeClassified(ck, 'customer', 'MIGRATABLE'));
+      sourceByKey.set(ck, c);
+    }
+    // 1 BLOCKED customer — the 客片 links to this one (defective pair)
+    const blockedCk = 'CUSTOMER_ALIAS_R1_5_BLK_0';
+    const blockedC = makeCustomer(blockedCk, {});
+    classified.push(makeClassified(blockedCk, 'customer', 'BLOCKED'));
+    sourceByKey.set(blockedCk, blockedC);
+    // 10 MIGRATABLE models
+    for (let i = 0; i < 10; i++) {
+      const mk = `MODEL_ALIAS_R1_5_${i}`;
+      const m = { record_key: mk, entity_type: 'model', fields: {} };
+      classified.push(makeClassified(mk, 'model', 'MIGRATABLE'));
+      sourceByKey.set(mk, m);
+    }
+    // 5 correct 样片 — each links to a MIGRATABLE model
+    for (let i = 0; i < 5; i++) {
+      const mk = `MODEL_ALIAS_R1_5_${i}`;
+      const pk = `PROJECT_ALIAS_R1_5_YP_${i}`;
+      const p = makeProject(pk, {
+        project_type_raw: '创作',
+        linked_customer_key: null,
+        linked_model_key: mk,
+      });
+      classified.push(makeClassified(pk, 'project', 'MIGRATABLE'));
+      sourceByKey.set(pk, p);
+    }
+    // 1 defective 客片 — links to BLOCKED customer (not MIGRATABLE)
+    const defectivePk = 'PROJECT_ALIAS_R1_5_KP_0';
+    const defectiveP = makeProject(defectivePk, {
+      project_type_raw: '客片',
+      linked_customer_key: blockedCk,
+    });
+    classified.push(makeClassified(defectivePk, 'project', 'MIGRATABLE'));
+    sourceByKey.set(defectivePk, defectiveP);
+    // 10 MIGRATABLE makeups
+    for (let i = 0; i < 10; i++) {
+      const mk2 = `MAKEUP_ALIAS_R1_5_${i}`;
+      const m2 = { record_key: mk2, entity_type: 'makeup', fields: {} };
+      classified.push(makeClassified(mk2, 'makeup', 'MIGRATABLE'));
+      sourceByKey.set(mk2, m2);
+    }
+
+    const result = evaluateD026Threshold(classified, sourceByKey);
+
+    // 样片 5/5 complete, 客片 0/1 incomplete → per_type_completeness_met = false
+    assert.equal(result.project_association_check.yangpian_model_pairs, 5,
+      '5 样片-Model pairs');
+    assert.equal(result.project_association_check.yangpian_model_total, 5);
+    assert.equal(result.project_association_check.yangpian_completeness_met, true,
+      '样片 completeness 100%');
+    assert.equal(result.project_association_check.kepian_customer_pairs, 0,
+      '0 客片-Customer pairs (Customer is BLOCKED, not MIGRATABLE)');
+    assert.equal(result.project_association_check.kepian_customer_total, 1,
+      '1 MIGRATABLE 客片 exists (defective pair)');
+    assert.equal(result.project_association_check.kepian_completeness_met, false,
+      '客片 completeness 0% < 100% — per-type gate FAILs');
+    assert.equal(result.project_association_check.per_type_completeness_met, false,
+      'per-type completeness gate FAIL');
+    // combined_pairs = 5 would pass the old threshold, but per-type fails
+    assert.equal(result.project_association_check.combined_pairs, 5);
+    assert.equal(result.project_association_check.combined_pairs_met, true);
+    assert.equal(result.project_association_check.met, false,
+      'association gate FAILs because per-type completeness is not met');
+    assert.equal(result.all_thresholds_met, false);
+    assert.match(result.judgement, /^FAIL/);
+  });
+
+  // R1 test 6: 5 correct 客片 + 1 样片 with non-MIGRATABLE Model → FAIL
+  it('R1-6: 5 correct 客片 + 1 样片 missing MIGRATABLE Model → D-026 association FAIL', () => {
+    const classified = [];
+    const sourceByKey = new Map();
+    // 5 MIGRATABLE customers (referenced by 5 correct 客片)
+    for (let i = 0; i < 5; i++) {
+      const ck = `CUSTOMER_ALIAS_R1_6_MIG_${i}`;
+      const c = makeCustomer(ck, {});
+      classified.push(makeClassified(ck, 'customer', 'MIGRATABLE'));
+      sourceByKey.set(ck, c);
+    }
+    // 5 MIGRATABLE models (for model threshold; only 1 is referenced
+    // by the defective 样片, and that one is BLOCKED)
+    for (let i = 0; i < 10; i++) {
+      const mk = `MODEL_ALIAS_R1_6_MIG_${i}`;
+      const m = { record_key: mk, entity_type: 'model', fields: {} };
+      classified.push(makeClassified(mk, 'model', 'MIGRATABLE'));
+      sourceByKey.set(mk, m);
+    }
+    // 1 BLOCKED model — the 样片 links to this one (defective pair)
+    const blockedMk = 'MODEL_ALIAS_R1_6_BLK_0';
+    const blockedM = { record_key: blockedMk, entity_type: 'model', fields: {} };
+    classified.push(makeClassified(blockedMk, 'model', 'BLOCKED'));
+    sourceByKey.set(blockedMk, blockedM);
+    // 5 correct 客片 — each links to a MIGRATABLE customer
+    for (let i = 0; i < 5; i++) {
+      const ck = `CUSTOMER_ALIAS_R1_6_MIG_${i}`;
+      const pk = `PROJECT_ALIAS_R1_6_KP_${i}`;
+      const p = makeProject(pk, {
+        project_type_raw: '客片',
+        linked_customer_key: ck,
+      });
+      classified.push(makeClassified(pk, 'project', 'MIGRATABLE'));
+      sourceByKey.set(pk, p);
+    }
+    // 1 defective 样片 — links to BLOCKED model (not MIGRATABLE)
+    const defectivePk = 'PROJECT_ALIAS_R1_6_YP_0';
+    const defectiveP = makeProject(defectivePk, {
+      project_type_raw: '创作',
+      linked_customer_key: null,
+      linked_model_key: blockedMk,
+    });
+    classified.push(makeClassified(defectivePk, 'project', 'MIGRATABLE'));
+    sourceByKey.set(defectivePk, defectiveP);
+    // 10 MIGRATABLE makeups
+    for (let i = 0; i < 10; i++) {
+      const mk2 = `MAKEUP_ALIAS_R1_6_${i}`;
+      const m2 = { record_key: mk2, entity_type: 'makeup', fields: {} };
+      classified.push(makeClassified(mk2, 'makeup', 'MIGRATABLE'));
+      sourceByKey.set(mk2, m2);
+    }
+
+    const result = evaluateD026Threshold(classified, sourceByKey);
+
+    // 客片 5/5 complete, 样片 0/1 incomplete → per_type_completeness_met = false
+    assert.equal(result.project_association_check.kepian_customer_pairs, 5,
+      '5 客片-Customer pairs');
+    assert.equal(result.project_association_check.kepian_customer_total, 5);
+    assert.equal(result.project_association_check.kepian_completeness_met, true,
+      '客片 completeness 100%');
+    assert.equal(result.project_association_check.yangpian_model_pairs, 0,
+      '0 样片-Model pairs (Model is BLOCKED, not MIGRATABLE)');
+    assert.equal(result.project_association_check.yangpian_model_total, 1,
+      '1 MIGRATABLE 样片 exists (defective pair)');
+    assert.equal(result.project_association_check.yangpian_completeness_met, false,
+      '样片 completeness 0% < 100% — per-type gate FAILs');
+    assert.equal(result.project_association_check.per_type_completeness_met, false,
+      'per-type completeness gate FAIL');
+    assert.equal(result.project_association_check.combined_pairs, 5);
+    assert.equal(result.project_association_check.combined_pairs_met, true);
+    assert.equal(result.project_association_check.met, false,
+      'association gate FAILs because per-type completeness is not met');
+    assert.equal(result.all_thresholds_met, false);
+    assert.match(result.judgement, /^FAIL/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R1: MK-07 empty status
+// independent NEEDS_REVIEW (GPT verdict item 7)
+//
+// Verifies that a record with empty status_raw is classified as
+// NEEDS_REVIEW / STATUS_NEEDS_REVIEW independently — not as ORPHAN_PROJECT
+// or any other reason. This mirrors the real MK-07 pilot candidate which
+// has status_raw="" (empty) in V1.
+// ---------------------------------------------------------------------------
+
+describe('PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R1: MK-07 empty status independent NEEDS_REVIEW', () => {
+  it('R1-7: record with empty status_raw → NEEDS_REVIEW / STATUS_NEEDS_REVIEW (independent)', () => {
+    // Use the classifier directly to verify MK-07-like behavior.
+    // MK-07 is a makeup record with status_raw="" in V1.
+    const { classifyRecord } = require('../src/migration/classifier');
+    const mk07Record = {
+      record_key: 'MAKEUP_ALIAS_R1_MK07',
+      entity_type: 'makeup',
+      fields: {
+        name: 'fixture-mk07',
+        status_raw: '',  // empty — MK-07 real condition
+        source_channel_raw: null,
+        budget_range_raw: null,
+        phone: '10000000099',
+        wechat_id: 'fixture_wechat_mk07',
+        portfolio_url: 'https://example.com/portfolio/mk07',
+        xiaohongshu_account: 'fixture_xhs_mk07',
+        project_type_raw: null,
+        linked_project_keys: [],
+        linked_customer_key: null,
+        linked_customer_name_hint: null,
+        duplicate_candidates: [],
+        has_delivery_evidence: false,
+        has_archive_evidence: false,
+      },
+    };
+    const result = classifyRecord(mk07Record);
+    assert.equal(result.classification, 'NEEDS_REVIEW',
+      'empty status_raw → NEEDS_REVIEW (not BLOCKED, not MIGRATABLE)');
+    assert.equal(result.primary_reason_code, 'STATUS_NEEDS_REVIEW',
+      'primary reason is STATUS_NEEDS_REVIEW (independent — not ORPHAN, not CUSTOMER_UNRESOLVED)');
+    assert.equal(result.secondary_reason_codes.length, 0,
+      'no secondary reasons — status review is the sole defect');
+  });
+
+  // Sanity check: MK-07 with a valid V2 status becomes MIGRATABLE
+  it('R1-7-sanity: MK-07 with valid V2 status_raw → MIGRATABLE', () => {
+    const { classifyRecord } = require('../src/migration/classifier');
+    const mk07Record = {
+      record_key: 'MAKEUP_ALIAS_R1_MK07_FIX',
+      entity_type: 'makeup',
+      fields: {
+        name: 'fixture-mk07',
+        status_raw: '已合作',  // valid V2 enum
+        source_channel_raw: null,
+        budget_range_raw: null,
+        phone: '10000000099',
+        wechat_id: 'fixture_wechat_mk07',
+        portfolio_url: 'https://example.com/portfolio/mk07',
+        xiaohongshu_account: 'fixture_xhs_mk07',
+        project_type_raw: null,
+        linked_project_keys: [],
+        linked_customer_key: null,
+        linked_customer_name_hint: null,
+        duplicate_candidates: [],
+        has_delivery_evidence: false,
+        has_archive_evidence: false,
+      },
+    };
+    const result = classifyRecord(mk07Record);
+    assert.equal(result.classification, 'MIGRATABLE');
+    assert.equal(result.primary_reason_code, 'ELIGIBLE');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R1: MATCH_NOT_FOUND projects
+// do NOT enter MIGRATABLE project count (GPT verdict item 3 & 4)
+//
+// Verifies that a project with authoritative_match_status='MATCH_NOT_FOUND'
+// is classified as NEEDS_REVIEW / PROJECT_SOURCE_MATCH_REQUIRED (not
+// ORPHAN_PROJECT), and that D-026 source_match_check tracks it separately
+// from MIGRATABLE projects.
+// ---------------------------------------------------------------------------
+
+describe('PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R1: MATCH_NOT_FOUND handling', () => {
+  it('R1-3/4: MATCH_NOT_FOUND project → NEEDS_REVIEW / PROJECT_SOURCE_MATCH_REQUIRED (not ORPHAN)', () => {
+    const { classifyRecord } = require('../src/migration/classifier');
+    const project = {
+      record_key: 'PROJECT_ALIAS_R1_MATCH_NOT_FOUND',
+      entity_type: 'project',
+      fields: {
+        name: 'fixture-project-match-not-found',
+        status_raw: '策划中',
+        source_channel_raw: null,
+        budget_range_raw: null,
+        phone: null,
+        wechat_id: null,
+        portfolio_url: null,
+        xiaohongshu_account: null,
+        project_type_raw: '创作',
+        linked_project_keys: [],
+        linked_customer_key: null,
+        linked_customer_name_hint: null,
+        linked_model_key: null,
+        duplicate_candidates: [],
+        has_delivery_evidence: false,
+        has_archive_evidence: false,
+        authoritative_match_status: 'MATCH_NOT_FOUND',
+      },
+    };
+    const result = classifyRecord(project);
+    assert.equal(result.classification, 'NEEDS_REVIEW',
+      'MATCH_NOT_FOUND → NEEDS_REVIEW (not BLOCKED, not MIGRATABLE)');
+    assert.equal(result.primary_reason_code, 'PROJECT_SOURCE_MATCH_REQUIRED',
+      'primary reason is PROJECT_SOURCE_MATCH_REQUIRED (not ORPHAN_PROJECT)');
+    // critical: must NOT be ORPHAN_PROJECT (which assumes type is known)
+    assert.equal(result.secondary_reason_codes.includes('ORPHAN_PROJECT'), false,
+      'MATCH_NOT_FOUND must not collapse into ORPHAN_PROJECT');
+  });
+
+  it('R1-3: unresolved link → BLOCKED / LINKED_RELATION_UNRESOLVED', () => {
+    const { classifyBatch } = require('../src/migration/classifier');
+    const project = {
+      record_key: 'PROJECT_ALIAS_R1_UNRESOLVED',
+      entity_type: 'project',
+      fields: {
+        name: 'fixture-project-unresolved',
+        status_raw: '策划中',
+        project_type_raw: '客片',
+        linked_customer_key: 'CUSTOMER_ALIAS_NONEXISTENT_999',
+        linked_model_key: null,
+        duplicate_candidates: [],
+        has_delivery_evidence: false,
+        has_archive_evidence: false,
+        authoritative_match_status: 'MATCHED',
+      },
+    };
+    // batch mode required for unresolved detection (context.recordsByKey)
+    const results = classifyBatch([project]);
+    const r = results[0];
+    assert.equal(r.classification, 'BLOCKED',
+      'unresolved link → BLOCKED (not NEEDS_REVIEW)');
+    assert.equal(r.primary_reason_code, 'LINKED_RELATION_UNRESOLVED',
+      'primary reason is LINKED_RELATION_UNRESOLVED');
+  });
+
+  it('R1: D-026 source_match_check tracks MATCH_NOT_FOUND projects separately', () => {
+    const classified = [];
+    const sourceByKey = new Map();
+    // 1 MATCHED project (MIGRATABLE)
+    const matchedPk = 'PROJECT_ALIAS_R1_SM_MATCHED';
+    const matchedP = makeProject(matchedPk, {
+      project_type_raw: '客片',
+      linked_customer_key: 'CUSTOMER_ALIAS_R1_SM_0',
+      authoritative_match_status: 'MATCHED',
+    });
+    classified.push(makeClassified(matchedPk, 'project', 'MIGRATABLE'));
+    sourceByKey.set(matchedPk, matchedP);
+    // 2 MATCH_NOT_FOUND projects (NEEDS_REVIEW)
+    for (let i = 0; i < 2; i++) {
+      const pk = `PROJECT_ALIAS_R1_SM_MNF_${i}`;
+      const p = makeProject(pk, {
+        project_type_raw: '创作',
+        linked_customer_key: null,
+        linked_model_key: null,
+        authoritative_match_status: 'MATCH_NOT_FOUND',
+      });
+      classified.push(makeClassified(pk, 'project', 'NEEDS_REVIEW'));
+      sourceByKey.set(pk, p);
+    }
+    // 5 MIGRATABLE customers
+    for (let i = 0; i < 5; i++) {
+      const ck = `CUSTOMER_ALIAS_R1_SM_${i}`;
+      const c = makeCustomer(ck, {});
+      classified.push(makeClassified(ck, 'customer', 'MIGRATABLE'));
+      sourceByKey.set(ck, c);
+    }
+
+    const result = evaluateD026Threshold(classified, sourceByKey);
+    assert.equal(result.source_match_check.total_project_count, 3,
+      'total projects = 3 (1 matched + 2 match_not_found)');
+    assert.equal(result.source_match_check.matched_project_count, 1);
+    assert.equal(result.source_match_check.match_not_found_project_count, 2);
+    // MATCH_NOT_FOUND projects are NEEDS_REVIEW, not MIGRATABLE, so they
+    // do not enter the MIGRATABLE project count
+    assert.equal(result.thresholds.project.actual_migratable, 1,
+      'only 1 MIGRATABLE project (MATCH_NOT_FOUND excluded)');
   });
 });

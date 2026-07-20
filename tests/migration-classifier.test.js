@@ -40,6 +40,7 @@ describe('classifier public surface', () => {
   it('exposes all required reason codes with stable priority order', () => {
     const expectedCodes = [
       'MISSING_NAME', 'MISSING_IDENTITY', 'LINKED_ENTITY_TYPE_MISMATCH',
+      'PROJECT_SOURCE_MATCH_REQUIRED', 'LINKED_RELATION_UNRESOLVED',
       'ORPHAN_PROJECT',
       'CUSTOMER_UNRESOLVED', 'DUPLICATE_UNRESOLVED', 'STATUS_NEEDS_REVIEW',
       'SOURCE_UNMAPPED', 'BUDGET_AMBIGUOUS', 'PROJECT_TYPE_UNMAPPED',

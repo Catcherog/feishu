@@ -39,18 +39,45 @@ const REASON_CODES = {
   // target. Higher priority number than PROJECT_TYPE_UNMAPPED (90) so
   // non-empty-but-invalid types take precedence over the empty case.
   PROJECT_TYPE_REQUIRED:         { priority: 95,  classification: 'NEEDS_REVIEW' },
+  // New (PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R1): project record
+  // cannot be matched to the authoritative source (项目统计表). Such records
+  // cannot be assigned an authoritative project_type and must not be
+  // classified as ORPHAN_PROJECT (which assumes a known type). They enter
+  // NEEDS_REVIEW pending user confirmation of identity / type / links.
+  PROJECT_SOURCE_MATCH_REQUIRED: { priority: 27, classification: 'NEEDS_REVIEW' },
+  // New (PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R1): a V1 link field
+  // references a record_id that cannot be resolved in the batch (the
+  // referenced record is missing). The relation cannot be verified, so
+  // the record is BLOCKED. Distinct from ORPHAN_PROJECT (which means no
+  // link key is present at all) and LINKED_ENTITY_TYPE_MISMATCH (which
+  // means the target exists but has the wrong entity_type).
+  LINKED_RELATION_UNRESOLVED:    { priority: 28, classification: 'BLOCKED' },
   ELIGIBLE:                      { priority: 100, classification: 'MIGRATABLE' },
 };
 
 /**
  * Stable priority order. Hard-coded to guarantee determinism regardless of
  * object key iteration order.
+ *
+ * PROJECT_SOURCE_MATCH_REQUIRED (P27) sits between LINKED_ENTITY_TYPE_MISMATCH
+ * (P25) and ORPHAN_PROJECT (P30) so that a record whose authoritative source
+ * match failed surfaces as NEEDS_REVIEW (not BLOCKED), and never collapses
+ * into ORPHAN_PROJECT (which assumes the type is known but the link is
+ * missing).
+ *
+ * LINKED_RELATION_UNRESOLVED (P28) sits between PROJECT_SOURCE_MATCH_REQUIRED
+ * (P27) and ORPHAN_PROJECT (P30) — when a V1 link field references a
+ * record_id that cannot be resolved in the batch, the record is BLOCKED with
+ * a specific reason, distinct from ORPHAN_PROJECT (no link key present at
+ * all) and LINKED_ENTITY_TYPE_MISMATCH (target exists but wrong type).
  * @type {readonly string[]}
  */
 const REASON_PRIORITY_ORDER = [
   'MISSING_NAME',
   'MISSING_IDENTITY',
   'LINKED_ENTITY_TYPE_MISMATCH',
+  'PROJECT_SOURCE_MATCH_REQUIRED',
+  'LINKED_RELATION_UNRESOLVED',
   'ORPHAN_PROJECT',
   'CUSTOMER_UNRESOLVED',
   'DUPLICATE_UNRESOLVED',

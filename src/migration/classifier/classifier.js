@@ -327,6 +327,71 @@ function isLinkedEntityTypeMismatch(record, context) {
 }
 
 /**
+ * Project source match required (PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R1).
+ *
+ * Detects when a project record cannot be matched to the authoritative
+ * source (项目统计表). Such records cannot be assigned an authoritative
+ * project_type and must NOT be classified as ORPHAN_PROJECT (which assumes
+ * a known type). They enter NEEDS_REVIEW pending user confirmation.
+ *
+ * The match status is provided by the caller (normalizer / pre-classifier
+ * match step) via `record.fields.authoritative_match_status`. Valid values:
+ *   - 'MATCHED'         — record matched to a row in 项目统计表
+ *   - 'MATCH_NOT_FOUND' — record could not be matched
+ *   - undefined / null — match not attempted (legacy / single-record mode);
+ *                         do not trigger this reason code (backward compat)
+ *
+ * Per user decision (PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R1):
+ *   - MATCH_NOT_FOUND records do NOT enter the MIGRATABLE project count
+ *     for D-026 statistics (handled in d026-evaluator.js).
+ *   - MATCH_NOT_FOUND records do NOT enter the per-type association
+ *     completeness denominator.
+ *   - They are never classified as ORPHAN_PROJECT.
+ */
+function isProjectSourceMatchRequired(record) {
+  const status = (record.fields || {}).authoritative_match_status;
+  return status === 'MATCH_NOT_FOUND';
+}
+
+/**
+ * Linked relation unresolved (PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R1).
+ *
+ * Detects when a V1 link field references a record_id that cannot be
+ * resolved in the batch (the referenced record is missing). The relation
+ * cannot be verified, so the record is BLOCKED with a specific reason.
+ *
+ * Distinct from:
+ *   - ORPHAN_PROJECT: no link key is present at all
+ *   - LINKED_ENTITY_TYPE_MISMATCH: target exists but has wrong entity_type
+ *
+ * Only detectable in batch mode (requires context.recordsByKey to look up
+ * the target record). Single-record mode returns false because the
+ * referenced record may exist outside the batch.
+ *
+ * Checks both linked_customer_key and linked_model_key when non-empty.
+ * Does NOT trigger when both are empty (that case is ORPHAN_PROJECT).
+ */
+function isLinkedRelationUnresolved(record, context) {
+  if (!context || !context.recordsByKey) return false;
+  const f = record.fields || {};
+  const customerKey = str(f.linked_customer_key);
+  const modelKey = str(f.linked_model_key);
+
+  // If no link keys present at all, ORPHAN_PROJECT handles it (not this code).
+  if (customerKey === '' && modelKey === '') return false;
+
+  // For each present link key, check if the target exists in the batch.
+  // If any present key points to a missing record, the relation is unresolved.
+  if (customerKey !== '') {
+    if (!context.recordsByKey.has(customerKey)) return true;
+  }
+  if (modelKey !== '') {
+    if (!context.recordsByKey.has(modelKey)) return true;
+  }
+  return false;
+}
+
+/**
  * Project's linked customer is itself unresolved (NEEDS_REVIEW or BLOCKED).
  * Only detectable in batch mode.
  */
@@ -423,8 +488,37 @@ function collectReasons(record, context) {
     reasons.push('LINKED_ENTITY_TYPE_MISMATCH');
   }
 
+  // P27: PROJECT_SOURCE_MATCH_REQUIRED (project only)
+  // (PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R1)
+  // Project cannot be matched to authoritative source (项目统计表).
+  // Such records enter NEEDS_REVIEW and must NOT be classified as
+  // ORPHAN_PROJECT (which assumes the type is known).
+  if (record.entity_type === 'project' && isProjectSourceMatchRequired(record)) {
+    reasons.push('PROJECT_SOURCE_MATCH_REQUIRED');
+  }
+
+  // P28: LINKED_RELATION_UNRESOLVED (project only, batch only)
+  // (PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R1)
+  // A V1 link field references a record_id that cannot be resolved in
+  // the batch. Distinct from ORPHAN_PROJECT (no link key present at all)
+  // and LINKED_ENTITY_TYPE_MISMATCH (target exists but wrong type).
+  if (record.entity_type === 'project'
+    && isLinkedRelationUnresolved(record, context || null)) {
+    reasons.push('LINKED_RELATION_UNRESOLVED');
+  }
+
   // P30: ORPHAN_PROJECT (project only)
-  if (record.entity_type === 'project' && isOrphanProject(record, context || null)) {
+  // Skip ORPHAN_PROJECT if PROJECT_SOURCE_MATCH_REQUIRED already triggered
+  // (MATCH_NOT_FOUND records cannot be assigned a type, so orphan check
+  // is meaningless — it would falsely assume a type and flag missing link).
+  // Also skip if LINKED_RELATION_UNRESOLVED already triggered — that reason
+  // means a link key IS present but points to a record missing from the
+  // batch, which is semantically distinct from ORPHAN_PROJECT (no link key
+  // present at all). Triggering both would double-count the same defect.
+  if (record.entity_type === 'project'
+    && !reasons.includes('PROJECT_SOURCE_MATCH_REQUIRED')
+    && !reasons.includes('LINKED_RELATION_UNRESOLVED')
+    && isOrphanProject(record, context || null)) {
     reasons.push('ORPHAN_PROJECT');
   }
 
@@ -534,6 +628,10 @@ module.exports = {
   // Exported for testing / introspection. Not part of the stable public API.
   _collectReasons: collectReasons,
   _normalizeProjectType: normalizeProjectType,
+  _isProjectSourceMatchRequired: isProjectSourceMatchRequired,
+  _isLinkedRelationUnresolved: isLinkedRelationUnresolved,
+  _isLinkedEntityTypeMismatch: isLinkedEntityTypeMismatch,
+  _isOrphanProject: isOrphanProject,
   _CUSTOMER_STATUS_DIRECT_MAP: CUSTOMER_STATUS_DIRECT_MAP,
   _PROJECT_STATUS_DIRECT_MAP: PROJECT_STATUS_DIRECT_MAP,
   _SOURCE_CHANNEL_ENUM: SOURCE_CHANNEL_ENUM,
