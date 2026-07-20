@@ -14,7 +14,7 @@
 > R5 second fix batch commits: `8dcd9fdcba7e27e3275fd4b1c805f9a160d42a52`（R5 second fix main commit）+ `13dee7175f99e3c0577aa8267ad0e1440f4ebaf3`（R5 second fix backfill commit）
 > R5 third fix batch commits: `ea18cb69c9eee3ef798ba0bffb45b468c4ddc495`（R5 third fix main commit）+ `8448e9ba74d792f5b227cf78c3399d1253ebe4c6`（R5 third fix backfill commit）
 > R5 final HEAD after third fix backfill: `8448e9ba74d792f5b227cf78c3399d1253ebe4c6`
-> Tracked files at R5 main batch closeout: 140; at R5 first fix batch closeout: 142; at R5 second fix batch closeout: 146; at R5 third fix batch closeout: 146; at R6 main batch closeout: 153 (header previously mis-stated as 152; corrected in R6 fix batch per TASK-004 P1-3); at R6 fix batch closeout: 156; at R6 minimum final fix 02 batch closeout: 157 (added docs/ai/tasks/TASK-004-R6-REVIEW-FIX-PACKET.md)
+> Tracked files at R5 main batch closeout: 140; at R5 first fix batch closeout: 142; at R5 second fix batch closeout: 146; at R5 third fix batch closeout: 146; at R6 main batch closeout: 153 (header previously mis-stated as 152; corrected in R6 fix batch per TASK-004 P1-3); at R6 fix batch closeout: 156; at R6 minimum final fix 02 batch closeout: 157 (added docs/ai/tasks/TASK-004-R6-REVIEW-FIX-PACKET.md); at R6 closeout batch closeout: 160 (added 3 public reports: PILOT_READINESS_PACKET.md + r6-closeout-candidate-pool-summary.json + r6-closeout-quantity-threshold-judgement.json)
 > R6 main commit: `0f3fb108c790b054251e67940761f99705a76c18`（R6 read-only Dry Run 主体提交：R5 closeout + P1 scanner debt + 全量分类 + 审计包 PLACEHOLDER 版本）
 > R6 backfill commit: `d1b2d0544eb6216b583a56667a0484ecccb38003`（SHA backfill for R6 main commit；遵循 R5 第三修复批次相同策略）
 > R6 final HEAD after backfill: `d1b2d0544eb6216b583a56667a0484ecccb38003`（已 push，HEAD == origin/master == d1b2d054）
@@ -25,6 +25,8 @@
 > R6 minimum final fix backfill commit: NOT_EMBEDDED（非自引用字段约定——本 backfill commit 的自身 SHA 不嵌入控制文件，由 `git rev-parse HEAD` 或 `git log --oneline -1 HEAD` 在 push 后独立复核；指向 main-fix commit 的引用为非自引用字段，分类 EXTERNALLY_VERIFIED_NOT_EMBEDDED）
 > R6 minimum final fix 02 main commit: `1b592eee453aaa7d1f619afc743e7c83ac0a22a1`（R6 最小最终修复 02 批次主体提交：TASK-004-R6-REVIEW-FIX-PACKET.md 恢复到公开仓库 + projectBatch entity_type 一致性检查 BEFORE classification 分支 + 4 new reverse-tests + 3 控制文件更新；parent = `e443a14`，可通过 `git show -s --format=%P 1b592ee` 复核）
 > R6 minimum final fix 02 backfill commit: NOT_EMBEDDED（非自引用字段约定——本 backfill commit 的自身 SHA 不嵌入控制文件，由 `git rev-parse HEAD` 或 `git log --oneline -1 HEAD` 在 push 后独立复核；指向 main-fix 02 commit 的引用为非自引用字段，分类 EXTERNALLY_VERIFIED_NOT_EMBEDDED）
+> R6 closeout main commit: `14e80765f078b72215605f5bc182f481aee7be02`（R6 控制面关闭 + PILOT_READINESS_PACKET Phase A+B 主体提交：audit_status R6_REVIEW_PENDING -> R6_PASS_WITH_DEBT + gate_status.R6 REVIEW_PENDING -> PASS_WITH_DEBT + r6_debt_register (3 debts) + 3 new public reports (PILOT_READINESS_PACKET.md + r6-closeout-candidate-pool-summary.json + r6-closeout-quantity-threshold-judgement.json) + 2 control files updated；parent = `5a7ff7e`，可通过 `git show -s --format=%P 14e8076` 复核）
+> R6 closeout backfill commit: NOT_EMBEDDED（非自引用字段约定——本 backfill commit 的自身 SHA 不嵌入控制文件，由 `git rev-parse HEAD` 或 `git log --oneline -1 HEAD` 在 push 后独立复核；指向 closeout main commit 的引用为非自引用字段，分类 EXTERNALLY_VERIFIED_NOT_EMBEDDED；was PENDING_BACKFILL_CLOSEOUT placeholder in the main-fix commit）
 > This file is the phase-specific execution entrypoint. It overrides stale phase instructions in older prompts or chat history.
 
 ## 1. Bootstrap
@@ -442,9 +444,9 @@ Three debts registered in `manifest.r6_debt_register` at closeout:
 ### 3.10.4 Phase A commit chain
 
 - Baseline HEAD at start of this batch = `5a7ff7e7d9ebfc8d363944334a0a67ed24347b37` (R6 minimum final fix 02 backfill commit).
-- Main-fix commit SHA: `PENDING_BACKFILL_CLOSEOUT` placeholder — will be replaced by actual SHA in subsequent backfill commit.
+- Main-fix commit SHA: `14e80765f078b72215605f5bc182f481aee7be02` (was `PENDING_BACKFILL_CLOSEOUT` placeholder in the main-fix commit; replaced by actual SHA in the subsequent SHA backfill commit).
 - Backfill commit SHA: `NOT_EMBEDDED` (per non-self-reference convention; independently verifiable via `git rev-parse HEAD` after push).
-- Parent chain: `git show -s --format=%P <main_fix_closeout_commit>` returns `5a7ff7e...` (parent = R6 minimum final fix 02 backfill commit, baseline of this batch).
+- Parent chain: `git show -s --format=%P 14e8076` returns `5a7ff7e...` (parent = R6 minimum final fix 02 backfill commit, baseline of this batch).
 
 ### 3.10.5 Files changed in this batch (Phase A + Phase B)
 
