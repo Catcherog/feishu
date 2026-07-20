@@ -343,6 +343,44 @@
       "non_self_reference_note": "backfill_commit and final_head fields marked NOT_EMBEDDED — this backfill commit's own SHA is NOT embedded in control files (per .trae/rules/_gpt_audit.md non-self-reference convention). After push, the SHA is independently verifiable via `git rev-parse HEAD` or `git log --oneline -1 HEAD`. main_commit field (e1d1086) is a non-self-referencing field classified as EXTERNALLY_VERIFIED_NOT_EMBEDDED.",
       "parent_chain_verification": "git show -s --format=%P e1d1086 returns 3e8fd993b9648357719a6ef7aa08cbe0a8b21021 (parent = R6 fix backfill commit). Three-link chain: d1b2d05 (R6 backfill) -> 7b4d5c5 (R6 fix main) -> 3e8fd99 (R6 fix backfill) -> e1d1086 (R6 minimum final fix main) -> <backfill_commit_TBD> (R6 minimum final fix backfill, NOT_EMBEDDED).",
       "notes": "R6 minimum final fix batch completed per user task description (6 numbered items). No scope expansion: only projection.js + tests + 3 control files modified. Control plane remains R6_REVIEW_PENDING. MIGRATION_PILOT_001=NOT_APPROVED. History cleanup NOT_APPROVED, NOT_EXECUTED. No Feishu write API calls. No real-data processing. No MIGRATION_PILOT_001 start."
+    },
+    {
+      "date": "2026-07-20",
+      "gate": "R6",
+      "action": "r6_minimum_final_fix_02_batch_submission",
+      "baseline_head": "e443a14",
+      "main_commit": "PENDING_BACKFILL_02",
+      "backfill_commit": "NOT_EMBEDDED",
+      "final_head": "NOT_EMBEDDED",
+      "audit_outcome": "PENDING_REVIEW",
+      "scope": [
+        "Restored docs/ai/tasks/TASK-004-R6-REVIEW-FIX-PACKET.md to the public repository. The file existed at the parent SOP repo (d:\\360Downloads\\Trae 项目\\SOP\\docs\\ai\\tasks\\) but was missing from feishu-v2/docs/ai/tasks/ even though manifest.authoritative_files and audit package referenced it. Option A (restore) chosen over Option B (remove from authoritative_files) because the file content is a public GPT fix packet containing only commit SHAs and audit conclusions — no PII, secrets, or real Feishu identifiers.",
+        "projection.js projectBatch: added ensureEntityTypeConsistency(r, c) call BEFORE the `if (c.classification === 'MIGRATABLE')` branch. Previously the entity_type consistency check only ran inside projectCustomer/projectProject when classification === 'MIGRATABLE'; BLOCKED / NEEDS_REVIEW records with mismatched classified.entity_type silently returned a null payload that masked caller bugs. Per R6-MINIMUM-FINAL-FIX-02 task item 3.",
+        "tests/migration-projection.test.js: 4 new tests in 1 new suite (`R6-MINIMUM-FINAL-FIX-02: projectBatch entity_type consistency for non-MIGRATABLE records`). Two required mismatch-throw tests (BLOCKED customer + classified.entity_type=project; NEEDS_REVIEW project + classified.entity_type=customer) + two sanity-check tests (matching entity_type on non-MIGRATABLE records still returns null payload without throwing). Suite count 14 -> 15, test count 64 -> 68, all PASS.",
+        "Control plane updates: phaseR6-read-only-dry-run-gpt-audit-package.md (Section 1.F added + Section 6.13 + Section 7 AC13 added + Section 5.6 added + Section 2.9 added); config/public-execution-manifest.json (new revision_history entry `r6_minimum_final_fix_02_batch_submission` + test_results updated 145 -> 149 PASS); PUBLIC_EXECUTION_ENTRYPOINT.md (header lines added for R6 minimum final fix 02 main/backfill commits + Section 3.9 added + tracked file count 156 -> 157)."
+      ],
+      "fixes_applied": [
+        "Dangling reference resolution: docs/ai/tasks/TASK-004-R6-REVIEW-FIX-PACKET.md restored to public repo (file existed at parent SOP repo but was missing from feishu-v2/docs/ai/tasks/ despite manifest.authoritative_files line 34 reference and audit package / entrypoint references).",
+        "projectBatch defense-in-depth: entity_type consistency check now runs BEFORE classification branch — BLOCKED / NEEDS_REVIEW records with mismatched entity_type also throw instead of silently returning null payload.",
+        "New tests: 2 required mismatch-throw tests + 2 sanity-check null-payload tests; suite count 14 -> 15, test count 64 -> 68.",
+        "Control plane: test count 145 -> 149 PASS; tracked file count 156 -> 157 (after commit); authoritative_files unchanged (already listed line 34); new revision_history entry added."
+      ],
+      "test_results": "58 classifier + 68 projection/evaluator (51 original + 13 R6 minimum final fix + 4 R6 minimum final fix 02) + 20 scanner + 3 schema_diff = 149 PASS",
+      "scan_results": "tracked 157 files (after staging TASK-004-R6-REVIEW-FIX-PACKET.md, git treats staged file as tracked) S0=0 S1=0 S2=0; staged 6 files (all 6 R6 minimum final fix 02 batch files: TASK-004 + projection.js + migration-projection.test.js + manifest + entrypoint + audit package) S0=0 S1=0 S2=0; tracked 157 files (after main-fix commit, verifiable via `git ls-files | wc -l`) S0=0 S1=0 S2=0 (will be re-verified by GPT after push)",
+      "d026_threshold_judgement": "UNCHANGED — FAIL (customer 0/5, project 0/5, model 3/10, makeup 5/10, project_association_check 0/5). MIGRATION_PILOT_001 MUST NOT start. No D-026 evaluator code changes in this batch.",
+      "non_self_reference_note": "backfill_commit and final_head fields marked NOT_EMBEDDED — this backfill commit's own SHA is NOT embedded in control files (per .trae/rules/_gpt_audit.md non-self-reference convention). After push, the SHA is independently verifiable via `git rev-parse HEAD` or `git log --oneline -1 HEAD`. main_commit field (PENDING_BACKFILL_02 placeholder in this revision_history entry; will be replaced by the actual main-fix commit SHA in the subsequent SHA backfill commit) is a non-self-referencing field classified as EXTERNALLY_VERIFIED_NOT_EMBEDDED.",
+      "parent_chain_verification": "git show -s --format=%P <main_fix_02_commit> returns e443a14... (parent = R6 minimum final fix backfill commit, the baseline HEAD at start of this batch). Chain: ... -> e1d1086 (R6 minimum final fix main) -> e443a14 (R6 minimum final fix backfill, baseline of this batch) -> <main_fix_02_commit_TBD> (R6 minimum final fix 02 main, PENDING_BACKFILL_02) -> <backfill_commit_TBD> (R6 minimum final fix 02 backfill, NOT_EMBEDDED).",
+      "new_files": [
+        "docs/ai/tasks/TASK-004-R6-REVIEW-FIX-PACKET.md"
+      ],
+      "modified_files": [
+        "src/migration/projection.js (projectBatch: ensureEntityTypeConsistency BEFORE classification branch)",
+        "tests/migration-projection.test.js (4 new tests + 1 new suite)",
+        "reports/phaseR6-read-only-dry-run-gpt-audit-package.md (Section 1.F + Section 2.9 + Section 5.6 + Section 6.13 + Section 7 AC13)",
+        "config/public-execution-manifest.json (new revision_history entry + test count update)",
+        "PUBLIC_EXECUTION_ENTRYPOINT.md (header + Section 3.9 + tracked count 156 -> 157)"
+      ],
+      "notes": "R6 minimum final fix 02 batch completed per user task description (9 numbered items). No scope expansion: TASK-004-R6-REVIEW-FIX-PACKET.md restored (dangling reference fix) + projectBatch entity_type consistency check (BEFORE classification branch) + 4 new tests + 3 control files updated. Control plane remains R6_REVIEW_PENDING. MIGRATION_PILOT_001=NOT_APPROVED. stop_after_completion=true. History cleanup NOT_APPROVED, NOT_EXECUTED. No Feishu write API calls. No real-data processing. No MIGRATION_PILOT_001 start."
     }
   ],
   "stop_after_completion": true

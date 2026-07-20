@@ -327,6 +327,12 @@ function projectBatch(records, classified) {
     if (!c) {
       throw new Error(`projectBatch: no classification for ${r.record_key}`);
     }
+    // Fail-closed: entity_type consistency is a general invariant — runs
+    // BEFORE the classification branch so BLOCKED / NEEDS_REVIEW records
+    // with mismatched entity_type also throw, instead of silently
+    // returning a null payload that masks a caller bug. Per
+    // R6-MINIMUM-FINAL-FIX-02 task requirement.
+    ensureEntityTypeConsistency(r, c);
     let payload = null;
     if (c.classification === 'MIGRATABLE') {
       if (r.entity_type === 'customer') {

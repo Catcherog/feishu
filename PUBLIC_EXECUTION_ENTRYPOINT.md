@@ -14,7 +14,7 @@
 > R5 second fix batch commits: `8dcd9fdcba7e27e3275fd4b1c805f9a160d42a52`（R5 second fix main commit）+ `13dee7175f99e3c0577aa8267ad0e1440f4ebaf3`（R5 second fix backfill commit）
 > R5 third fix batch commits: `ea18cb69c9eee3ef798ba0bffb45b468c4ddc495`（R5 third fix main commit）+ `8448e9ba74d792f5b227cf78c3399d1253ebe4c6`（R5 third fix backfill commit）
 > R5 final HEAD after third fix backfill: `8448e9ba74d792f5b227cf78c3399d1253ebe4c6`
-> Tracked files at R5 main batch closeout: 140; at R5 first fix batch closeout: 142; at R5 second fix batch closeout: 146; at R5 third fix batch closeout: 146; at R6 main batch closeout: 153 (header previously mis-stated as 152; corrected in R6 fix batch per TASK-004 P1-3); at R6 fix batch closeout: 156
+> Tracked files at R5 main batch closeout: 140; at R5 first fix batch closeout: 142; at R5 second fix batch closeout: 146; at R5 third fix batch closeout: 146; at R6 main batch closeout: 153 (header previously mis-stated as 152; corrected in R6 fix batch per TASK-004 P1-3); at R6 fix batch closeout: 156; at R6 minimum final fix 02 batch closeout: 157 (added docs/ai/tasks/TASK-004-R6-REVIEW-FIX-PACKET.md)
 > R6 main commit: `0f3fb108c790b054251e67940761f99705a76c18`（R6 read-only Dry Run 主体提交：R5 closeout + P1 scanner debt + 全量分类 + 审计包 PLACEHOLDER 版本）
 > R6 backfill commit: `d1b2d0544eb6216b583a56667a0484ecccb38003`（SHA backfill for R6 main commit；遵循 R5 第三修复批次相同策略）
 > R6 final HEAD after backfill: `d1b2d0544eb6216b583a56667a0484ecccb38003`（已 push，HEAD == origin/master == d1b2d054）
@@ -23,6 +23,8 @@
 > R6 fix final HEAD after backfill: `3e8fd993b9648357719a6ef7aa08cbe0a8b21021`
 > R6 minimum final fix main commit: `e1d10869cd350d933be899600b27f8023993dc76`（R6 最小最终修复批次主体提交：projection.js fail-closed validators + 13 reverse-tests + 控制文件 stale placeholder 清理；parent = `3e8fd99`）
 > R6 minimum final fix backfill commit: NOT_EMBEDDED（非自引用字段约定——本 backfill commit 的自身 SHA 不嵌入控制文件，由 `git rev-parse HEAD` 或 `git log --oneline -1 HEAD` 在 push 后独立复核；指向 main-fix commit 的引用为非自引用字段，分类 EXTERNALLY_VERIFIED_NOT_EMBEDDED）
+> R6 minimum final fix 02 main commit: PENDING_BACKFILL_02（R6 最小最终修复 02 批次主体提交：TASK-004-R6-REVIEW-FIX-PACKET.md 恢复到公开仓库 + projectBatch entity_type 一致性检查 BEFORE classification 分支 + 4 new reverse-tests + 3 控制文件更新；parent = `e443a14`；将由后续 SHA backfill commit 回填）
+> R6 minimum final fix 02 backfill commit: NOT_EMBEDDED（非自引用字段约定——本 backfill commit 的自身 SHA 不嵌入控制文件，由 `git rev-parse HEAD` 或 `git log --oneline -1 HEAD` 在 push 后独立复核；指向 main-fix 02 commit 的引用为非自引用字段，分类 EXTERNALLY_VERIFIED_NOT_EMBEDDED）
 > This file is the phase-specific execution entrypoint. It overrides stale phase instructions in older prompts or chat history.
 
 ## 1. Bootstrap
@@ -367,6 +369,46 @@ Per `.trae/rules/_gpt_audit.md` Section "证据元数据", every public evidence
 - Parent-child chain verification (use `git log --oneline -2 HEAD` or `git show -s --format=%P HEAD` at the R6 fix backfill commit `3e8fd99`): parent = `7b4d5c5` (R6 fix main commit), grandparent = `d1b2d05` (R6 backfill commit). The deprecated `git log -2 7b4d5c53` form is no longer used.
 
 Control plane remains `R6_REVIEW_PENDING`. `MIGRATION_PILOT_001` remains `NOT_APPROVED`. R6 fix main commit SHA (`7b4d5c5...`) and R6 fix backfill commit SHA (`3e8fd99...`) are already embedded in this file's header (lines 21-23) and in `config/public-execution-manifest.json` `revision_history[r6_fix_batch_submission]` — these are non-self-referencing fields and are classified as `EXTERNALLY_VERIFIED_NOT_EMBEDDED` per `.trae/rules/_gpt_audit.md` (the values are independently verifiable from `git log` and are not embedded in their own commit's blob SHA).
+
+## 3.9 R6 minimum final fix 02 batch (2026-07-20)
+
+After the R6 minimum final fix batch (`e1d1086` main + SHA backfill commit `e443a14`), a follow-up R6 minimum final fix 02 batch was required to address a dangling reference in the manifest and a defense-in-depth gap in `projectBatch`. Scope (per user task description, 9 numbered items):
+
+1. **Restored `docs/ai/tasks/TASK-004-R6-REVIEW-FIX-PACKET.md`** to the public repository. The file existed at the parent SOP repo (`d:\360Downloads\Trae 项目\SOP\docs\ai\tasks\`) but was missing from `feishu-v2/docs/ai/tasks/` even though `manifest.authoritative_files` line 34, `reports/phaseR6-read-only-dry-run-gpt-audit-package.md` Section 1.E, and `PUBLIC_EXECUTION_ENTRYPOINT.md` Section 3.8 referenced it. Option A (restore) chosen over Option B (remove from authoritative_files and correct references) because the file content is a public GPT fix packet containing only commit SHAs and audit conclusions — no PII, secrets, or real Feishu identifiers.
+2. **Modified `projectBatch`** in `src/migration/projection.js`: added `ensureEntityTypeConsistency(r, c)` call BEFORE the `if (c.classification === 'MIGRATABLE')` branch. Previously the entity_type consistency check only ran inside `projectCustomer`/`projectProject` when classification === 'MIGRATABLE'; BLOCKED / NEEDS_REVIEW records with mismatched `classified.entity_type` silently returned a null payload that masked caller bugs. Per task item 3.
+3. **Added 4 new tests** in `tests/migration-projection.test.js` under a new suite `R6-MINIMUM-FINAL-FIX-02: projectBatch entity_type consistency for non-MIGRATABLE records`:
+   - `BLOCKED customer + classified.entity_type=project throws` (required by task item 4)
+   - `NEEDS_REVIEW project + classified.entity_type=customer throws` (required by task item 4)
+   - `BLOCKED customer + classified.entity_type=customer returns null payload` (sanity check)
+   - `NEEDS_REVIEW project + classified.entity_type=project returns null payload` (sanity check)
+   Suite count 14 → 15, test count 64 → 68, all PASS.
+4. **Ran and recorded the 5 required commands**:
+   - `node --test tests/migration-classifier.test.js` → 58/58 PASS (13 suites, exit 0).
+   - `node --test tests/migration-projection.test.js` → 68/68 PASS (15 suites, exit 0).
+   - `python -m unittest tests.test_verify_public_repo tests.test_generate_schema_diff` → 23/23 PASS (scanner 20 + schema_diff 3, exit 0).
+   - `python scripts/verify_public_repo.py` → tracked 156 files `S0=0 S1=0 S2=0`, exit 0 (pre-staging).
+   - `python scripts/verify_public_repo.py --staged` → staged 3 files `S0=0 S1=0 S2=0`, exit 0 (pre-main-fix-commit, after staging TASK-004 + projection.js + migration-projection.test.js).
+5. **Updated 3 control plane files**:
+   - `reports/phaseR6-read-only-dry-run-gpt-audit-package.md` (Section 1.F + Section 2.9 + Section 5.6 + Section 6.13 + Section 7 AC13 added).
+   - `config/public-execution-manifest.json` (new revision_history entry `r6_minimum_final_fix_02_batch_submission` + test_results updated 145 → 149 PASS; authoritative_files unchanged — `docs/ai/tasks/TASK-004-R6-REVIEW-FIX-PACKET.md` already listed at line 34).
+   - `PUBLIC_EXECUTION_ENTRYPOINT.md` (header lines added for R6 minimum final fix 02 main/backfill commits + Section 3.9 added + tracked file count 156 → 157).
+6. **Final control plane state**: `audit_status=R6_REVIEW_PENDING`; `migration_pilot_status=NOT_APPROVED`; `stop_after_completion=true`. No `MIGRATION_PILOT_001` start.
+
+### 3.9.1 Verification evidence for R6 minimum final fix 02 batch
+
+- `feishu-v2/` working tree clean before staging; baseline HEAD at start of R6 minimum final fix 02 batch = `e443a14` (R6 minimum final fix backfill commit).
+- `node --test tests/migration-classifier.test.js`: 58/58 PASS, 13 suites, exit 0 (regression — no behavior change).
+- `node --test tests/migration-projection.test.js`: 68/68 PASS, 15 suites, exit 0 (4 new tests added).
+- `python -m unittest tests.test_verify_public_repo tests.test_generate_schema_diff`: 23/23 PASS (20 scanner + 3 schema_diff), exit 0 (regression).
+- `python scripts/verify_public_repo.py` against tracked 156 files (pre-staging): `S0=0 S1=0 S2=0`, exit 0.
+- `python scripts/verify_public_repo.py --staged` against staged 3 files (TASK-004-R6-REVIEW-FIX-PACKET.md + projection.js + migration-projection.test.js): `S0=0 S1=0 S2=0`, exit 0.
+- **Total tests**: 58 classifier + 68 projection/evaluator (51 original + 13 R6 minimum final fix + 4 R6 minimum final fix 02) + 20 scanner + 3 schema_diff = **149 PASS** (was 145 before this batch).
+- **Tracked file count**: 156 (pre-staging) → 157 (after R6 minimum final fix 02 main commit; verifiable via `git ls-files | wc -l`). The single new tracked file is `docs/ai/tasks/TASK-004-R6-REVIEW-FIX-PACKET.md` (previously a dangling reference in `manifest.authoritative_files` line 34).
+- D-026 threshold judgement: UNCHANGED — FAIL (customer 0/5, project 0/5, model 3/10, makeup 5/10, project_association_check 0/5). `MIGRATION_PILOT_001` MUST NOT start. No D-026 evaluator code changes in this batch.
+- R6 minimum final fix 02 main commit SHA = `PENDING_BACKFILL_02` (placeholder; will be replaced by the actual main-fix 02 commit SHA in the subsequent SHA backfill commit). R6 minimum final fix 02 backfill commit SHA = `NOT_EMBEDDED` (non-self-reference convention). After push, the SHA is independently verifiable via `git rev-parse HEAD` or `git log --oneline -1 HEAD`.
+- Parent-child chain: `git show -s --format=%P <main_fix_02_commit>` will return `e443a14...` (parent = R6 minimum final fix backfill commit, baseline of this batch). Chain: `... → e1d1086 (R6 minimum final fix main) → e443a14 (R6 minimum final fix backfill, baseline) → <main_fix_02_commit> (R6 minimum final fix 02 main, PENDING_BACKFILL_02) → <backfill_commit> (R6 minimum final fix 02 backfill, NOT_EMBEDDED)`.
+
+Control plane remains `R6_REVIEW_PENDING`. `MIGRATION_PILOT_001` remains `NOT_APPROVED`. `stop_after_completion=true`. R6 minimum final fix 02 main commit SHA (`PENDING_BACKFILL_02` placeholder; will be filled by the subsequent SHA backfill commit) and backfill commit SHA (`NOT_EMBEDDED`) follow the same non-self-reference convention as the R6 minimum final fix batch. No history rewrite, no force push, no real-data processing, no Feishu write API calls.
 
 ## 4. Approved work
 

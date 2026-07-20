@@ -805,3 +805,58 @@ describe('R6 fail-closed: projectBatch propagates projection errors', () => {
     );
   });
 });
+
+// ---------------------------------------------------------------------------
+// R6-MINIMUM-FINAL-FIX-02: projectBatch entity_type consistency check
+// BEFORE classification branch (BLOCKED / NEEDS_REVIEW mismatches must throw)
+//
+// Verifies that projectBatch now calls ensureEntityTypeConsistency BEFORE
+// the `if (c.classification === 'MIGRATABLE')` branch. A non-MIGRATABLE
+// record (BLOCKED / NEEDS_REVIEW) with a mismatched classified.entity_type
+// MUST throw instead of silently returning a null payload that masks a
+// caller bug.
+// ---------------------------------------------------------------------------
+
+describe('R6-MINIMUM-FINAL-FIX-02: projectBatch entity_type consistency for non-MIGRATABLE records', () => {
+  it('BLOCKED customer + classified.entity_type=project throws (consistency checked before classification branch)', () => {
+    // record is customer, classified is project — mismatch
+    const record = makeCustomer('CUSTOMER_ALIAS_R6_MFF_001', {});
+    const classified = makeClassified('CUSTOMER_ALIAS_R6_MFF_001', 'project', 'BLOCKED');
+    assert.throws(
+      () => projectBatch([record], [classified]),
+      /entity_type mismatch/,
+    );
+  });
+
+  it('NEEDS_REVIEW project + classified.entity_type=customer throws (consistency checked before classification branch)', () => {
+    // record is project, classified is customer — mismatch
+    const record = makeProject('PROJECT_ALIAS_R6_MFF_002', {
+      linked_customer_key: 'CUSTOMER_ALIAS_X',
+    });
+    const classified = makeClassified('PROJECT_ALIAS_R6_MFF_002', 'customer', 'NEEDS_REVIEW');
+    assert.throws(
+      () => projectBatch([record], [classified]),
+      /entity_type mismatch/,
+    );
+  });
+
+  it('BLOCKED customer + classified.entity_type=customer returns null payload (no mismatch, no throw)', () => {
+    // Sanity check: matching entity_type on a BLOCKED record still returns
+    // null payload without throwing.
+    const record = makeCustomer('CUSTOMER_ALIAS_R6_MFF_003', {});
+    const classified = makeClassified('CUSTOMER_ALIAS_R6_MFF_003', 'customer', 'BLOCKED');
+    const batch = projectBatch([record], [classified]);
+    assert.equal(batch.length, 1);
+    assert.equal(batch[0].payload, null);
+  });
+
+  it('NEEDS_REVIEW project + classified.entity_type=project returns null payload (no mismatch, no throw)', () => {
+    // Sanity check: matching entity_type on a NEEDS_REVIEW record still
+    // returns null payload without throwing.
+    const record = makeProject('PROJECT_ALIAS_R6_MFF_004', {});
+    const classified = makeClassified('PROJECT_ALIAS_R6_MFF_004', 'project', 'NEEDS_REVIEW');
+    const batch = projectBatch([record], [classified]);
+    assert.equal(batch.length, 1);
+    assert.equal(batch[0].payload, null);
+  });
+});
