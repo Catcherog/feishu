@@ -38,6 +38,31 @@
 //   - Retained the overall MIGRATABLE project count threshold (>= 5) and
 //     per-entity thresholds.
 //
+// PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R2 corrections:
+//   - Decoupled per-type association completeness denominator from
+//     `final_classification === 'MIGRATABLE'`. The denominator now includes
+//     ALL projects with `authoritative_match_status !== 'MATCH_NOT_FOUND'`
+//     AND non-empty normalized project_type — regardless of whether the
+//     project ended up MIGRATABLE / BLOCKED / NEEDS_REVIEW. This closes the
+//     "self-proving loop" where a project missing its link would first be
+//     classified as BLOCKED/ORPHAN_PROJECT and then be excluded from the
+//     per-type completeness denominator, masking the defect.
+//   - Removed `MIGRATABLE` requirement from the "correct pair" definition.
+//     A pair is now defined purely by structural validity:
+//       * linked_*_key is present (non-empty)
+//       * the key resolves to a record in the batch
+//       * the resolved record's entity_type matches the expected type
+//         (customer for 客片 / 品牌 / 其他; model for 样片)
+//       * no type mismatch (a Model key in the Customer field, etc.)
+//     Whether the linked record is itself MIGRATABLE is irrelevant for
+//     per-type completeness — that concern is covered by the per-entity
+//     MIGRATABLE count threshold (Customer >= 5, Model >= 10, etc.).
+//   - The four D-026 gates are now INDEPENDENT:
+//       1. Per-entity MIGRATABLE count threshold (Customer/Project/Model/Makeup)
+//       2. Per-type 100% association completeness (structural validity only)
+//       3. Entity-type correctness (zero mismatches + detection coverage)
+//       4. Combined correct pairs count (>= 5)
+//
 // Public surface:
 //   evaluateD026Threshold(classified, sourceByKey) -> judgement
 //   D026_THRESHOLDS, D026_PROJECT_ASSOCIATION_MIN
@@ -92,19 +117,35 @@ const ENTITY_TYPES = ['customer', 'project', 'model', 'makeup'];
  *      NEEDS_REVIEW and excluded from this count by classifier logic)
  *   3. model MIGRATABLE count >= 10
  *   4. makeup MIGRATABLE count >= 10
- *   5. (AC-08/AC-09, R1) Per-type 100% completeness check:
- *      - For MIGRATABLE 客片 / 品牌 / 其他 projects: every such project
- *        must have linked_customer_key pointing to a MIGRATABLE Customer
- *      - For MIGRATABLE 样片 projects (V1 "创作" normalized): every such
- *        project must have linked_model_key pointing to a MIGRATABLE Model
- *      Either type may have 0 MIGRATABLE projects (vacuous PASS), but if
- *      any MIGRATABLE project of a given type lacks its required
- *      association to a MIGRATABLE record of the correct entity_type,
- *      the completeness gate FAILs for that type.
+ *   5. (AC-08/AC-09, R2) Per-type 100% association completeness check.
+ *      Denominator is decoupled from final_classification:
+ *      - A project enters the denominator iff:
+ *          * entity_type === 'project'
+ *          * authoritative_match_status !== 'MATCH_NOT_FOUND'
+ *            (undefined is treated as 'MATCHED' for legacy compat)
+ *          * normalized project_type is non-empty AND is one of:
+ *              客片 / 品牌 / 其他  → enters kepian_customer_total
+ *              样片 (V1 "创作" normalized) → enters yangpian_model_total
+ *      - A project counts as a "correct pair" iff its required
+ *        type-specific linked_*_key:
+ *          * is present (non-empty)
+ *          * resolves to a record in the batch
+ *          * the resolved record's entity_type matches the expected type
+ *            (customer for 客片/品牌/其他; model for 样片)
+ *          * no type mismatch (covered by entity_type_correctness_check)
+ *        Whether the linked record is itself MIGRATABLE is IRRELEVANT
+ *        for the per-type completeness gate — that is covered by the
+ *        per-entity MIGRATABLE count threshold (gates 1 and 3).
+ *      - Either type may have 0 denominator projects (vacuous PASS), but
+ *        if any denominator project of a given type lacks its required
+ *        type-specific association, the completeness gate FAILs for
+ *        that type.
  *   6. (AC-09) 关联实体类型正确性: zero projects with a linked key pointing
  *      to the wrong entity_type (e.g. Model key written into Customer field).
  *      Coverage evidence (checked_relation_count) is reported; a 0 result
  *      with 0 relations checked is NOT a positive verification.
+ *   7. (R2) Combined correct pairs count >= 5. This is the OVERALL batch
+ *      size requirement (independent of per-type completeness).
  *
  * The output is fully anonymized: only aggregate counts, no record keys,
  * no record IDs, no names, no linked-customer detail.
@@ -165,28 +206,38 @@ function evaluateD026Threshold(classified, sourceByKey) {
     throw new Error('evaluateD026Threshold: sourceByKey must be a Map');
   }
 
-  // Count MIGRATABLE per entity. Collect MIGRATABLE customer and model keys.
+  // Gate 1: Count MIGRATABLE per entity. This is the per-entity quantity
+  // threshold (Customer >= 5, Project >= 5, Model >= 10, Makeup >= 10).
+  // MIGRATABLE determination is independent of per-type association
+  // completeness (R2: gates are independent).
   const counts = { customer: 0, project: 0, model: 0, makeup: 0 };
-  const migratableCustomerKeys = new Set();
-  const migratableModelKeys = new Set();
   for (const c of classified) {
     if (!c || c.classification !== 'MIGRATABLE') continue;
     if (!ENTITY_TYPES.includes(c.entity_type)) continue;
     counts[c.entity_type] += 1;
-    if (c.entity_type === 'customer') {
-      migratableCustomerKeys.add(c.record_key);
-    } else if (c.entity_type === 'model') {
-      migratableModelKeys.add(c.record_key);
-    }
   }
 
-  // Iterate MIGRATABLE projects: split by normalized project_type and
-  // verify the type-specific link resolves to a MIGRATABLE record of the
-  // correct entity_type. Also count type mismatches and detection coverage.
-  let kepianCustomerPairs = 0;   // 客片 + linked_customer_key → MIGRATABLE Customer
-  let kepianCustomerTotal = 0;   // total MIGRATABLE 客片 projects
-  let yangpianModelPairs = 0;    // 样片 + linked_model_key → MIGRATABLE Model
-  let yangpianModelTotal = 0;    // total MIGRATABLE 样片 projects
+  // Gate 2/3: Per-type 100% association completeness + entity-type
+  // correctness with detection coverage.
+  //
+  // R2 key change: denominator is decoupled from final_classification.
+  // A project enters the denominator iff:
+  //   - entity_type === 'project'
+  //   - authoritative_match_status !== 'MATCH_NOT_FOUND'
+  //     (undefined is treated as 'MATCHED' for legacy compat)
+  //   - normalized project_type is non-empty AND one of:
+  //       客片 / 品牌 / 其他 → kepian_customer_total
+  //       样片               → yangpian_model_total
+  //
+  // A project counts as a "correct pair" iff its required type-specific
+  // linked_*_key is present, resolves to a record in the batch, and the
+  // resolved record's entity_type matches the expected type. Whether the
+  // linked record is itself MIGRATABLE is IRRELEVANT — that is covered
+  // by the per-entity MIGRATABLE count threshold.
+  let kepianCustomerPairs = 0;   // 客片 + linked_customer_key → Customer (any classification)
+  let kepianCustomerTotal = 0;   // total MATCHED 客片/品牌/其他 projects (any classification)
+  let yangpianModelPairs = 0;    // 样片 + linked_model_key → Model (any classification)
+  let yangpianModelTotal = 0;    // total MATCHED 样片 projects (any classification)
   let typeMismatches = 0;        // linked_*_key points to wrong entity_type
   let checkedRelations = 0;     // total link relations inspected
   let unresolvedRelations = 0;   // link keys pointing to records missing from batch
@@ -199,23 +250,29 @@ function evaluateD026Threshold(classified, sourceByKey) {
 
   for (const c of classified) {
     if (!c) continue;
-    if (c.entity_type === 'project') {
-      totalProjectCount += 1;
-      const source = sourceByKey.get(c.record_key);
-      const matchStatus = source && source.fields
-        ? source.fields.authoritative_match_status
-        : undefined;
-      if (matchStatus === 'MATCH_NOT_FOUND') {
-        matchNotFoundProjectCount += 1;
-      } else {
-        // 'MATCHED' or undefined (legacy single-record mode) counts as matched
-        matchedProjectCount += 1;
-      }
-    }
-
-    if (c.classification !== 'MIGRATABLE') continue;
     if (c.entity_type !== 'project') continue;
+
+    // source_match_check counts ALL projects (regardless of classification
+    // or match_status). This is informational — it shows how many projects
+    // are in the batch and how they were categorized by match_status.
+    totalProjectCount += 1;
     const source = sourceByKey.get(c.record_key);
+    const matchStatus = source && source.fields
+      ? source.fields.authoritative_match_status
+      : undefined;
+    if (matchStatus === 'MATCH_NOT_FOUND') {
+      matchNotFoundProjectCount += 1;
+      // MATCH_NOT_FOUND projects do NOT enter the per-type association
+      // denominator. They are NEEDS_REVIEW / PROJECT_SOURCE_MATCH_REQUIRED
+      // and cannot be assigned an authoritative project_type.
+      continue;
+    }
+    // 'MATCHED' or undefined (legacy single-record mode) counts as matched
+    matchedProjectCount += 1;
+
+    // Per-type association check: requires source.fields with non-empty
+    // normalized project_type. Empty type → PROJECT_TYPE_REQUIRED handles
+    // it at classifier level; not assoc-testable, skip denominator.
     if (!source || !source.fields) continue;
     const f = source.fields;
     const rawType = (f.project_type_raw === null || f.project_type_raw === undefined)
@@ -238,9 +295,9 @@ function evaluateD026Threshold(classified, sourceByKey) {
           // Model key references a record not in the batch — unresolved
           unresolvedRelations += 1;
         } else if (linked.entity_type === 'model') {
-          if (migratableModelKeys.has(modelKey)) {
-            yangpianModelPairs += 1;
-          }
+          // R2: pair does NOT require linked Model to be MIGRATABLE.
+          // MIGRATABLE count is a separate per-entity threshold (gate 1).
+          yangpianModelPairs += 1;
         } else {
           // Model key points to a non-model record — type mismatch.
           typeMismatches += 1;
@@ -265,9 +322,8 @@ function evaluateD026Threshold(classified, sourceByKey) {
         if (!linked) {
           unresolvedRelations += 1;
         } else if (linked.entity_type === 'customer') {
-          if (migratableCustomerKeys.has(customerKey)) {
-            kepianCustomerPairs += 1;
-          }
+          // R2: pair does NOT require linked Customer to be MIGRATABLE.
+          kepianCustomerPairs += 1;
         } else {
           // Customer key points to a non-customer record — type mismatch.
           typeMismatches += 1;
@@ -285,7 +341,7 @@ function evaluateD026Threshold(classified, sourceByKey) {
       }
     }
     // Unmapped types: skip association check (classifier handles as
-    // PROJECT_TYPE_UNMAPPED; such projects would not be MIGRATABLE anyway).
+    // PROJECT_TYPE_UNMAPPED; not assoc-testable).
   }
 
   // Build per-entity threshold results.
@@ -377,10 +433,10 @@ function evaluateD026Threshold(classified, sourceByKey) {
     : 'FAIL — One or more D-026 thresholds not met. MIGRATION_PILOT_001 MUST NOT start. Possible causes: MIGRATABLE counts short, per-type association completeness < 100% (客片 Customer / 样片 Model), combined pair count < 5, or one or more linked keys point to the wrong entity_type / unresolved record.';
 
   return {
-    schema_version: 'r6-quantity-threshold-judgement-v1.2',
+    schema_version: 'r6-quantity-threshold-judgement-v1.3',
     decision_reference: 'D-026 (DECISION_LOG.md)',
     description:
-      'D-026 Phase 1B-3 启动前置条件（PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R1）：Customer >= 5 / Project >= 5 / Model >= 10 / Makeup >= 10 / 客片 Customer 完整率 100% / 样片 Model 完整率 100% / 合计 MIGRATABLE Project 关联对 >= 5 / 关联实体类型零错配 / 检测覆盖证据齐全。MATCH_NOT_FOUND 项目不进入 MIGRATABLE 统计。Migration pilot MUST NOT start until ALL thresholds are met.',
+      'D-026 Phase 1B-3 启动前置条件（PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R2）：Customer >= 5 / Project >= 5 / Model >= 10 / Makeup >= 10 / 客片 Customer 完整率 100% / 样片 Model 完整率 100% / 合计正确关联对 >= 5 / 关联实体类型零错配 / 检测覆盖证据齐全。R2: 分母基于权威身份而非 final_classification；MATCH_NOT_FOUND 项目不进入分类型完整性分母。Migration pilot MUST NOT start until ALL thresholds are met.',
     all_thresholds_met: allMet,
     judgement,
     thresholds,
