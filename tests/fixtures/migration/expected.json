@@ -44,6 +44,11 @@
     { "record_key": "CUSTOMER_ALIAS_020", "entity_type": "customer", "classification": "NEEDS_REVIEW", "primary_reason_code": "STATUS_NEEDS_REVIEW", "secondary_reason_codes": [] },
     { "record_key": "PROJECT_ALIAS_012", "entity_type": "project", "classification": "MIGRATABLE", "primary_reason_code": "ELIGIBLE", "secondary_reason_codes": [] },
     { "record_key": "PROJECT_ALIAS_013", "entity_type": "project", "classification": "MIGRATABLE", "primary_reason_code": "ELIGIBLE", "secondary_reason_codes": [] },
-    { "record_key": "PROJECT_ALIAS_014", "entity_type": "project", "classification": "NEEDS_REVIEW", "primary_reason_code": "STATUS_NEEDS_REVIEW", "secondary_reason_codes": [] }
+    { "record_key": "PROJECT_ALIAS_014", "entity_type": "project", "classification": "NEEDS_REVIEW", "primary_reason_code": "STATUS_NEEDS_REVIEW", "secondary_reason_codes": [] },
+    { "record_key": "PROJECT_ALIAS_015", "entity_type": "project", "classification": "BLOCKED", "primary_reason_code": "LINKED_ENTITY_TYPE_MISMATCH", "secondary_reason_codes": ["ORPHAN_PROJECT"] },
+    { "record_key": "PROJECT_ALIAS_016", "entity_type": "project", "classification": "NEEDS_REVIEW", "primary_reason_code": "PROJECT_TYPE_REQUIRED", "secondary_reason_codes": [] },
+    { "record_key": "PROJECT_ALIAS_017", "entity_type": "project", "classification": "MIGRATABLE", "primary_reason_code": "ELIGIBLE", "secondary_reason_codes": [] },
+    { "record_key": "PROJECT_ALIAS_018", "entity_type": "project", "classification": "BLOCKED", "primary_reason_code": "ORPHAN_PROJECT", "secondary_reason_codes": [] },
+    { "record_key": "PROJECT_ALIAS_019", "entity_type": "project", "classification": "BLOCKED", "primary_reason_code": "LINKED_ENTITY_TYPE_MISMATCH", "secondary_reason_codes": ["ORPHAN_PROJECT"] }
   ]
 }

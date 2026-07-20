@@ -18,16 +18,28 @@
 
 /** @type {Record<string, ReasonCodeDefinition>} */
 const REASON_CODES = {
-  MISSING_NAME:           { priority: 10,  classification: 'BLOCKED' },
-  MISSING_IDENTITY:        { priority: 20,  classification: 'BLOCKED' },
-  ORPHAN_PROJECT:          { priority: 30,  classification: 'BLOCKED' },
-  CUSTOMER_UNRESOLVED:    { priority: 40,  classification: 'NEEDS_REVIEW' },
-  DUPLICATE_UNRESOLVED:    { priority: 50,  classification: 'NEEDS_REVIEW' },
-  STATUS_NEEDS_REVIEW:     { priority: 60,  classification: 'NEEDS_REVIEW' },
-  SOURCE_UNMAPPED:         { priority: 70,  classification: 'NEEDS_REVIEW' },
-  BUDGET_AMBIGUOUS:        { priority: 80,  classification: 'NEEDS_REVIEW' },
-  PROJECT_TYPE_UNMAPPED:   { priority: 90,  classification: 'NEEDS_REVIEW' },
-  ELIGIBLE:                { priority: 100, classification: 'MIGRATABLE' },
+  MISSING_NAME:                  { priority: 10,  classification: 'BLOCKED' },
+  MISSING_IDENTITY:              { priority: 20,  classification: 'BLOCKED' },
+  ORPHAN_PROJECT:                { priority: 30,  classification: 'BLOCKED' },
+  // New (PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01): linked key points to
+  // wrong entity type — e.g. a 样片 project has a Model record_key written
+  // into the linked_customer_key field, or a 客片 project has a Customer
+  // record_key written into the linked_model_key field. Lower priority
+  // number than ORPHAN_PROJECT so the specific mismatch is surfaced first
+  // when both could theoretically apply.
+  LINKED_ENTITY_TYPE_MISMATCH:  { priority: 25,  classification: 'BLOCKED' },
+  CUSTOMER_UNRESOLVED:          { priority: 40,  classification: 'NEEDS_REVIEW' },
+  DUPLICATE_UNRESOLVED:          { priority: 50,  classification: 'NEEDS_REVIEW' },
+  STATUS_NEEDS_REVIEW:           { priority: 60,  classification: 'NEEDS_REVIEW' },
+  SOURCE_UNMAPPED:               { priority: 70,  classification: 'NEEDS_REVIEW' },
+  BUDGET_AMBIGUOUS:              { priority: 80,  classification: 'NEEDS_REVIEW' },
+  PROJECT_TYPE_UNMAPPED:         { priority: 90,  classification: 'NEEDS_REVIEW' },
+  // New (PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01): project_type_raw is
+  // empty. The classifier must not infer the type or auto-pick a link
+  // target. Higher priority number than PROJECT_TYPE_UNMAPPED (90) so
+  // non-empty-but-invalid types take precedence over the empty case.
+  PROJECT_TYPE_REQUIRED:         { priority: 95,  classification: 'NEEDS_REVIEW' },
+  ELIGIBLE:                      { priority: 100, classification: 'MIGRATABLE' },
 };
 
 /**
@@ -38,6 +50,7 @@ const REASON_CODES = {
 const REASON_PRIORITY_ORDER = [
   'MISSING_NAME',
   'MISSING_IDENTITY',
+  'LINKED_ENTITY_TYPE_MISMATCH',
   'ORPHAN_PROJECT',
   'CUSTOMER_UNRESOLVED',
   'DUPLICATE_UNRESOLVED',
@@ -45,6 +58,7 @@ const REASON_PRIORITY_ORDER = [
   'SOURCE_UNMAPPED',
   'BUDGET_AMBIGUOUS',
   'PROJECT_TYPE_UNMAPPED',
+  'PROJECT_TYPE_REQUIRED',
   'ELIGIBLE',
 ];
 

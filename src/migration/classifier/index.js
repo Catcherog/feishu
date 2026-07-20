@@ -12,6 +12,8 @@
 const {
   classifyRecord,
   classifyBatch,
+  _normalizeProjectType: normalizeProjectType,
+  _PROJECT_TYPE_NORMALIZATION: PROJECT_TYPE_NORMALIZATION,
 } = require('./classifier');
 const { parseBudget, BUDGET_RULE_VERSION } = require('./budget');
 const { buildAccountingSummary } = require('./accounting');
@@ -27,6 +29,8 @@ module.exports = {
   classifyBatch,
   parseBudget,
   buildAccountingSummary,
+  normalizeProjectType,
+  PROJECT_TYPE_NORMALIZATION,
   REASON_CODES,
   REASON_PRIORITY_ORDER,
   sortAndDedupReasonCodes,

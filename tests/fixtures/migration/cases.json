@@ -924,6 +924,116 @@
         "has_delivery_evidence": false,
         "has_archive_evidence": false
       }
+    },
+    {
+      "record_key": "PROJECT_ALIAS_015",
+      "entity_type": "project",
+      "fields": {
+        "name": "测试项目O",
+        "status_raw": "策划中",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": null,
+        "wechat_id": null,
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": "创作",
+        "linked_project_keys": [],
+        "linked_customer_key": "MODEL_ALIAS_001",
+        "linked_customer_name_hint": null,
+        "linked_model_key": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "PROJECT_ALIAS_016",
+      "entity_type": "project",
+      "fields": {
+        "name": "测试项目P",
+        "status_raw": "策划中",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": null,
+        "wechat_id": null,
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": "",
+        "linked_project_keys": [],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "linked_model_key": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "PROJECT_ALIAS_017",
+      "entity_type": "project",
+      "fields": {
+        "name": "测试项目Q",
+        "status_raw": "策划中",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": null,
+        "wechat_id": null,
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": "创作",
+        "linked_project_keys": [],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "linked_model_key": "MODEL_ALIAS_001",
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "PROJECT_ALIAS_018",
+      "entity_type": "project",
+      "fields": {
+        "name": "测试项目R",
+        "status_raw": "策划中",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": null,
+        "wechat_id": null,
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": "创作",
+        "linked_project_keys": [],
+        "linked_customer_key": "CUSTOMER_ALIAS_001",
+        "linked_customer_name_hint": null,
+        "linked_model_key": null,
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
+    },
+    {
+      "record_key": "PROJECT_ALIAS_019",
+      "entity_type": "project",
+      "fields": {
+        "name": "测试项目S",
+        "status_raw": "策划中",
+        "source_channel_raw": null,
+        "budget_range_raw": null,
+        "phone": null,
+        "wechat_id": null,
+        "portfolio_url": null,
+        "xiaohongshu_account": null,
+        "project_type_raw": "客片",
+        "linked_project_keys": [],
+        "linked_customer_key": null,
+        "linked_customer_name_hint": null,
+        "linked_model_key": "CUSTOMER_ALIAS_001",
+        "duplicate_candidates": [],
+        "has_delivery_evidence": false,
+        "has_archive_evidence": false
+      }
     }
   ]
 }

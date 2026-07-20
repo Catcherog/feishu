@@ -27,6 +27,24 @@
 
 const { parseBudget, BUDGET_RULE_VERSION } = require('./classifier/budget');
 
+// V1 → V2 project-type normalization (PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01).
+// Must mirror the map in classifier/classifier.js — kept as a local copy to
+// avoid a circular dependency (classifier imports nothing from projection,
+// and projection importing from classifier would create a cycle through
+// budget). Both maps must stay in sync.
+const PROJECT_TYPE_NORMALIZATION = new Map([
+  ['创作', '样片'],
+]);
+
+function normalizeProjectType(v1Type) {
+  const trimmed = str(v1Type);
+  if (trimmed === '') return '';
+  if (PROJECT_TYPE_NORMALIZATION.has(trimmed)) {
+    return PROJECT_TYPE_NORMALIZATION.get(trimmed);
+  }
+  return trimmed;
+}
+
 // ---------------------------------------------------------------------------
 // Explicit migration defaults (the 5 schema-default fields that the Base
 // layer cannot apply on its own).
@@ -155,8 +173,12 @@ function ensureCustomerMigrationContext(record) {
 //   - fields must be a non-null object
 //   - name must be non-empty
 //   - status_raw must be non-empty
-//   - project_type_raw must be non-empty
-//   - linked_customer_key must be non-empty
+//   - project_type_raw must be non-empty (V1 "创作" normalizes to V2 "样片")
+//   - association key by project type (PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01):
+//       样片 (V1 "创作"): linked_model_key must be non-empty (Customer optional)
+//       客片/品牌/其他:   linked_customer_key must be non-empty
+//   - empty project_type_raw throws (PROJECT_TYPE_REQUIRED handles this
+//     at classifier level; projection fails closed if it reaches here)
 function ensureProjectMigrationContext(record) {
   const f = record.fields;
   if (!f || typeof f !== 'object' || Array.isArray(f)) {
@@ -179,9 +201,29 @@ function ensureProjectMigrationContext(record) {
       `projection: ${record.record_key} project project_type_raw must be non-empty`,
     );
   }
-  if (!nonEmpty(f.linked_customer_key)) {
+  const normalizedType = normalizeProjectType(f.project_type_raw);
+  if (normalizedType === '样片') {
+    // 样片 (sample shoot, V1 "创作") MUST link to a Model. Customer is
+    // optional and never required by projection. AC-05: missing Customer
+    // must NOT block a 样片 from migrating.
+    if (!nonEmpty(f.linked_model_key)) {
+      throw new Error(
+        `projection: ${record.record_key} 样片 project linked_model_key must be non-empty`,
+      );
+    }
+  } else if (normalizedType === '客片' || normalizedType === '品牌' || normalizedType === '其他') {
+    // 客片 / 品牌 / 其他 MUST link to a Customer.
+    if (!nonEmpty(f.linked_customer_key)) {
+      throw new Error(
+        `projection: ${record.record_key} ${normalizedType} project linked_customer_key must be non-empty`,
+      );
+    }
+  } else {
+    // Unknown / unmapped type — classifier would have flagged this as
+    // PROJECT_TYPE_UNMAPPED. Projection fails closed rather than guessing
+    // which link key to require.
     throw new Error(
-      `projection: ${record.record_key} project linked_customer_key must be non-empty`,
+      `projection: ${record.record_key} project_type_raw "${f.project_type_raw}" is not a known V2 enum value`,
     );
   }
 }
@@ -268,18 +310,24 @@ function projectProject(record, classified) {
   if (classified.classification !== 'MIGRATABLE') return null;
   ensureEntityType(record, 'project');
   // Fail-closed: re-verify the minimum fields needed to write a valid
-  // V2 Project record. linked_customer_key is required so D-026
-  // association check has the source data it needs at migration time.
+  // V2 Project record. ensureProjectMigrationContext now branches on
+  // normalized project type — 样片 requires linked_model_key, 客片
+  // requires linked_customer_key (PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01
+  // AC-04 / AC-05).
   ensureProjectMigrationContext(record);
 
   const f = record.fields || {};
+  const normalizedType = normalizeProjectType(f.project_type_raw);
 
-  return {
+  // Build payload. linked_customer_key is emitted when present (even for
+  // 样片 — optional but preserved if the source record carried one).
+  // linked_model_key is emitted for 样片 (required) and for any other
+  // type when present (preserves source data without forcing it).
+  const payload = {
     // Migrated business fields (preserved from source)
     name: f.name,
     status_raw: f.status_raw,
     project_type_raw: f.project_type_raw,
-    linked_customer_key: f.linked_customer_key,
 
     // Explicit migration-rule versioning — these 2 fields are the
     // schema-default fields that the lark-cli `+field-create` limitation
@@ -289,6 +337,30 @@ function projectProject(record, classified) {
     status_mapping_rule_version:
       MIGRATION_DEFAULTS.project.status_mapping_rule_version,
   };
+
+  // Association fields: emit whichever keys are present, plus the
+  // type-specific required key (which may be empty string if the
+  // projection passed validation but the field was undefined in source).
+  // For 样片: linked_model_key is the authoritative association.
+  // For 客片/品牌/其他: linked_customer_key is the authoritative association.
+  if (normalizedType === '样片') {
+    payload.linked_model_key = f.linked_model_key;
+    // Optional: preserve linked_customer_key if source had one
+    // (样片 may have a Customer link as secondary metadata).
+    if (nonEmpty(f.linked_customer_key)) {
+      payload.linked_customer_key = f.linked_customer_key;
+    }
+  } else {
+    // 客片 / 品牌 / 其他
+    payload.linked_customer_key = f.linked_customer_key;
+    // Optional: preserve linked_model_key if source had one
+    // (some 客片 may also reference a Model).
+    if (nonEmpty(f.linked_model_key)) {
+      payload.linked_model_key = f.linked_model_key;
+    }
+  }
+
+  return payload;
 }
 
 /**

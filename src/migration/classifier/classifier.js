@@ -57,7 +57,32 @@ const SOURCE_CHANNEL_ENUM = new Set([
   '其他', '未知',
 ]);
 
-const PROJECT_TYPE_ENUM = new Set(['客片', '创作', '品牌', '其他']);
+const PROJECT_TYPE_ENUM = new Set(['客片', '样片', '品牌', '其他']);
+
+// V1 → V2 project-type normalization (PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01).
+// V1 uses "创作" for sample / creative shoots; V2 uses "样片". The
+// classifier treats both as the same logical type for enum membership
+// and association checks, but never silently infers type when source
+// value is empty (that case is PROJECT_TYPE_REQUIRED, not normalization).
+const PROJECT_TYPE_NORMALIZATION = new Map([
+  ['创作', '样片'],
+]);
+
+/**
+ * Normalize a V1 project_type_raw string to its V2 canonical form.
+ * Returns '' for empty input. Unknown values pass through unchanged
+ * (PROJECT_TYPE_UNMAPPED handles them downstream).
+ * @param {string|null|undefined} v1Type
+ * @returns {string}
+ */
+function normalizeProjectType(v1Type) {
+  const trimmed = str(v1Type);
+  if (trimmed === '') return '';
+  if (PROJECT_TYPE_NORMALIZATION.has(trimmed)) {
+    return PROJECT_TYPE_NORMALIZATION.get(trimmed);
+  }
+  return trimmed;
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -188,15 +213,45 @@ function resourceMissingIdentity(record) {
 }
 
 /**
- * Project is an orphan per D-023:
- *   - no linked_customer_key, and either no hint or hint does not match any
- *     customer name in the batch
- *   - or linked_customer_key points to a customer that is not in the batch
+ * Project is an orphan per D-023 and PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01.
  *
- * In single-record mode (no context), a present hint is assumed to match.
+ * Business rule (authoritative source: 项目统计表):
+ *   - 客片 project: must link to a Customer (linked_customer_key required).
+ *     Missing Customer → ORPHAN_PROJECT.
+ *   - 样片 project (V1 "创作" normalized to "样片"): must link to a Model
+ *     (linked_model_key required). Missing Customer is NOT an orphan
+ *     condition — Customer is optional for 样片.
+ *   - Empty project_type_raw: never flag as orphan. PROJECT_TYPE_REQUIRED
+ *     handles the missing-type case separately.
+ *   - Other types (品牌/其他/unmapped): default to Customer-link check
+ *     (preserves existing behavior for non-sample types).
+ *
+ * In single-record mode (no context), a present hint (for 客片) or present
+ * model key (for 样片) is assumed to match.
  */
 function isOrphanProject(record, context) {
   const f = record.fields || {};
+  const rawType = str(f.project_type_raw);
+  if (rawType === '') return false; // let PROJECT_TYPE_REQUIRED handle it
+  const normalizedType = normalizeProjectType(rawType);
+
+  if (normalizedType === '样片') {
+    // 样片 must link to a Model. Customer is optional.
+    const modelKey = str(f.linked_model_key);
+    if (modelKey !== '') {
+      if (context && context.recordsByKey) {
+        const model = context.recordsByKey.get(modelKey);
+        if (!model) return true; // referenced model missing from batch
+      }
+      return false; // assume resolvable
+    }
+    // No model key at all — even if linked_customer_key is present, a 样片
+    // without linked_model_key is orphan (model link is the required one).
+    return true;
+  }
+
+  // Default branch: 客片 / 品牌 / 其他 / unmapped-non-empty.
+  // Check linked_customer_key (existing behavior).
   const key = str(f.linked_customer_key);
   const hint = str(f.linked_customer_name_hint);
 
@@ -215,6 +270,59 @@ function isOrphanProject(record, context) {
     return !context.customerNames.has(hint);
   }
   // Single-record mode: assume hint is resolvable.
+  return false;
+}
+
+/**
+ * Linked entity type mismatch (PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01).
+ *
+ * Detects when a project's linked_*_key field points to a record of the
+ * wrong entity_type:
+ *   - 样片 project with linked_customer_key pointing to a Model record
+ *     (Model key written into Customer field)
+ *   - 样片 project with linked_model_key pointing to a Customer record
+ *     (Customer key written into Model field)
+ *   - 客片 project with linked_model_key pointing to a Customer record
+ *   - 客片 project with linked_customer_key pointing to a Model record
+ *
+ * Only detectable in batch mode (requires context.recordsByKey to look up
+ * the linked record's entity_type). Single-record mode returns false.
+ */
+function isLinkedEntityTypeMismatch(record, context) {
+  if (!context || !context.recordsByKey) return false;
+  const f = record.fields || {};
+  const rawType = str(f.project_type_raw);
+  if (rawType === '') return false;
+  const normalizedType = normalizeProjectType(rawType);
+
+  const customerKey = str(f.linked_customer_key);
+  const modelKey = str(f.linked_model_key);
+
+  if (normalizedType === '样片') {
+    // 样片 should link to Model, not Customer.
+    // Flag if linked_customer_key points to a Model record (Model key
+    // written into Customer field) OR linked_model_key points to a
+    // Customer record (Customer key written into Model field).
+    if (customerKey !== '') {
+      const linked = context.recordsByKey.get(customerKey);
+      if (linked && linked.entity_type === 'model') return true;
+    }
+    if (modelKey !== '') {
+      const linked = context.recordsByKey.get(modelKey);
+      if (linked && linked.entity_type === 'customer') return true;
+    }
+  } else if (normalizedType === '客片') {
+    // 客片 should link to Customer, not Model.
+    if (modelKey !== '') {
+      const linked = context.recordsByKey.get(modelKey);
+      if (linked && linked.entity_type === 'customer') return true;
+    }
+    if (customerKey !== '') {
+      const linked = context.recordsByKey.get(customerKey);
+      if (linked && linked.entity_type === 'model') return true;
+    }
+  }
+
   return false;
 }
 
@@ -263,11 +371,24 @@ function isBudgetAmbiguous(record) {
 
 /**
  * Project type is non-empty but not in the V2 enum (D-024).
+ * Normalizes V1 "创作" to V2 "样片" before enum membership check
+ * (PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01 AC-03).
  */
 function isProjectTypeUnmapped(record) {
   const type = str((record.fields || {}).project_type_raw);
-  if (type === '') return false;
-  return !PROJECT_TYPE_ENUM.has(type);
+  if (type === '') return false; // empty handled by isProjectTypeRequired
+  const normalized = normalizeProjectType(type);
+  return !PROJECT_TYPE_ENUM.has(normalized);
+}
+
+/**
+ * Project type is empty (PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01 AC-06).
+ * The classifier must NOT infer the type or auto-pick a link target.
+ * Triggers PROJECT_TYPE_REQUIRED reason code (NEEDS_REVIEW).
+ */
+function isProjectTypeRequired(record) {
+  const type = str((record.fields || {}).project_type_raw);
+  return type === '';
 }
 
 // ---------------------------------------------------------------------------
@@ -293,6 +414,13 @@ function collectReasons(record, context) {
   } else if ((record.entity_type === 'model' || record.entity_type === 'makeup')
     && resourceMissingIdentity(record)) {
     reasons.push('MISSING_IDENTITY');
+  }
+
+  // P25: LINKED_ENTITY_TYPE_MISMATCH (project only, batch only)
+  // Detects Model key written into Customer field, or vice versa.
+  if (record.entity_type === 'project'
+    && isLinkedEntityTypeMismatch(record, context || null)) {
+    reasons.push('LINKED_ENTITY_TYPE_MISMATCH');
   }
 
   // P30: ORPHAN_PROJECT (project only)
@@ -329,9 +457,15 @@ function collectReasons(record, context) {
     reasons.push('BUDGET_AMBIGUOUS');
   }
 
-  // P90: PROJECT_TYPE_UNMAPPED (project only)
+  // P90: PROJECT_TYPE_UNMAPPED (project only, non-empty type not in V2 enum)
   if (record.entity_type === 'project' && isProjectTypeUnmapped(record)) {
     reasons.push('PROJECT_TYPE_UNMAPPED');
+  }
+
+  // P95: PROJECT_TYPE_REQUIRED (project only, empty type — never infer)
+  // (PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01 AC-06)
+  if (record.entity_type === 'project' && isProjectTypeRequired(record)) {
+    reasons.push('PROJECT_TYPE_REQUIRED');
   }
 
   // P100: ELIGIBLE (if no other reasons)
@@ -399,9 +533,11 @@ module.exports = {
   classifyBatch,
   // Exported for testing / introspection. Not part of the stable public API.
   _collectReasons: collectReasons,
+  _normalizeProjectType: normalizeProjectType,
   _CUSTOMER_STATUS_DIRECT_MAP: CUSTOMER_STATUS_DIRECT_MAP,
   _PROJECT_STATUS_DIRECT_MAP: PROJECT_STATUS_DIRECT_MAP,
   _SOURCE_CHANNEL_ENUM: SOURCE_CHANNEL_ENUM,
   _PROJECT_TYPE_ENUM: PROJECT_TYPE_ENUM,
+  _PROJECT_TYPE_NORMALIZATION: PROJECT_TYPE_NORMALIZATION,
   _COOPERATION_STATUS_ENUM: COOPERATION_STATUS_ENUM,
 };

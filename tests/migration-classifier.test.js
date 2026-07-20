@@ -39,9 +39,11 @@ function sha256OfBatchOutput(records) {
 describe('classifier public surface', () => {
   it('exposes all required reason codes with stable priority order', () => {
     const expectedCodes = [
-      'MISSING_NAME', 'MISSING_IDENTITY', 'ORPHAN_PROJECT',
+      'MISSING_NAME', 'MISSING_IDENTITY', 'LINKED_ENTITY_TYPE_MISMATCH',
+      'ORPHAN_PROJECT',
       'CUSTOMER_UNRESOLVED', 'DUPLICATE_UNRESOLVED', 'STATUS_NEEDS_REVIEW',
-      'SOURCE_UNMAPPED', 'BUDGET_AMBIGUOUS', 'PROJECT_TYPE_UNMAPPED', 'ELIGIBLE',
+      'SOURCE_UNMAPPED', 'BUDGET_AMBIGUOUS', 'PROJECT_TYPE_UNMAPPED',
+      'PROJECT_TYPE_REQUIRED', 'ELIGIBLE',
     ];
     for (const code of expectedCodes) {
       assert.ok(REASON_CODES[code], `missing reason code: ${code}`);

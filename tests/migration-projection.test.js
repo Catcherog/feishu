@@ -82,6 +82,7 @@ function makeProject(key, fields) {
       linked_project_keys: [],
       linked_customer_key: null,
       linked_customer_name_hint: null,
+      linked_model_key: null,
       duplicate_candidates: [],
       has_delivery_evidence: false,
       has_archive_evidence: false,
@@ -858,5 +859,336 @@ describe('R6-MINIMUM-FINAL-FIX-02: projectBatch entity_type consistency for non-
     const batch = projectBatch([record], [classified]);
     assert.equal(batch.length, 1);
     assert.equal(batch[0].payload, null);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01: 9 required test cases
+//
+// Verifies that projection + D-026 evaluator correctly handle the
+// per-project-type association rules:
+//   - 客片 requires linked_customer_key (Customer)
+//   - 样片 (V1 "创作") requires linked_model_key (Model); Customer optional
+//   - empty project_type_raw throws (PROJECT_TYPE_REQUIRED handles at
+//     classifier level, but projection fails closed if reached)
+//   - linked key pointing to wrong entity_type fails the D-026 gate
+// ---------------------------------------------------------------------------
+
+describe('PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01: 9 required test cases', () => {
+  // Test 1: 客片 + Customer → MIGRATABLE
+  it('1. 客片 project with Customer link → MIGRATABLE projection succeeds', () => {
+    const record = makeProject('PROJECT_ALIAS_PTC_001', {
+      project_type_raw: '客片',
+      linked_customer_key: 'CUSTOMER_ALIAS_PTC_001',
+    });
+    const classified = makeClassified('PROJECT_ALIAS_PTC_001', 'project', 'MIGRATABLE');
+    const payload = projectProject(record, classified);
+    assert.ok(payload !== null);
+    assert.equal(payload.project_type_raw, '客片');
+    assert.equal(payload.linked_customer_key, 'CUSTOMER_ALIAS_PTC_001');
+  });
+
+  // Test 2: 客片无 Customer → BLOCKED (projection throws)
+  it('2. 客片 project without Customer link → projection throws (BLOCKED at classifier)', () => {
+    const record = makeProject('PROJECT_ALIAS_PTC_002', {
+      project_type_raw: '客片',
+      linked_customer_key: null,
+    });
+    const classified = makeClassified('PROJECT_ALIAS_PTC_002', 'project', 'MIGRATABLE');
+    assert.throws(
+      () => projectProject(record, classified),
+      /linked_customer_key must be non-empty/,
+    );
+  });
+
+  // Test 3: 创作/样片 + Model → MIGRATABLE
+  it('3. 创作 (样片) project with Model link → MIGRATABLE projection succeeds', () => {
+    const record = makeProject('PROJECT_ALIAS_PTC_003', {
+      project_type_raw: '创作',
+      linked_customer_key: null, // 样片: Customer optional
+      linked_model_key: 'MODEL_ALIAS_PTC_001',
+    });
+    const classified = makeClassified('PROJECT_ALIAS_PTC_003', 'project', 'MIGRATABLE');
+    const payload = projectProject(record, classified);
+    assert.ok(payload !== null);
+    assert.equal(payload.project_type_raw, '创作');
+    assert.equal(payload.linked_model_key, 'MODEL_ALIAS_PTC_001');
+    // linked_customer_key should NOT be present (was empty in source)
+    assert.ok(!('linked_customer_key' in payload),
+      '样片 without linked_customer_key must NOT emit that field in payload');
+  });
+
+  // Test 4: 创作/样片无 Customer但有Model → MIGRATABLE (same as #3, explicit)
+  it('4. 创作 (样片) project with Model link but no Customer → MIGRATABLE (Customer optional)', () => {
+    const record = makeProject('PROJECT_ALIAS_PTC_004', {
+      project_type_raw: '创作',
+      linked_customer_key: '',
+      linked_model_key: 'MODEL_ALIAS_PTC_002',
+    });
+    const classified = makeClassified('PROJECT_ALIAS_PTC_004', 'project', 'MIGRATABLE');
+    const payload = projectProject(record, classified);
+    assert.ok(payload !== null);
+    assert.equal(payload.linked_model_key, 'MODEL_ALIAS_PTC_002');
+    // Customer should not be in payload (was empty)
+    assert.ok(!('linked_customer_key' in payload));
+  });
+
+  // Test 5: 创作/样片只有Customer无Model → BLOCKED (projection throws)
+  it('5. 创作 (样片) project with only Customer, no Model → projection throws (BLOCKED at classifier)', () => {
+    const record = makeProject('PROJECT_ALIAS_PTC_005', {
+      project_type_raw: '创作',
+      linked_customer_key: 'CUSTOMER_ALIAS_PTC_005',
+      linked_model_key: null,
+    });
+    const classified = makeClassified('PROJECT_ALIAS_PTC_005', 'project', 'MIGRATABLE');
+    assert.throws(
+      () => projectProject(record, classified),
+      /样片 project linked_model_key must be non-empty/,
+    );
+  });
+
+  // Test 6: 类型为空 → NEEDS_REVIEW (projection throws because type unknown)
+  it('6. Empty project_type_raw → projection throws (NEEDS_REVIEW at classifier)', () => {
+    const record = makeProject('PROJECT_ALIAS_PTC_006', {
+      project_type_raw: '',
+      linked_customer_key: 'CUSTOMER_ALIAS_PTC_006',
+    });
+    const classified = makeClassified('PROJECT_ALIAS_PTC_006', 'project', 'MIGRATABLE');
+    assert.throws(
+      () => projectProject(record, classified),
+      /project_type_raw must be non-empty/,
+    );
+  });
+
+  // Test 7: Model key 写入 Customer 字段 → D-026 entity_type mismatch (FAIL)
+  it('7. 样片 project with Model key written into Customer field → D-026 type mismatch fails gate', () => {
+    // Build a small batch: 1 样片 project, 1 model record referenced via
+    // linked_customer_key (wrong field), minimal other entities to isolate
+    // the type-mismatch check.
+    const modelKey = 'MODEL_ALIAS_PTC_007';
+    const modelRecord = {
+      record_key: modelKey,
+      entity_type: 'model',
+      fields: { name: 'fixture-model' },
+    };
+    const projectKey = 'PROJECT_ALIAS_PTC_007';
+    const projectRecord = {
+      record_key: projectKey,
+      entity_type: 'project',
+      fields: {
+        name: 'fixture-project',
+        status_raw: '策划中',
+        project_type_raw: '创作', // 样片 after normalization
+        linked_customer_key: modelKey, // WRONG: Model key in Customer field
+        linked_model_key: '',
+      },
+    };
+    const classified = [
+      makeClassified(modelKey, 'model', 'MIGRATABLE'),
+      makeClassified(projectKey, 'project', 'MIGRATABLE'),
+    ];
+    const sourceByKey = new Map([
+      [modelKey, modelRecord],
+      [projectKey, projectRecord],
+    ]);
+    const result = evaluateD026Threshold(classified, sourceByKey);
+    // Type mismatch detected → entity_type_correctness_check fails
+    assert.equal(result.entity_type_correctness_check.actual_mismatches, 1,
+      'expected 1 type mismatch (Model key in Customer field)');
+    assert.equal(result.entity_type_correctness_check.met, false);
+    assert.equal(result.all_thresholds_met, false);
+  });
+
+  // Test 8: Customer key 写入 Model 字段 → D-026 entity_type mismatch (FAIL)
+  it('8. 客片 project with Customer key written into Model field → D-026 type mismatch fails gate', () => {
+    const customerKey = 'CUSTOMER_ALIAS_PTC_008';
+    const customerRecord = {
+      record_key: customerKey,
+      entity_type: 'customer',
+      fields: { name: 'fixture-customer' },
+    };
+    const projectKey = 'PROJECT_ALIAS_PTC_008';
+    const projectRecord = {
+      record_key: projectKey,
+      entity_type: 'project',
+      fields: {
+        name: 'fixture-project',
+        status_raw: '策划中',
+        project_type_raw: '客片',
+        linked_customer_key: customerKey, // correct: Customer in Customer field
+        linked_model_key: customerKey, // WRONG: Customer key in Model field
+      },
+    };
+    const classified = [
+      makeClassified(customerKey, 'customer', 'MIGRATABLE'),
+      makeClassified(projectKey, 'project', 'MIGRATABLE'),
+    ];
+    const sourceByKey = new Map([
+      [customerKey, customerRecord],
+      [projectKey, projectRecord],
+    ]);
+    const result = evaluateD026Threshold(classified, sourceByKey);
+    // Type mismatch detected → entity_type_correctness_check fails
+    assert.equal(result.entity_type_correctness_check.actual_mismatches, 1,
+      'expected 1 type mismatch (Customer key in Model field)');
+    assert.equal(result.entity_type_correctness_check.met, false);
+    assert.equal(result.all_thresholds_met, false);
+  });
+
+  // Test 9: 原有 Customer/Model/Makeup 分类无非预期退化
+  it('9. Existing Customer/Model/Makeup classifications do not regress with new type-aware logic', () => {
+    // Customer classification: should still produce standard MIGRATABLE
+    // payload with the 3 explicit defaults.
+    const customerRecord = makeCustomer('CUSTOMER_ALIAS_PTC_009', {
+      budget_range_raw: '3000-5000',
+    });
+    const customerClassified = makeClassified('CUSTOMER_ALIAS_PTC_009', 'customer', 'MIGRATABLE');
+    const customerPayload = projectCustomer(customerRecord, customerClassified);
+    assert.ok(customerPayload !== null);
+    assert.equal(customerPayload.budget_parse_rule_version, 'budget-map-v1.0');
+    assert.equal(customerPayload.source_channel_mapping_version, 'source-map-v1.0');
+    assert.equal(customerPayload.status_mapping_rule_version, 'status-map-v1.0');
+    assert.equal(customerPayload.budget_min, 3000);
+    assert.equal(customerPayload.budget_max, 5000);
+
+    // Model / Makeup classification: projectBatch returns null payload
+    // for resource entity types (resource projection is out of scope).
+    const modelRecord = {
+      record_key: 'MODEL_ALIAS_PTC_009',
+      entity_type: 'model',
+      fields: { name: 'fixture-model' },
+    };
+    const modelClassified = makeClassified('MODEL_ALIAS_PTC_009', 'model', 'MIGRATABLE');
+    const makeupRecord = {
+      record_key: 'MAKEUP_ALIAS_PTC_009',
+      entity_type: 'makeup',
+      fields: { name: 'fixture-makeup' },
+    };
+    const makeupClassified = makeClassified('MAKEUP_ALIAS_PTC_009', 'makeup', 'MIGRATABLE');
+    const batch = projectBatch([modelRecord, makeupRecord], [modelClassified, makeupClassified]);
+    assert.equal(batch[0].payload, null);
+    assert.equal(batch[1].payload, null);
+
+    // 客片 project classification: should still produce MIGRATABLE payload
+    // with linked_customer_key preserved.
+    const kepianProject = makeProject('PROJECT_ALIAS_PTC_009_KEPIAN', {
+      project_type_raw: '客片',
+      linked_customer_key: 'CUSTOMER_ALIAS_PTC_009',
+    });
+    const kepianClassified = makeClassified('PROJECT_ALIAS_PTC_009_KEPIAN', 'project', 'MIGRATABLE');
+    const kepianPayload = projectProject(kepianProject, kepianClassified);
+    assert.ok(kepianPayload !== null);
+    assert.equal(kepianPayload.linked_customer_key, 'CUSTOMER_ALIAS_PTC_009');
+    assert.equal(kepianPayload.currency, 'CNY');
+    assert.equal(kepianPayload.status_mapping_rule_version, 'status-map-v1.0');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01: D-026 split association check
+// ---------------------------------------------------------------------------
+
+describe('PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01: D-026 split association check', () => {
+  // Scenario: PASS with mix of 客片-Customer and 样片-Model pairs (combined >= 5)
+  it('D-026 PASSes when 客片-Customer + 样片-Model combined pairs >= 5', () => {
+    const classified = [];
+    const sourceByKey = new Map();
+    // 5 MIGRATABLE customers
+    for (let i = 0; i < 5; i++) {
+      const ck = `CUSTOMER_ALIAS_PTC_D026_${i}`;
+      const c = makeCustomer(ck, {});
+      classified.push(makeClassified(ck, 'customer', 'MIGRATABLE'));
+      sourceByKey.set(ck, c);
+    }
+    // 10 MIGRATABLE models (D-026 threshold is 10)
+    for (let i = 0; i < 10; i++) {
+      const mk = `MODEL_ALIAS_PTC_D026_${i}`;
+      const m = { record_key: mk, entity_type: 'model', fields: {} };
+      classified.push(makeClassified(mk, 'model', 'MIGRATABLE'));
+      sourceByKey.set(mk, m);
+    }
+    // 3 客片 projects (each linking to a customer) + 2 样片 projects (each linking to a model)
+    for (let i = 0; i < 3; i++) {
+      const ck = `CUSTOMER_ALIAS_PTC_D026_${i}`;
+      const pk = `PROJECT_ALIAS_PTC_D026_KP_${i}`;
+      const p = makeProject(pk, {
+        project_type_raw: '客片',
+        linked_customer_key: ck,
+      });
+      classified.push(makeClassified(pk, 'project', 'MIGRATABLE'));
+      sourceByKey.set(pk, p);
+    }
+    for (let i = 0; i < 2; i++) {
+      const mk = `MODEL_ALIAS_PTC_D026_${i}`;
+      const pk = `PROJECT_ALIAS_PTC_D026_YP_${i}`;
+      const p = makeProject(pk, {
+        project_type_raw: '创作', // V1 for 样片
+        linked_customer_key: null,
+        linked_model_key: mk,
+      });
+      classified.push(makeClassified(pk, 'project', 'MIGRATABLE'));
+      sourceByKey.set(pk, p);
+    }
+    // 10 MIGRATABLE makeups
+    for (let i = 0; i < 10; i++) {
+      const mk2 = `MAKEUP_ALIAS_PTC_D026_${i}`;
+      const m2 = { record_key: mk2, entity_type: 'makeup', fields: {} };
+      classified.push(makeClassified(mk2, 'makeup', 'MIGRATABLE'));
+      sourceByKey.set(mk2, m2);
+    }
+    const result = evaluateD026Threshold(classified, sourceByKey);
+    assert.equal(result.project_association_check.kepian_customer_pairs, 3);
+    assert.equal(result.project_association_check.yangpian_model_pairs, 2);
+    assert.equal(result.project_association_check.combined_pairs, 5);
+    assert.equal(result.project_association_check.met, true);
+    assert.equal(result.entity_type_correctness_check.actual_mismatches, 0);
+    assert.equal(result.entity_type_correctness_check.met, true);
+    assert.equal(result.all_thresholds_met, true);
+    assert.match(result.judgement, /^PASS/);
+  });
+
+  // Scenario: 样片 projects pass even without any Customer link
+  it('D-026 样片 projects pass association check without any Customer link (Customer optional)', () => {
+    const classified = [];
+    const sourceByKey = new Map();
+    // 5 MIGRATABLE customers (still required for customer threshold >= 5)
+    for (let i = 0; i < 5; i++) {
+      const ck = `CUSTOMER_ALIAS_PTC_NO_CUST_${i}`;
+      const c = makeCustomer(ck, {});
+      classified.push(makeClassified(ck, 'customer', 'MIGRATABLE'));
+      sourceByKey.set(ck, c);
+    }
+    // 10 MIGRATABLE models (D-026 threshold is 10)
+    for (let i = 0; i < 10; i++) {
+      const mk = `MODEL_ALIAS_PTC_NO_CUST_${i}`;
+      const m = { record_key: mk, entity_type: 'model', fields: {} };
+      classified.push(makeClassified(mk, 'model', 'MIGRATABLE'));
+      sourceByKey.set(mk, m);
+    }
+    // 5 样片 projects, each linking to a Model, none linking to Customer
+    for (let i = 0; i < 5; i++) {
+      const mk = `MODEL_ALIAS_PTC_NO_CUST_${i}`;
+      const pk = `PROJECT_ALIAS_PTC_NO_CUST_${i}`;
+      const p = makeProject(pk, {
+        project_type_raw: '创作',
+        linked_customer_key: null, // no Customer link at all
+        linked_model_key: mk,
+      });
+      classified.push(makeClassified(pk, 'project', 'MIGRATABLE'));
+      sourceByKey.set(pk, p);
+    }
+    for (let i = 0; i < 10; i++) {
+      const mk2 = `MAKEUP_ALIAS_PTC_NO_CUST_${i}`;
+      const m2 = { record_key: mk2, entity_type: 'makeup', fields: {} };
+      classified.push(makeClassified(mk2, 'makeup', 'MIGRATABLE'));
+      sourceByKey.set(mk2, m2);
+    }
+    const result = evaluateD026Threshold(classified, sourceByKey);
+    assert.equal(result.project_association_check.kepian_customer_pairs, 0);
+    assert.equal(result.project_association_check.yangpian_model_pairs, 5);
+    assert.equal(result.project_association_check.combined_pairs, 5);
+    assert.equal(result.project_association_check.met, true);
+    assert.equal(result.all_thresholds_met, true);
+    assert.match(result.judgement, /^PASS/);
   });
 });
