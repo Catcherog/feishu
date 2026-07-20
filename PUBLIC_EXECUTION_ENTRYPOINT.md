@@ -2,12 +2,12 @@
 
 > Repository: `https://github.com/Catcherog/feishu`
 > Branch: `master`
-> Current execution state: `PHASE_R6_READ_ONLY_DRY_RUN_REVIEW_PENDING`
+> Current execution state: `PHASE_R6_CLOSED_WITH_DEBT`
 > Current gate: `R6`
 > R4 audit status: `R4_INDEPENDENTLY_VERIFIED_PASS` (GPT 2026-07-18, `MVP_PASS_WITH_DEBT`)
 > R5 audit status: `R5_INDEPENDENTLY_VERIFIED_PASS` (GPT 2026-07-18 third fix batch review, `MVP_PASS_WITH_DEBT`; P1 scanner debt closed in R6 batch)
-> R6 audit status: `R6_REVIEW_PENDING` (R6 read-only Dry Run completed; awaiting GPT independent review)
-> Migration pilot: `NOT_APPROVED`
+> R6 audit status: `R6_PASS_WITH_DEBT` (R6 closed 2026-07-20; 3 debts registered: D-026 candidate shortfall / view filter-sort / no CI; R6 code audit loop CLOSED — MUST NOT be reopened)
+> Migration pilot: `NOT_APPROVED` (`pilot_readiness=NOT_READY` — D-026 candidate pool insufficient, see `reports/PILOT_READINESS_PACKET.md`)
 > Current HEAD at R5 main batch closeout: `3df9fc5da09c751f28629d053951a50374138dda`
 > R5 first fix main commit: `82d98866686d4b0f502ad450b34177ab9a770335`（P0-1/P0-2/P0-3 主体修复）
 > R5 first fix backfill commit: `672ed78640895e6a01f294c15d9b82ad270b60be`（SHA backfill for R5 first fix batch）
@@ -409,6 +409,153 @@ After the R6 minimum final fix batch (`e1d1086` main + SHA backfill commit `e443
 - Parent-child chain: `git show -s --format=%P 1b592ee` returns `e443a14...` (parent = R6 minimum final fix backfill commit, baseline of this batch). Chain: `... → e1d1086 (R6 minimum final fix main) → e443a14 (R6 minimum final fix backfill, baseline) → 1b592ee (R6 minimum final fix 02 main, actual SHA backfilled) → <backfill_commit> (R6 minimum final fix 02 backfill, NOT_EMBEDDED)`.
 
 Control plane remains `R6_REVIEW_PENDING`. `MIGRATION_PILOT_001` remains `NOT_APPROVED`. `stop_after_completion=true`. R6 minimum final fix 02 main commit SHA (`1b592eee453aaa7d1f619afc743e7c83ac0a22a1`, backfilled from `PENDING_BACKFILL_02` placeholder) and backfill commit SHA (`NOT_EMBEDDED`) follow the same non-self-reference convention as the R6 minimum final fix batch. No history rewrite, no force push, no real-data processing, no Feishu write API calls.
+
+## 3.10 R6 Closeout — control plane advancement to PASS_WITH_DEBT (2026-07-20)
+
+Per user task `R6-CLOSEOUT-AND-PILOT-READINESS` Phase A, R6 audit loop was control-plane closed on 2026-07-20. **After this batch, R6 code audit loop is CLOSED and MUST NOT be reopened.** Any further R6 code changes require a new user-issued task and a separate audit gate (not a re-opening of R6).
+
+### 3.10.1 Scope of Phase A
+
+Phase A is **control plane only** — no code modifications, no new test cases, no audit package regeneration. Only control files (`config/public-execution-manifest.json` + this file) and new Phase B reports were touched.
+
+### 3.10.2 Control plane state transition
+
+| Field | Before | After |
+|---|---|---|
+| `audit_status` | `R6_REVIEW_PENDING` | `R6_PASS_WITH_DEBT` |
+| `gate_status.R6` | `REVIEW_PENDING` | `PASS_WITH_DEBT` |
+| `current_phase` | `PHASE_R6_READ_ONLY_DRY_RUN` | `PHASE_R6_CLOSED_WITH_DEBT` |
+| `migration_pilot_status` | `NOT_APPROVED` | `NOT_APPROVED` (unchanged) |
+| `pilot_readiness` | _(absent)_ | `NOT_READY` (new field) |
+| `stop_after_completion` | `true` | `true` (unchanged) |
+
+### 3.10.3 R6 debt register
+
+Three debts registered in `manifest.r6_debt_register` at closeout:
+
+| ID | Description | Blocks pilot? | Resolution path |
+|---|---|---|---|
+| R6-DEBT-01 | D-026 quantity threshold not met — candidate pool insufficient (customer 0/5, project 0/5, model 3/10, makeup 5/10, project_association 0/5). | **Yes** | User decision required (V1 data enrichment / manual selection / defer pilot). See `reports/PILOT_READINESS_PACKET.md` Section 6. |
+| R6-DEBT-02 | View filter/sort configuration not applied on V2 test Base — `lark-cli +view-create` does not support filter/sort parameters. | **Yes** | Choose plan A/B/C in `reports/r6-views-filter-sort-status.md` Section 4 before `MIGRATION_PILOT_001` start. |
+| R6-DEBT-03 | No CI pipeline — verification commands documented but not automated in CI. | No | Add CI workflow before or after `MIGRATION_PILOT_001`; not a pilot blocker but recommended for production-grade verification. |
+
+### 3.10.4 Phase A commit chain
+
+- Baseline HEAD at start of this batch = `5a7ff7e7d9ebfc8d363944334a0a67ed24347b37` (R6 minimum final fix 02 backfill commit).
+- Main-fix commit SHA: `PENDING_BACKFILL_CLOSEOUT` placeholder — will be replaced by actual SHA in subsequent backfill commit.
+- Backfill commit SHA: `NOT_EMBEDDED` (per non-self-reference convention; independently verifiable via `git rev-parse HEAD` after push).
+- Parent chain: `git show -s --format=%P <main_fix_closeout_commit>` returns `5a7ff7e...` (parent = R6 minimum final fix 02 backfill commit, baseline of this batch).
+
+### 3.10.5 Files changed in this batch (Phase A + Phase B)
+
+| File | Operation | Source |
+|---|---|---|
+| `config/public-execution-manifest.json` | Modified | Phase A (control plane advancement + debt register + revision_history entry) |
+| `PUBLIC_EXECUTION_ENTRYPOINT.md` | Modified | Phase A (header updates + this Section 3.10 + Section 3.11) |
+| `reports/PILOT_READINESS_PACKET.md` | New | Phase B (PILOT_READINESS_PACKET with NOT_READY status) |
+| `reports/r6-closeout-candidate-pool-summary.json` | New | Phase B (script-generated public summary, anonymized aggregates only) |
+| `reports/r6-closeout-quantity-threshold-judgement.json` | New | Phase B (D-026 evaluator output for candidate pool) |
+
+### 3.10.6 Acceptance Criteria mapping (Phase A only)
+
+- **AC-01** R6 已控制面关闭: **PASS** — `audit_status` and `gate_status.R6` advanced to `PASS_WITH_DEBT`; 3 debts registered in `r6_debt_register`. R6 code audit loop CLOSED per user task Phase A item 5.
+
+### 3.10.7 Phase A verification evidence
+
+- No code modifications → no test suite re-run required. Existing 149 PASS test suite (58 classifier + 68 projection/evaluator + 20 scanner + 3 schema_diff) remains valid and unchanged.
+- Security scan results (tracked + staged): see Section 3.10.8 below.
+
+### 3.10.8 Security scan results for this batch
+
+- `python scripts/verify_public_repo.py` against tracked files (post-commit): `S0=0 S1=0 S2=0`, exit 0.
+- `python scripts/verify_public_repo.py --staged` against staged 5 files (3 new public reports + 2 modified control files): `S0=0 S1=0 S2=0`, exit 0.
+- All 3 new public reports (`PILOT_READINESS_PACKET.md`, `r6-closeout-candidate-pool-summary.json`, `r6-closeout-quantity-threshold-judgement.json`) contain only aggregate counts, shortfall numbers, and field-name lists — no `record_id`, `name`, `phone`, `wechat`, or other PII.
+
+## 3.11 PILOT_READINESS_PACKET summary (Phase B, 2026-07-20)
+
+Per user task `R6-CLOSEOUT-AND-PILOT-READINESS` Phase B, a minimal candidate pool selection was attempted by read-only rerun of the classifier + D-026 evaluator on the existing private classification input (304 cases: 36 customer + 47 project + 106 model + 115 makeup).
+
+### 3.11.1 Execution method
+
+- Script: `src/scripts/temp/r6_closeout_candidate_pool.js` (TEMP, gitignored, expires 2026-07-23).
+- Inputs: `backups/private/classification-input.private.json` (gitignored, 304 private V1 records) + existing `classifyBatch` (no code changes) + existing `evaluateD026Threshold` (no code changes).
+- Outputs:
+  - Public: `reports/r6-closeout-candidate-pool-summary.json` + `reports/r6-closeout-quantity-threshold-judgement.json` + `reports/PILOT_READINESS_PACKET.md`.
+  - Private: `backups/private/r6-closeout-candidate-pool.private.json` (gitignored, contains `record_key` + alias for cross-reference).
+- No V2 writes. No Feishu write API calls. No code changes. No new tests.
+
+### 3.11.2 Target counts vs available vs selected
+
+| Entity | Target | Available MIGRATABLE | Selected | Shortfall (vs target) |
+|---|---:|---:|---:|---:|
+| Customer | 8 | 0 | 0 | 8 |
+| Project | 8 | 0 | 0 | 8 |
+| Model | 10 | 3 | 3 | 7 |
+| Makeup | 8 | 5 | 5 | 3 |
+| **Project-Customer association** | 5 | 0 | 0 | 5 |
+
+### 3.11.3 D-026 threshold judgement (candidate pool)
+
+Per `reports/r6-closeout-quantity-threshold-judgement.json` (schema `r6-quantity-threshold-judgement-v1.1`, D-026 reference):
+
+- `all_thresholds_met`: **false**
+- `judgement`: **FAIL — One or more D-026 thresholds not met. `MIGRATION_PILOT_001` MUST NOT start.**
+- Per-entity:
+  - customer: required 5, actual 0, threshold_met=false, shortfall=5
+  - project: required 5, actual 0, threshold_met=false, shortfall=5
+  - model: required 10, actual 3, threshold_met=false, shortfall=7
+  - makeup: required 10, actual 5, threshold_met=false, shortfall=5
+- `project_association_check`: required 5, actual 0, met=false, shortfall=5
+
+### 3.11.4 Root cause of shortfall (V1 data field gaps, not code bugs)
+
+Phase B Stop Condition 1 was triggered (candidate insufficient → report shortfall, no full cleanup expansion). Root cause analysis from `reports/r6-closeout-candidate-pool-summary.json`:
+
+| Reason code | Customer count | Project count | Likely missing field |
+|---|---:|---:|---|
+| MISSING_NAME | 23 | 25 | `name` |
+| MISSING_IDENTITY | 11 | 0 | identity fields (phone/wechat/id) |
+| ORPHAN_PROJECT | 0 | 22 | `linked_customer_key` |
+| (other BLOCKED reasons) | 0 | 0 | — |
+| **MIGRATABLE** | **0** | **0** | — |
+
+The classifier logic and D-026 evaluator both functioned correctly (Scenario A in `tests/migration-projection.test.js` confirms the happy path passes when sufficient MIGRATABLE records exist). The shortfall is purely a V1 data quality issue, not a code defect.
+
+### 3.11.5 Recommended next-step paths (not auto-executed)
+
+Per `reports/PILOT_READINESS_PACKET.md` Section 6, four paths are documented for user decision:
+
+- **Plan A (recommended)**: Supplement V1 source data with the missing `name` / `identity` / `linked_customer_key` fields, then rerun the Phase B candidate pool script. This is the only path that produces real MIGRATABLE candidates and preserves the audit trail.
+- **Plan B (not recommended)**: Relax classifier rules to treat MISSING_NAME / MISSING_IDENTITY as NEEDS_REVIEW instead of BLOCKED. This would inflate MIGRATABLE counts but violates D-020 / D-021 / D-025 invariants and breaks R5 acceptance.
+- **Plan C**: Manually select 5+5+10+10 records by hand from the V1 export, bypassing the classifier. Acceptable for a one-shot pilot but loses reproducibility.
+- **Plan D**: Defer `MIGRATION_PILOT_001` entirely until V1 data quality is addressed at the source.
+
+### 3.11.6 Acceptance Criteria mapping (Phase B)
+
+| AC | Status | Evidence |
+|---|---|---|
+| AC-02 Customer MIGRATABLE >= 5 | **FAIL** | actual 0, shortfall 5 |
+| AC-03 Project MIGRATABLE >= 5 | **FAIL** | actual 0, shortfall 5 |
+| AC-04 valid Project-Customer association >= 5 | **FAIL** | actual 0, shortfall 5 |
+| AC-05 Model MIGRATABLE >= 10 | **FAIL** | actual 3, shortfall 7 |
+| AC-06 Makeup MIGRATABLE >= 10 | **FAIL** | actual 5, shortfall 5 |
+| AC-07 Public evidence no PII | **PASS** | public summary + threshold judgement contain only aggregate counts and field-name lists; no `record_id` / `name` / `phone` / `wechat`. |
+| AC-08 `MIGRATION_PILOT_001` not started | **PASS** | `migration_pilot_status` remains `NOT_APPROVED`; `pilot_readiness=NOT_READY`. |
+
+### 3.11.7 Overall acceptance for `R6-CLOSEOUT-AND-PILOT-READINESS`
+
+3/8 AC PASS (AC-01, AC-07, AC-08). 5/8 AC FAIL (AC-02 through AC-06) due to V1 data field gaps documented in Section 3.11.4. Per task Stop Conditions, candidate-insufficient case stops here — no full cleanup expansion, no intermediate GPT audit package, no real Pilot start. The PILOT_READINESS_PACKET status is **NOT_READY**.
+
+### 3.11.8 Stop conditions triggered
+
+- **Stop Condition 1** (candidate insufficient → report shortfall, no full cleanup expansion): **TRIGGERED**. See Section 3.11.4 root cause analysis.
+- Stop Condition 2 (D-026 met → stop after generating PILOT_READINESS_PACKET): not applicable (D-026 not met).
+- Stop Condition 3 (no intermediate GPT audit package): **OBEYED** — no intermediate audit package generated in this batch.
+- Stop Condition 4 (no real Pilot start): **OBEYED** — `MIGRATION_PILOT_001` remains `NOT_APPROVED`.
+
+### 3.11.9 Next owner
+
+**USER**. The 5 failing ACs cannot be resolved by Trae without (a) V1 source data enrichment, (b) classifier rule relaxation (not recommended, breaks R5), or (c) manual selection override. User must select one of the four paths in Section 3.11.5 before `MIGRATION_PILOT_001` can proceed.
 
 ## 4. Approved work
 

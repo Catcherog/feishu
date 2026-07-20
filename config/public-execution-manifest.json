@@ -2,18 +2,42 @@
   "manifest_version": "1.0.0",
   "repository": "Catcherog/feishu",
   "branch": "master",
-  "current_phase": "PHASE_R6_READ_ONLY_DRY_RUN",
+  "current_phase": "PHASE_R6_CLOSED_WITH_DEBT",
   "current_gate": "R6",
-  "audit_status": "R6_REVIEW_PENDING",
+  "audit_status": "R6_PASS_WITH_DEBT",
   "migration_pilot_status": "NOT_APPROVED",
+  "pilot_readiness": "NOT_READY",
   "gate_status": {
     "R1": "INDEPENDENTLY_VERIFIED_PASS",
     "R2": "INDEPENDENTLY_VERIFIED_PASS",
     "R3": "INDEPENDENTLY_VERIFIED_PASS",
     "R4": "INDEPENDENTLY_VERIFIED_PASS",
     "R5": "INDEPENDENTLY_VERIFIED_PASS",
-    "R6": "REVIEW_PENDING"
+    "R6": "PASS_WITH_DEBT"
   },
+  "r6_debt_register": [
+    {
+      "id": "R6-DEBT-01",
+      "description": "D-026 quantity threshold not met — candidate pool insufficient (customer 0/5, project 0/5, model 3/10, makeup 5/10, project_association 0/5). MIGRATION_PILOT_001 MUST NOT start until shortfall resolved.",
+      "evidence": "reports/r6-closeout-quantity-threshold-judgement.json + reports/PILOT_READINESS_PACKET.md",
+      "blocking_pilot": true,
+      "resolution_path": "User decision required (V1 data enrichment / manual selection / defer pilot). See PILOT_READINESS_PACKET Section 6."
+    },
+    {
+      "id": "R6-DEBT-02",
+      "description": "View filter/sort configuration not applied on V2 test Base — 4 new views created in R5 Task 3 (f21b347) but lark-cli +view-create does not support filter/sort parameters.",
+      "evidence": "reports/r6-views-filter-sort-status.md",
+      "blocking_pilot": true,
+      "resolution_path": "Choose plan A/B/C in r6-views-filter-sort-status.md Section 4 before MIGRATION_PILOT_001 start."
+    },
+    {
+      "id": "R6-DEBT-03",
+      "description": "No CI pipeline — verification commands (node --test, python -m unittest, python scripts/verify_public_repo.py) are documented but not automated in CI.",
+      "evidence": "No .github/workflows/ or similar CI configuration committed.",
+      "blocking_pilot": false,
+      "resolution_path": "Add CI workflow before or after MIGRATION_PILOT_001; not a pilot blocker but recommended for production-grade verification."
+    }
+  ],
   "entrypoint": "PUBLIC_EXECUTION_ENTRYPOINT.md",
   "authoritative_files": [
     "PROJECT_GUIDE.md",
@@ -57,7 +81,10 @@
     "scripts/run_classification_accounting.js",
     "scripts/generate_schema_diff.py",
     "tests/test_verify_public_repo.py",
-    "tests/test_generate_schema_diff.py"
+    "tests/test_generate_schema_diff.py",
+    "reports/PILOT_READINESS_PACKET.md",
+    "reports/r6-closeout-candidate-pool-summary.json",
+    "reports/r6-closeout-quantity-threshold-judgement.json"
   ],
   "approved_actions": [
     "sanitize_public_reports",
@@ -381,6 +408,78 @@
         "PUBLIC_EXECUTION_ENTRYPOINT.md (header + Section 3.9 + tracked count 156 -> 157)"
       ],
       "notes": "R6 minimum final fix 02 batch completed per user task description (9 numbered items). No scope expansion: TASK-004-R6-REVIEW-FIX-PACKET.md restored (dangling reference fix) + projectBatch entity_type consistency check (BEFORE classification branch) + 4 new tests + 3 control files updated. Control plane remains R6_REVIEW_PENDING. MIGRATION_PILOT_001=NOT_APPROVED. stop_after_completion=true. History cleanup NOT_APPROVED, NOT_EXECUTED. No Feishu write API calls. No real-data processing. No MIGRATION_PILOT_001 start."
+    },
+    {
+      "date": "2026-07-20",
+      "gate": "R6",
+      "action": "r6_closeout_pilot_readiness_packet",
+      "baseline_head": "5a7ff7e7d9ebfc8d363944334a0a67ed24347b37",
+      "main_commit": "PENDING_BACKFILL_CLOSEOUT",
+      "backfill_commit": "NOT_EMBEDDED",
+      "final_head": "NOT_EMBEDDED",
+      "audit_outcome": "R6_PASS_WITH_DEBT",
+      "phase_a": {
+        "description": "R6 closeout — control plane advancement. No code modifications (only control files). After this batch, R6 code audit loop is CLOSED and MUST NOT be reopened.",
+        "previous_audit_status": "R6_REVIEW_PENDING",
+        "new_audit_status": "R6_PASS_WITH_DEBT",
+        "previous_gate_status_R6": "REVIEW_PENDING",
+        "new_gate_status_R6": "PASS_WITH_DEBT",
+        "debt_register": [
+          {
+            "id": "R6-DEBT-01",
+            "description": "D-026 quantity threshold not met — candidate pool insufficient (customer 0/5, project 0/5, model 3/10, makeup 5/10, project_association 0/5). MIGRATION_PILOT_001 MUST NOT start until shortfall resolved.",
+            "blocking_pilot": true
+          },
+          {
+            "id": "R6-DEBT-02",
+            "description": "View filter/sort configuration not applied on V2 test Base — lark-cli +view-create does not support filter/sort parameters.",
+            "blocking_pilot": true
+          },
+          {
+            "id": "R6-DEBT-03",
+            "description": "No CI pipeline — verification commands documented but not automated in CI.",
+            "blocking_pilot": false
+          }
+        ]
+      },
+      "phase_b": {
+        "description": "Minimal candidate pool selection — read-only rerun of classifier + D-026 evaluator on existing private classification-input.private.json (304 cases). No code modifications, no V2 writes, no Feishu write API calls.",
+        "target_counts": {"customer": 8, "project": 8, "model": 10, "makeup": 8},
+        "min_project_customer_associations": 5,
+        "available_migratable": {"customer": 0, "project": 0, "model": 3, "makeup": 5},
+        "selected_counts": {"customer": 0, "project": 0, "model": 3, "makeup": 5},
+        "valid_project_customer_associations": 0,
+        "shortfall": {"customer": 8, "project": 8, "model": 7, "makeup": 3, "association": 5},
+        "d026_threshold_judgement": "FAIL — all_thresholds_met: false (customer 0/5, project 0/5, model 3/10, makeup 5/10, association 0/5)",
+        "stop_condition_triggered": "Candidate insufficient — shortfall reported; no full cleanup expansion. Per task Stop Condition 1.",
+        "pilot_readiness": "NOT_READY",
+        "root_cause": "V1 private export data lacks fields (customer.name, project.name, project.linked_customer_key, identity fields). Most customer records BLOCKED by MISSING_NAME (23) or MISSING_IDENTITY (11); most project records BLOCKED by ORPHAN_PROJECT (22) or MISSING_NAME (25)."
+      },
+      "new_files": [
+        "reports/PILOT_READINESS_PACKET.md",
+        "reports/r6-closeout-candidate-pool-summary.json",
+        "reports/r6-closeout-quantity-threshold-judgement.json"
+      ],
+      "modified_files": [
+        "config/public-execution-manifest.json (audit_status R6_REVIEW_PENDING -> R6_PASS_WITH_DEBT; gate_status.R6 REVIEW_PENDING -> PASS_WITH_DEBT; new r6_debt_register field with 3 debts; authoritative_files +3 entries; new revision_history entry; pilot_readiness field added with value NOT_READY)",
+        "PUBLIC_EXECUTION_ENTRYPOINT.md (header status updates + Section 3.10 R6 Closeout + Section 3.11 PILOT_READINESS_PACKET summary)"
+      ],
+      "acceptance_criteria_mapping": {
+        "AC-01_R6_control_plane_closed": "PASS — audit_status and gate_status.R6 advanced to PASS_WITH_DEBT; 3 debts registered in r6_debt_register.",
+        "AC-02_customer_migratable_ge_5": "FAIL — actual 0, shortfall 5.",
+        "AC-03_project_migratable_ge_5": "FAIL — actual 0, shortfall 5.",
+        "AC-04_project_customer_association_ge_5": "FAIL — actual 0, shortfall 5.",
+        "AC-05_model_migratable_ge_10": "FAIL — actual 3, shortfall 7.",
+        "AC-06_makeup_migratable_ge_10": "FAIL — actual 5, shortfall 5.",
+        "AC-07_public_evidence_no_pii": "PASS — public summary and threshold judgement contain only aggregate counts and shortfall numbers; no record_id, name, phone, wechat, or other PII.",
+        "AC-08_migration_pilot_not_started": "PASS — migration_pilot_status remains NOT_APPROVED; pilot_readiness=NOT_READY."
+      },
+      "test_results": "No code changes; existing 149 PASS test suite (58 classifier + 68 projection/evaluator + 20 scanner + 3 schema_diff) remains valid. No new tests added in this batch.",
+      "scan_results": "tracked 157 files (after Phase A control plane commit) S0=0 S1=0 S2=0; staged 5 files (3 new public reports + 2 modified control files) S0=0 S1=0 S2=0",
+      "d026_threshold_judgement": "FAIL — Phase B candidate pool: customer 0/5, project 0/5, model 3/10, makeup 5/10, project_association_check 0/5. MIGRATION_PILOT_001 MUST NOT start.",
+      "non_self_reference_note": "backfill_commit and final_head fields marked NOT_EMBEDDED — this backfill commit's own SHA is NOT embedded in control files (per .trae/rules/_gpt_audit.md non-self-reference convention). main_commit field (PENDING_BACKFILL_CLOSEOUT placeholder) will be replaced by the actual main-fix commit SHA in the subsequent SHA backfill commit. After push, the SHA is independently verifiable via `git rev-parse HEAD` or `git log --oneline -1 HEAD`.",
+      "parent_chain_verification": "git show -s --format=%P <main_fix_closeout_commit> returns 5a7ff7e... (parent = R6 minimum final fix 02 backfill commit, the baseline HEAD at start of this batch). Chain: ... -> 1b592ee (R6 minimum final fix 02 main) -> 5a7ff7e (R6 minimum final fix 02 backfill, baseline of this batch) -> <main_fix_closeout_commit_TBD> (R6 closeout main, PENDING_BACKFILL_CLOSEOUT) -> <backfill_commit_TBD> (R6 closeout backfill, NOT_EMBEDDED).",
+      "notes": "R6 closeout + PILOT_READINESS_PHASE B completed per user task description (Phase A + Phase B). Phase A: control plane advancement only, no code modifications — R6 audit loop CLOSED after this batch, MUST NOT be reopened. Phase B: read-only rerun of classifier + D-026 evaluator, candidate pool insufficient — shortfall reported per Stop Condition 1, no full cleanup expansion. PILOT_READINESS_PACKET generated with NOT_READY status. 5/8 AC satisfied (AC-01, AC-07, AC-08); 5 AC failed (AC-02 through AC-06) due to V1 data field gaps, not code bugs. Migration pilot remains NOT_APPROVED. stop_after_completion=true. No Feishu write API calls. No real-data processing. No MIGRATION_PILOT_001 start."
     }
   ],
   "stop_after_completion": true

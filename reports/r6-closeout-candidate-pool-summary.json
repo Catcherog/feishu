@@ -1,0 +1,33 @@
+{
+  "schema_version": "r6-closeout-candidate-pool-summary-v1.0",
+  "generated_for": "R6_CLOSEOUT_PILOT_READINESS_PHASE_B",
+  "decision_reference": "D-026 (DECISION_LOG.md) — minimal candidate pool satisfying quantity + association requirements",
+  "target_counts": {
+    "customer": 8,
+    "project": 8,
+    "model": 10,
+    "makeup": 8
+  },
+  "min_project_customer_associations": 5,
+  "selected_counts": {
+    "customer": 0,
+    "project": 0,
+    "model": 3,
+    "makeup": 5
+  },
+  "available_migratable": {
+    "customer": 0,
+    "project": 0,
+    "model": 3,
+    "makeup": 5
+  },
+  "valid_project_customer_associations": 0,
+  "shortfall": {
+    "customer": 8,
+    "project": 8,
+    "model": 7,
+    "makeup": 3,
+    "association": 5
+  },
+  "note": "Aggregate counts only. No real record_id, customer name, phone, wechat, portfolio_url, or PII is disclosed. Aliases are opaque identifiers with no PII."
+}
