@@ -1,11 +1,28 @@
 # PILOT_READINESS_PACKET
 
+> **STATUS: SUPERSEDED (2026-07-21)**
+>
+> The statistics in this packet (customer 0/5, project 0/5, model 3/10, makeup 5/10, association 0/5) are from the R6 closeout (2026-07-20) and are **SUPERSEDED** by the current results of `PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R2`:
+>
+> | Metric | Old (this packet) | Current (R2) |
+> |---|---|---|
+> | Project MIGRATABLE | 0/5 | 1/5 |
+> | 样片 valid Model association | not measured | 0/18 (0%) |
+> | Makeup MIGRATABLE | 5/10 | 9/10 |
+> | Combined correct pairs | 0 | 1 |
+> | P-06~P-08 | not classified | MATCH_NOT_FOUND (3) |
+> | D-026 overall | FAIL | FAIL (unchanged) |
+>
+> This packet is retained for historical reference only. R6 audit loop remains CLOSED (not reopened). The current authoritative state is in `PUBLIC_EXECUTION_ENTRYPOINT.md` Section 4.5 and `config/public-execution-manifest.json` `revision_history[stage_a_code_and_synthetic_verification]`.
+>
+> ---
+
 > **生成时间**：2026-07-20 (Asia/Shanghai)
 > **执行者**：Trae (GLM-5.2)
 > **关联任务**：R6-CLOSEOUT-AND-PILOT-READINESS（用户消息直接下发）
 > **工作仓库**：`feishu-v2/`（Catcherog/feishu）
 > **当前 HEAD**：`5a7ff7e7d9ebfc8d363944334a0a67ed24347b37`（R6 minimum final fix 02 backfill commit，本 packet 基线）
-> **PILOT_READINESS**：`NOT_READY` — 候选集不足，D-026 阈值未满足
+> **PILOT_READINESS**：`NOT_READY` - 候选集不足，D-026 阈值未满足
 
 ---
 

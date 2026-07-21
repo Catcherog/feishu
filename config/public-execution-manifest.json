@@ -1,20 +1,31 @@
 {
-  "manifest_version": "1.0.0",
+  "manifest_version": "1.1.0",
   "repository": "Catcherog/feishu",
   "branch": "master",
-  "current_phase": "PHASE_R6_CLOSED_WITH_DEBT",
-  "current_gate": "R6",
+  "current_phase": "PHASE_PILOT_VERTICAL_SLICE_STAGE_A",
+  "current_gate": "PILOT_VERTICAL_SLICE",
   "audit_status": "R6_PASS_WITH_DEBT",
   "migration_pilot_status": "NOT_APPROVED",
   "pilot_readiness": "NOT_READY",
+  "pilot_vertical_slice_status": "CODE_READY",
+  "pilot_vertical_slice_stage": "A",
   "gate_status": {
     "R1": "INDEPENDENTLY_VERIFIED_PASS",
     "R2": "INDEPENDENTLY_VERIFIED_PASS",
     "R3": "INDEPENDENTLY_VERIFIED_PASS",
     "R4": "INDEPENDENTLY_VERIFIED_PASS",
     "R5": "INDEPENDENTLY_VERIFIED_PASS",
-    "R6": "PASS_WITH_DEBT"
+    "R6": "PASS_WITH_DEBT",
+    "PILOT_VERTICAL_SLICE": "CODE_READY"
   },
+  "pilot_vertical_slice_states": [
+    "NOT_STARTED",
+    "CODE_READY",
+    "READY_FOR_ISOLATED_WRITE",
+    "PASS",
+    "FAIL",
+    "PARTIAL_PASS"
+  ],
   "r6_debt_register": [
     {
       "id": "R6-DEBT-01",
@@ -84,7 +95,13 @@
     "tests/test_generate_schema_diff.py",
     "reports/PILOT_READINESS_PACKET.md",
     "reports/r6-closeout-candidate-pool-summary.json",
-    "reports/r6-closeout-quantity-threshold-judgement.json"
+    "reports/r6-closeout-quantity-threshold-judgement.json",
+    "src/migration/pilot/index.js",
+    "src/migration/pilot/writer.js",
+    "src/migration/pilot/reader.js",
+    "src/migration/pilot/cleanup.js",
+    "src/migration/pilot/idempotency.js",
+    "tests/pilot-vertical-slice.test.js"
   ],
   "approved_actions": [
     "sanitize_public_reports",
@@ -97,12 +114,24 @@
     "apply_v1_1_delta_to_test_base",
     "validate_v1_1_fields",
     "run_read_only_dry_run",
-    "generate_gpt_audit_package"
+    "generate_gpt_audit_package",
+    "prepare_pilot_vertical_slice",
+    "implement_pilot_write_adapter",
+    "run_pilot_synthetic_tests",
+    "write_isolated_pilot_migratable_records",
+    "read_back_isolated_pilot_records",
+    "verify_pilot_idempotency",
+    "cleanup_isolated_pilot_records_by_exact_id"
   ],
   "prohibited_actions": [
     "start_migration_pilot_001",
     "write_needs_review_records",
     "write_blocked_records",
+    "write_match_not_found_records",
+    "write_ambiguous_match_records",
+    "write_production_v2_base",
+    "auto_expand_pilot_batch",
+    "lower_d026_threshold",
     "delete_old_base_records",
     "switch_app_to_v2",
     "enable_production_automation",
@@ -110,9 +139,17 @@
     "commit_real_feishu_identifiers",
     "auto_continue_after_gate",
     "silently_fix_schema_view_drift",
-    "auto_continue_to_r3"
+    "auto_continue_to_r3",
+    "reopen_r6_audit_loop"
   ],
-  "required_gate_order": ["R1", "R2", "R3", "R4", "R5", "R6"],
+  "required_gate_order": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6"
+  ],
   "private_only_patterns": [
     "config/*.local.*",
     "backups/private/**",
@@ -172,7 +209,12 @@
       "action": "v11_field_validation_submission",
       "task_packet": "docs/ai/tasks/TASK-003-R5-V11-FIELD-VALIDATION-PACKET.md",
       "baseline_head": "82365a0436aff554e8f7bd5318518caeab993208",
-      "commits": ["7051a7f", "c3d7e87", "f21b347", "9b63e8b"],
+      "commits": [
+        "7051a7f",
+        "c3d7e87",
+        "f21b347",
+        "9b63e8b"
+      ],
       "audit_outcome": "PENDING_REVIEW",
       "target_base_alias": "V2_PILOT_BASE_ALIAS",
       "schema_delta_applied": {
@@ -213,7 +255,10 @@
       "gate": "R5",
       "action": "r5_first_fix_batch_submission",
       "baseline_head": "3df9fc5da09c751f28629d053951a50374138dda",
-      "commits": ["82d9886", "672ed78"],
+      "commits": [
+        "82d9886",
+        "672ed78"
+      ],
       "final_head": "672ed78640895e6a01f294c15d9b82ad270b60be",
       "fix_packet": "docs/ai/tasks/TASK-003-R5-REVIEW-FIX-PACKET.md",
       "audit_outcome": "PENDING_REVIEW",
@@ -229,7 +274,10 @@
       "gate": "R5",
       "action": "r5_second_fix_batch_submission",
       "baseline_head": "672ed78640895e6a01f294c15d9b82ad270b60be",
-      "commits": ["8dcd9fd", "13dee71"],
+      "commits": [
+        "8dcd9fd",
+        "13dee71"
+      ],
       "final_head": "13dee7175f99e3c0577aa8267ad0e1440f4ebaf3",
       "audit_outcome": "PENDING_REVIEW",
       "fixes_applied": [
@@ -246,7 +294,10 @@
       "gate": "R5",
       "action": "r5_third_fix_batch_submission",
       "baseline_head": "13dee7175f99e3c0577aa8267ad0e1440f4ebaf3",
-      "commits": ["ea18cb6", "8448e9b"],
+      "commits": [
+        "ea18cb6",
+        "8448e9b"
+      ],
       "final_head": "8448e9ba74d792f5b227cf78c3399d1253ebe4c6",
       "audit_outcome": "PENDING_REVIEW",
       "fixes_applied": [
@@ -444,12 +495,33 @@
       },
       "phase_b": {
         "description": "Minimal candidate pool selection — read-only rerun of classifier + D-026 evaluator on existing private classification-input.private.json (304 cases). No code modifications, no V2 writes, no Feishu write API calls.",
-        "target_counts": {"customer": 8, "project": 8, "model": 10, "makeup": 8},
+        "target_counts": {
+          "customer": 8,
+          "project": 8,
+          "model": 10,
+          "makeup": 8
+        },
         "min_project_customer_associations": 5,
-        "available_migratable": {"customer": 0, "project": 0, "model": 3, "makeup": 5},
-        "selected_counts": {"customer": 0, "project": 0, "model": 3, "makeup": 5},
+        "available_migratable": {
+          "customer": 0,
+          "project": 0,
+          "model": 3,
+          "makeup": 5
+        },
+        "selected_counts": {
+          "customer": 0,
+          "project": 0,
+          "model": 3,
+          "makeup": 5
+        },
         "valid_project_customer_associations": 0,
-        "shortfall": {"customer": 8, "project": 8, "model": 7, "makeup": 3, "association": 5},
+        "shortfall": {
+          "customer": 8,
+          "project": 8,
+          "model": 7,
+          "makeup": 3,
+          "association": 5
+        },
         "d026_threshold_judgement": "FAIL — all_thresholds_met: false (customer 0/5, project 0/5, model 3/10, makeup 5/10, association 0/5)",
         "stop_condition_triggered": "Candidate insufficient — shortfall reported; no full cleanup expansion. Per task Stop Condition 1.",
         "pilot_readiness": "NOT_READY",
@@ -479,8 +551,60 @@
       "d026_threshold_judgement": "FAIL — Phase B candidate pool: customer 0/5, project 0/5, model 3/10, makeup 5/10, project_association_check 0/5. MIGRATION_PILOT_001 MUST NOT start.",
       "non_self_reference_note": "backfill_commit and final_head fields marked NOT_EMBEDDED — this backfill commit's own SHA is NOT embedded in control files (per .trae/rules/_gpt_audit.md non-self-reference convention). main_commit field is the actual R6 closeout main-fix commit SHA (14e80765f078b72215605f5bc182f481aee7be02, was PENDING_BACKFILL_CLOSEOUT placeholder in the main-fix commit; replaced by actual SHA in this subsequent SHA backfill commit). After push, the backfill SHA is independently verifiable via `git rev-parse HEAD` or `git log --oneline -1 HEAD`.",
       "parent_chain_verification": "git show -s --format=%P 14e8076 returns 5a7ff7e... (parent = R6 minimum final fix 02 backfill commit, the baseline HEAD at start of this batch). Chain: ... -> 1b592ee (R6 minimum final fix 02 main) -> 5a7ff7e (R6 minimum final fix 02 backfill, baseline of this batch) -> 14e8076 (R6 closeout main, actual SHA backfilled in this commit) -> <backfill_commit_TBD> (R6 closeout backfill, NOT_EMBEDDED).",
-      "notes": "R6 closeout + PILOT_READINESS_PHASE B completed per user task description (Phase A + Phase B). Phase A: control plane advancement only, no code modifications — R6 audit loop CLOSED after this batch, MUST NOT be reopened. Phase B: read-only rerun of classifier + D-026 evaluator, candidate pool insufficient — shortfall reported per Stop Condition 1, no full cleanup expansion. PILOT_READINESS_PACKET generated with NOT_READY status. 3/8 AC satisfied (AC-01, AC-07, AC-08); 5 AC failed (AC-02 through AC-06) due to V1 data field gaps, not code bugs. Migration pilot remains NOT_APPROVED. stop_after_completion=true. No Feishu write API calls. No real-data processing. No MIGRATION_PILOT_001 start."
+      "notes": "R6 closeout + PILOT_READINESS_PHASE B completed per user task description (Phase A + Phase B). Phase A: control plane advancement only, no code modifications - R6 audit loop CLOSED after this batch, MUST NOT be reopened. Phase B: read-only rerun of classifier + D-026 evaluator, candidate pool insufficient - shortfall reported per Stop Condition 1, no full cleanup expansion. PILOT_READINESS_PACKET generated with NOT_READY status. 3/8 AC satisfied (AC-01, AC-07, AC-08); 5 AC failed (AC-02 through AC-06) due to V1 data field gaps, not code bugs. Migration pilot remains NOT_APPROVED. stop_after_completion=true. No Feishu write API calls. No real-data processing. No MIGRATION_PILOT_001 start. [SUPERSEDED: PILOT_READINESS_PACKET statistics here are from R6 closeout (2026-07-20) and are SUPERSEDED by PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R2 current results: project MIGRATABLE=1, 样片 Model 0/18, makeup 9/10, combined_pairs 1. See PILOT_VERTICAL_SLICE Stage A revision_history entry below.]"
+    },
+    {
+      "date": "2026-07-21",
+      "gate": "PILOT_VERTICAL_SLICE",
+      "action": "stage_a_code_and_synthetic_verification",
+      "task_packet": "MIGRATION-VERTICAL-SLICE-ACCELERATION-01-R1",
+      "baseline_head": "fc3e910",
+      "main_commit": "PENDING_BACKFILL_STAGE_A",
+      "backfill_commit": "NOT_EMBEDDED",
+      "final_head": "NOT_EMBEDDED",
+      "audit_outcome": "PENDING_REVIEW",
+      "scope": [
+        "manifest version 1.0.0 -> 1.1.0: added pilot_vertical_slice_status, pilot_vertical_slice_stage, gate_status.PILOT_VERTICAL_SLICE, pilot_vertical_slice_states enum",
+        "approved_actions +7 new pilot-vertical-slice actions (prepare_pilot_vertical_slice, implement_pilot_write_adapter, run_pilot_synthetic_tests, write_isolated_pilot_migratable_records, read_back_isolated_pilot_records, verify_pilot_idempotency, cleanup_isolated_pilot_records_by_exact_id)",
+        "prohibited_actions +6 new (write_match_not_found_records, write_ambiguous_match_records, write_production_v2_base, auto_expand_pilot_batch, lower_d026_threshold, reopen_r6_audit_loop)",
+        "authoritative_files +6 new pilot adapter files (src/migration/pilot/{index,writer,reader,cleanup,idempotency}.js + tests/pilot-vertical-slice.test.js)",
+        "Implemented 4 Pilot adapter modules with fail-closed semantics. No real Feishu API calls - all I/O via injected transport functions.",
+        "writer.js: A-01 rejects non-MIGRATABLE, A-02 fails closed on missing config, A-03 rejects production V2 token, A-04 returns record_id, A-05 idempotency",
+        "reader.js: A-06 read-back diff with CRITICAL severity for idempotency_key mismatch",
+        "cleanup.js: A-07 exact record_id only, A-08 partial failure structured report",
+        "idempotency.js: SHA-256(legacy_source + legacy_record_id + target_entity_type + rule_version)"
+      ],
+      "new_files": [
+        "src/migration/pilot/index.js",
+        "src/migration/pilot/writer.js",
+        "src/migration/pilot/reader.js",
+        "src/migration/pilot/cleanup.js",
+        "src/migration/pilot/idempotency.js",
+        "tests/pilot-vertical-slice.test.js"
+      ],
+      "modified_files": [
+        "config/public-execution-manifest.json (manifest_version 1.1.0; new gate + actions + authoritative_files + this entry)",
+        "PUBLIC_EXECUTION_ENTRYPOINT.md (header + Section 4 PILOT_VERTICAL_SLICE Stage A)"
+      ],
+      "test_results": "58 classifier + 95 projection/evaluator + 35 pilot-vertical-slice + 20 scanner + 3 schema_diff = 211 PASS",
+      "d026_threshold_judgement": "UNCHANGED - FAIL (project MIGRATABLE=1/5, 样片 Model 完整率 0/18, makeup 9/10, combined_pairs 1 < 5). MIGRATION_PILOT_001 MUST NOT start.",
+      "stage_a_acceptance_criteria_mapping": {
+        "A-01_non_migratable_rejected": "PASS - writer.writeRecord throws on NEEDS_REVIEW/BLOCKED",
+        "A-02_missing_pilot_config_fail_closed": "PASS - createPilotWriter throws on missing pilot_base_token/production_v2_base_token/table_ids/transport",
+        "A-03_production_v2_token_rejected": "PASS - createPilotWriter throws when pilot_base_token === production_v2_base_token or forbidden alias",
+        "A-04_write_returns_record_id": "PASS - writeRecord returns {record_id, idempotency_key, status:CREATED}; throws if no record_id",
+        "A-05_idempotency_no_duplicate": "PASS - second write returns DUPLICATE_SKIPPED; writeBatch deduplicates",
+        "A-06_readback_diff_detects_mismatch": "PASS - VERIFIED/MISMATCH/NOT_FOUND + CRITICAL severity for idempotency_key mismatch",
+        "A-07_cleanup_exact_record_id_only": "PASS - requires exact record_id + reason; no fuzzy delete",
+        "A-08_partial_failure_structured_report": "PASS - writeBatch/deleteBatch continue on failure; populate cleanup_pending",
+        "A-09_d026_remains_fail": "PASS - no D-026 evaluator changes; D-026 FAIL unchanged",
+        "A-10_migration_pilot_001_not_approved": "PASS - migration_pilot_status remains NOT_APPROVED; PILOT_VERTICAL_SLICE is separate gate"
+      },
+      "non_self_reference_note": "main_commit is PENDING_BACKFILL_STAGE_A placeholder; backfill_commit and final_head marked NOT_EMBEDDED per non-self-reference convention.",
+      "parent_chain_verification": "to be verified after commit - git show -s --format=%P <main_commit> should return fc3e910 (baseline).",
+      "notes": "Stage A completed per MIGRATION-VERTICAL-SLICE-ACCELERATION-01-R1 Required Correction 04. All 10 Stage A ACs satisfied. No real Feishu API calls. No MIGRATION_PILOT_001 start. R6 audit loop remains CLOSED. D-026 threshold unchanged. PILOT_READINESS_PACKET (R6 closeout) SUPERSEDED by PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R2 results - minimal status sync, R6 not reopened. Next: Stage B requires explicit user approval + Pilot Base isolation proof."
     }
   ],
-  "stop_after_completion": true
+  "stop_after_completion": true,
+  "pilot_vertical_slice_stage_a_complete": true
 }

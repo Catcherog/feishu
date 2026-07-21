@@ -2,12 +2,13 @@
 
 > Repository: `https://github.com/Catcherog/feishu`
 > Branch: `master`
-> Current execution state: `PHASE_R6_CLOSED_WITH_DEBT`
-> Current gate: `R6`
+> Current execution state: `PHASE_PILOT_VERTICAL_SLICE_STAGE_A`
+> Current gate: `PILOT_VERTICAL_SLICE` (independent from R6; R6 remains CLOSED)
 > R4 audit status: `R4_INDEPENDENTLY_VERIFIED_PASS` (GPT 2026-07-18, `MVP_PASS_WITH_DEBT`)
 > R5 audit status: `R5_INDEPENDENTLY_VERIFIED_PASS` (GPT 2026-07-18 third fix batch review, `MVP_PASS_WITH_DEBT`; P1 scanner debt closed in R6 batch)
-> R6 audit status: `R6_PASS_WITH_DEBT` (R6 closed 2026-07-20; 3 debts registered: D-026 candidate shortfall / view filter-sort / no CI; R6 code audit loop CLOSED — MUST NOT be reopened)
-> Migration pilot: `NOT_APPROVED` (`pilot_readiness=NOT_READY` — D-026 candidate pool insufficient, see `reports/PILOT_READINESS_PACKET.md`)
+> R6 audit status: `R6_PASS_WITH_DEBT` (R6 closed 2026-07-20; 3 debts registered: D-026 candidate shortfall / view filter-sort / no CI; R6 code audit loop CLOSED - MUST NOT be reopened)
+> PILOT_VERTICAL_SLICE status: `CODE_READY` (Stage A complete 2026-07-21; Stage B pending user approval + Pilot Base isolation proof)
+> Migration pilot (MIGRATION_PILOT_001): `NOT_APPROVED` (`pilot_readiness=NOT_READY` - D-026 FAIL; PILOT_READINESS_PACKET statistics SUPERSEDED by PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R2 current results: project MIGRATABLE=1, 样片 Model 0/18, makeup 9/10, combined_pairs 1)
 > Current HEAD at R5 main batch closeout: `3df9fc5da09c751f28629d053951a50374138dda`
 > R5 first fix main commit: `82d98866686d4b0f502ad450b34177ab9a770335`（P0-1/P0-2/P0-3 主体修复）
 > R5 first fix backfill commit: `672ed78640895e6a01f294c15d9b82ad270b60be`（SHA backfill for R5 first fix batch）
@@ -701,4 +702,121 @@ At the end of each gate, report:
 8. Unresolved blockers
 9. Explicit statement that prohibited work was not executed
 10. Recommendation for the next gate, without automatically starting it
+
+---
+
+## 4. PILOT_VERTICAL_SLICE Gate (Stage A complete, Stage B pending)
+
+### 4.1 Gate definition
+
+`PILOT_VERTICAL_SLICE` is an INDEPENDENT technical verification gate, separate from `MIGRATION_PILOT_001` and R6. Per user task `MIGRATION-VERTICAL-SLICE-ACCELERATION-01-R1`:
+
+- `MIGRATION_PILOT_001` remains `NOT_APPROVED`.
+- D-026 threshold, algorithm, and FAIL status are unchanged.
+- R6 audit loop remains CLOSED - this gate does NOT reopen R6.
+- Only `MIGRATABLE` records with authoritative association evidence may be written to the isolated Pilot Base.
+- `NEEDS_REVIEW`, `BLOCKED`, `MATCH_NOT_FOUND`, `AMBIGUOUS_MATCH` records MUST NOT be written.
+
+### 4.2 Gate states
+
+```
+NOT_STARTED -> CODE_READY -> READY_FOR_ISOLATED_WRITE -> PASS | FAIL | PARTIAL_PASS
+```
+
+Current state: `CODE_READY` (Stage A complete 2026-07-21).
+
+### 4.3 Stage A - Code and Synthetic Verification (COMPLETE)
+
+Stage A implemented 4 Pilot adapter modules with fail-closed semantics. No real Feishu API calls were made - all I/O is via injected transport functions.
+
+**New files:**
+
+| File | Purpose | ACs covered |
+|---|---|---|
+| `src/migration/pilot/idempotency.js` | SHA-256 key from legacy_source + legacy_record_id + target_entity_type + rule_version | A-05 |
+| `src/migration/pilot/writer.js` | Writes MIGRATABLE records to Pilot Base only; rejects non-MIGRATABLE, production V2 token, missing config | A-01..A-05 |
+| `src/migration/pilot/reader.js` | Reads back by exact record_id; field-level diff with CRITICAL severity for idempotency_key mismatch | A-06 |
+| `src/migration/pilot/cleanup.js` | Deletes only by exact record_id; requires reason; partial failure populates cleanup_pending | A-07, A-08 |
+| `src/migration/pilot/index.js` | Public entry point aggregating the 4 adapters | - |
+| `tests/pilot-vertical-slice.test.js` | 35 synthetic tests covering A-01..A-08 + idempotency + e2e + entity_type consistency | A-01..A-08 |
+
+**Stage A Acceptance Criteria:**
+
+| AC | Status | Evidence |
+|---|---|---|
+| A-01 non-MIGRATABLE rejected | PASS | writer.writeRecord throws on NEEDS_REVIEW/BLOCKED |
+| A-02 missing Pilot config fail closed | PASS | createPilotWriter throws on missing pilot_base_token/production_v2_base_token/table_ids/transport |
+| A-03 production V2 token rejected | PASS | createPilotWriter throws when pilot_base_token === production_v2_base_token or forbidden alias |
+| A-04 write returns record_id | PASS | writeRecord returns {record_id, idempotency_key, status:'CREATED'} |
+| A-05 idempotency no duplicate | PASS | second write returns DUPLICATE_SKIPPED; writeBatch deduplicates |
+| A-06 readback diff detects mismatch | PASS | VERIFIED/MISMATCH/NOT_FOUND + CRITICAL severity for idempotency_key mismatch |
+| A-07 cleanup exact record_id only | PASS | requires exact record_id + reason; no fuzzy delete |
+| A-08 partial failure structured report | PASS | writeBatch/deleteBatch continue on failure; populate cleanup_pending |
+| A-09 D-026 remains FAIL | PASS | no D-026 evaluator changes |
+| A-10 MIGRATION_PILOT_001 NOT_APPROVED | PASS | migration_pilot_status remains NOT_APPROVED |
+
+**Test results:** 58 classifier + 95 projection/evaluator + 35 pilot-vertical-slice + 20 scanner + 3 schema_diff = **211 PASS** (was 177 before this batch).
+
+### 4.4 Stage B - Isolated Real Vertical Slice (PENDING)
+
+Stage B has NOT started. Entry conditions (all must be met before Stage B begins):
+
+1. Pilot Base and production V2 Base use DIFFERENT tokens or explicitly isolated resources (proof required, sanitized).
+2. Stage A all PASS (satisfied 2026-07-21).
+3. Pilot cohort associations all have authoritative evidence.
+4. Explicit user approval to begin Stage B real writes.
+
+**Stage B execution plan (not yet started):**
+
+1. Generate sanitized Dry Run.
+2. Write to isolated Pilot Base.
+3. Save exact target record IDs.
+4. Read back and verify each record.
+5. Execute second write with same input.
+6. Verify no duplicate records/relations.
+7. Cleanup or retain per task config.
+8. Output completion package.
+9. Stop - do NOT auto-expand batch.
+
+### 4.5 Current state alignment (Required Correction 01)
+
+Per `MIGRATION-VERTICAL-SLICE-ACCELERATION-01-R1` Required Correction 01, the old `PILOT_READINESS_PACKET.md` statistics (customer 0/5, project 0/5, model 3/10, makeup 5/10, association 0/5) are SUPERSEDED. Current state per `PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R2`:
+
+| Metric | Old (R6 closeout) | Current (R2) |
+|---|---|---|
+| Project MIGRATABLE | 0/5 | **1/5** (shortfall 4) |
+| 样片 valid Model association | not measured | **0/18** (0%) |
+| Makeup MIGRATABLE | 5/10 | **9/10** (shortfall 1) |
+| Combined correct pairs | 0 | **1** (< 5) |
+| P-06~P-08 | not classified | **MATCH_NOT_FOUND** (3 projects) |
+| D-026 overall | FAIL | **FAIL** (unchanged) |
+
+The old `PILOT_READINESS_PACKET.md` is marked SUPERSEDED in the manifest revision_history. R6 is NOT reopened.
+
+### 4.6 Prohibited actions (Stage A and Stage B)
+
+The following remain prohibited throughout PILOT_VERTICAL_SLICE:
+
+- `start_migration_pilot_001` (full migration still not approved)
+- `write_needs_review_records`
+- `write_blocked_records`
+- `write_match_not_found_records`
+- `write_ambiguous_match_records`
+- `write_production_v2_base`
+- `auto_expand_pilot_batch`
+- `lower_d026_threshold`
+- `reopen_r6_audit_loop`
+
+### 4.7 Stop conditions for Stage B
+
+- Cannot prove Pilot Base isolation from production V2 Base.
+- Writer might use production V2 token.
+- Write cannot return exact record ID.
+- Cannot complete exact cleanup.
+- Idempotency test fails.
+- Dry Run inconsistent with actual write.
+- Need to guess Customer or Model.
+- Need to lower D-026.
+- Need to write NEEDS_REVIEW/BLOCKED/MATCH_NOT_FOUND.
+- Cross-module transaction/rollback/state machine issue Trae cannot resolve in 2 rounds.
 
