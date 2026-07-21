@@ -1,0 +1,88 @@
+{
+  "schema_version": "r6-quantity-threshold-judgement-v1.3",
+  "snapshot_type": "CURRENT_R2_AUTHORITY",
+  "decision_reference": "D-026 (DECISION_LOG.md)",
+  "description": "D-026 Phase 1B-3 启动前置条件（PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R2）：Customer >= 5 / Project >= 5 / Model >= 10 / Makeup >= 10 / 客片 Customer 完整率 100% / 样片 Model 完整率 100% / 合计正确关联对 >= 5 / 关联实体类型零错配 / 检测覆盖证据齐全。R2: 分母基于权威身份而非 final_classification；MATCH_NOT_FOUND 项目不进入分类型完整性分母。Migration pilot MUST NOT start until ALL thresholds are met.",
+  "generated_at": "2026-07-21T08:16:19.924Z",
+  "generator": {
+    "script": "src/scripts/temp/r2_d026_current_snapshot.js",
+    "script_status": "TEMP",
+    "evaluator_file": "src/migration/d026-evaluator.js",
+    "evaluator_commit": "10d322e"
+  },
+  "source_of_truth": {
+    "file": "backups/private/r1-rerun-result.private.json",
+    "sha256": "125B2A4672CEDB1DD55641B8C630DE926C668D838D924E862EE0CB62AEF91B43",
+    "generated_at": "2026-07-20T17:06:58.919Z",
+    "task": "PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R1"
+  },
+  "input_snapshot": {
+    "classification_input": {
+      "file": "backups/private/classification-input.private.json",
+      "sha256": "2B5DDC2581B85BE2AE990F0F04193D427B3B7197037F46A8FDE1BD7FCA89E83D",
+      "case_count": 304
+    }
+  },
+  "all_thresholds_met": false,
+  "judgement": "FAIL — One or more D-026 thresholds not met. MIGRATION_PILOT_001 MUST NOT start. Possible causes: MIGRATABLE counts short, per-type association completeness < 100% (客片 Customer / 样片 Model), combined pair count < 5, or one or more linked keys point to the wrong entity_type / unresolved record.",
+  "thresholds": {
+    "customer": {
+      "required_migratable": 5,
+      "actual_migratable": 8,
+      "threshold_met": true,
+      "shortfall": 0
+    },
+    "project": {
+      "required_migratable": 5,
+      "actual_migratable": 1,
+      "threshold_met": false,
+      "shortfall": 4
+    },
+    "model": {
+      "required_migratable": 10,
+      "actual_migratable": 10,
+      "threshold_met": true,
+      "shortfall": 0
+    },
+    "makeup": {
+      "required_migratable": 10,
+      "actual_migratable": 9,
+      "threshold_met": false,
+      "shortfall": 1
+    }
+  },
+  "source_match_check": {
+    "matched_project_count": 44,
+    "match_not_found_project_count": 3,
+    "total_project_count": 47
+  },
+  "project_association_check": {
+    "required_combined": 5,
+    "kepian_customer_pairs": 1,
+    "kepian_customer_total": 1,
+    "kepian_completeness_met": true,
+    "yangpian_model_pairs": 0,
+    "yangpian_model_total": 18,
+    "yangpian_completeness_met": false,
+    "combined_pairs": 1,
+    "combined_pairs_met": false,
+    "per_type_completeness_met": false,
+    "met": false,
+    "shortfall": 4,
+    "required_migratable_with_migratable_customer": 5,
+    "actual_migratable_with_migratable_customer": 1
+  },
+  "entity_type_correctness_check": {
+    "allowed_mismatches": 0,
+    "actual_mismatches": 0,
+    "checked_relation_count": 1,
+    "unresolved_relation_count": 0,
+    "type_mismatch_count": 0,
+    "met": true
+  },
+  "historical_context": {
+    "superseded_report": "reports/r6-quantity-threshold-judgement.json",
+    "superseded_snapshot": "reports/r6-closeout-quantity-threshold-judgement.json",
+    "superseded_description": "R6 closeout statistics (customer 0/5, project 0/5, model 3/10, makeup 5/10, association 0/5) from 2026-07-20. Retained as historical evidence only; not the current R2 state."
+  }
+}

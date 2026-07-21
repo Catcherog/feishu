@@ -31,10 +31,21 @@
   "r6_debt_register": [
     {
       "id": "R6-DEBT-01",
-      "description": "D-026 quantity threshold not met — candidate pool insufficient (customer 0/5, project 0/5, model 3/10, makeup 5/10, project_association 0/5). MIGRATION_PILOT_001 MUST NOT start until shortfall resolved.",
-      "evidence": "reports/r6-closeout-quantity-threshold-judgement.json + reports/PILOT_READINESS_PACKET.md",
+      "description": "D-026 quantity threshold not met. MIGRATION_PILOT_001 MUST NOT start until shortfall resolved.",
+      "evidence": "reports/d026-current-r2-threshold-judgement.json (current R2 authority) + reports/r6-closeout-quantity-threshold-judgement.json (historical R6 closeout) + reports/PILOT_READINESS_PACKET.md (historical R6 closeout packet, SUPERSEDED)",
       "blocking_pilot": true,
-      "resolution_path": "User decision required (V1 data enrichment / manual selection / defer pilot). See PILOT_READINESS_PACKET Section 6."
+      "historical_snapshot": "R6_CLOSEOUT",
+      "historical_snapshot_description": "R6 closeout (2026-07-20) statistics: customer 0/5, project 0/5, model 3/10, makeup 5/10, project_association 0/5. Retained in reports/r6-quantity-threshold-judgement.json (now marked HISTORICAL_R6_CLOSEOUT) and reports/r6-closeout-quantity-threshold-judgement.json.",
+      "superseded_current_evidence": "reports/d026-current-r2-threshold-judgement.json",
+      "current_overall_status": "FAIL",
+      "current_r2_authority": {
+        "project_migratable": "1/5",
+        "makeup_migratable": "9/10",
+        "yangpian_model_pairs": "0/18",
+        "combined_pairs": 1,
+        "overall": "FAIL"
+      },
+      "resolution_path": "User decision required (V1 data enrichment / manual selection / defer pilot). See PILOT_READINESS_PACKET Section 6 (historical context) and PORTFOLIO-EVIDENCE.md Section 6 (current R2 authority)."
     },
     {
       "id": "R6-DEBT-02",
@@ -80,6 +91,8 @@
     "reports/r6-duplicate-candidates-summary.json",
     "reports/r6-orphan-records-summary.json",
     "reports/r6-quantity-threshold-judgement.json",
+    "reports/r6-closeout-quantity-threshold-judgement.json",
+    "reports/d026-current-r2-threshold-judgement.json",
     "reports/r6-views-filter-sort-status.md",
     "src/migration/classifier/reason-codes.js",
     "src/migration/classifier/budget.js",

@@ -4,6 +4,8 @@
 > **执行者**: Trae (GLM-5.2)
 > **审计目标**: 供 GPT 或人工审计者验证 MIGRATION-VERTICAL-SLICE-ACCELERATION-01-R1-STAGE-A-AUDIT-FIX-01 任务执行的正确性和完整性
 > **任务来源**: GPT Stage A 审计裁决 FIX_REQUIRED_EVIDENCE_AND_PUBLISHING
+>
+> **CORRECTION NOTICE (2026-07-21)**: 本审计包已由 MIGRATION-VERTICAL-SLICE-ACCELERATION-01-R1-STAGE-A-EVIDENCE-CORRECTION-02 修正。原包中 D-026 相关章节错误地将旧 R6 closeout 统计作为当前 R2 统计。修正后的当前 R2 权威结果见 `reports/d026-current-r2-threshold-judgement.json`；旧 R6 closeout 统计保留在 `reports/r6-quantity-threshold-judgement.json`（已标记 HISTORICAL_R6_CLOSEOUT）和 `reports/r6-closeout-quantity-threshold-judgement.json`。
 
 ---
 
@@ -63,19 +65,24 @@
 - 最终 HEAD `669e815d756d218a8ef8bf9247f100d820ea53e3` 已推送到 `origin/master`
 - Push 输出：`3089518..669e815  master -> master`
 
-### 2.2 D-026 评估器状态
+### 2.2 D-026 当前权威状态（R2）
+
 - `src/migration/d026-evaluator.js` 在本次 audit-fix 中未修改
 - 最后修改为 R2 correction commit `10d322e`
-- 在最终 HEAD 重跑确认 `all_thresholds_met: false` (FAIL)
+- 当前 R2 权威快照来源：`backups/private/r1-rerun-result.private.json`（PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R1 重跑结果）
+- 当前 R2 公开报告：`reports/d026-current-r2-threshold-judgement.json`
+- 当前 R2 权威结果：`all_thresholds_met: false` (FAIL)
 - 详细数据：
-  - customer: required=5 actual=0 met=false
-  - project: required=5 actual=0 met=false
-  - model: required=10 actual=3 met=false
-  - makeup: required=10 actual=5 met=false
-  - project_association_check: required=5 actual=0 met=false
-  - kepian_customer_pairs: 0/1
-  - yangpian_model_pairs: 0/21
-  - combined_pairs: 0/5
+  - customer: required=5 actual=8 met=true
+  - project: required=5 actual=1 met=false
+  - model: required=10 actual=10 met=true
+  - makeup: required=10 actual=9 met=false
+  - 客片 Customer 完整率: 1/1 = 100% (met)
+  - 样片 Model 完整率: 0/18 = 0% (not met)
+  - project_association_check: required=5 combined_pairs=1 met=false
+  - entity_type_correctness_check: checked=1 mismatches=0 met=true
+
+**历史 R6 closeout 统计（已废弃）**：customer 0/5, project 0/5, model 3/10, makeup 5/10, association 0/5。该组数字保留在 `reports/r6-quantity-threshold-judgement.json`（已标记 HISTORICAL_R6_CLOSEOUT）和 `reports/r6-closeout-quantity-threshold-judgement.json`，仅作历史证据，不得用于当前 Stage B 编排。
 
 ### 2.3 幂等性实现现状
 - writer.js 的 `idempotencyIndex` 是进程内 Map
@@ -105,11 +112,20 @@
 
 ## 3. 历史文档与真实系统的冲突
 
-无冲突。
+### 3.1 D-026 报告数据来源冲突（已修正）
+
+原 Stage A audit-fix 01 输出中，`reports/r6-quantity-threshold-judgement.json` 被描述为“最终 HEAD 当前 D-026 状态”，但实际数值来自 R6 closeout（2026-07-20）的旧私有分类矩阵，而非当前 R2 权威结果。该文件现已被明确标记为 `HISTORICAL_R6_CLOSEOUT`，当前 R2 权威状态迁移至 `reports/d026-current-r2-threshold-judgement.json`。
+
+冲突表现：
+- 旧 R6 closeout：customer 0/5, project 0/5, model 3/10, makeup 5/10, association 0/5
+- 当前 R2 权威：customer 8/5, project 1/5, model 10/10, makeup 9/10, 客片 1/1, 样片 Model 0/18, combined pairs 1
+- 两者 overall 均为 FAIL，但明细不可混用
+
+### 3.2 已修正的一致项
 
 - Manifest 中声明的 `migration_pilot_status: NOT_APPROVED` 与实际代码状态一致
 - Manifest 中 `gate_status.PILOT_VERTICAL_SLICE: CODE_READY` 与实际状态一致
-- D-026 报告中的 `all_thresholds_met: false` 与实际 evaluator 输出一致
+- 当前 R2 报告中的 `all_thresholds_met: false` 与 `r1-rerun-result.private.json` 一致
 - Revision history 中的 Stage A main commit SHA `cc6b926e40388b0a8d8f821fd529ece32a203c1b` 与 `git show` 输出一致
 
 ---
@@ -122,11 +138,12 @@
 - **解决方案**：Stage B 前必须实现 RF-05 option A（远端幂等查询）或 option B（持久化执行账本）
 - **当前缓解**：`pilot_idempotency_ready: false` 显式阻塞 Stage B
 
-### 4.2 样片 Model 关联完整率 0/21（MEDIUM）
-- **问题**：所有 21 个样片项目缺少正确的 Model 关联
+### 4.2 样片 Model 关联完整率 0/18（MEDIUM）
+- **问题**：所有 18 个样片项目缺少正确的 Model 关联
 - **影响**：Stage B 样片路径无法验证
 - **解决方案**：用户确认至少一条真实、正确、可匿名核验的样片-Model 关联
 - **当前缓解**：样片路径标记 `BLOCKED_DATA_PREREQUISITE`
+- **说明**：原审计包误写为 0/21（旧 R6 closeout 口径）；当前 R2 权威分母为 18，见 `reports/d026-current-r2-threshold-judgement.json`。
 
 ### 4.3 真实飞书 API 响应结构未覆盖（MEDIUM-HIGH）
 - **问题**：Stage A 测试使用合成 transport，未覆盖真实飞书字段类型（富文本、单选、关联字段、分页、超时）
@@ -135,10 +152,11 @@
 - **当前缓解**：Stage B NOT_AUTHORIZED
 
 ### 4.4 D-026 阈值未满足（DATA PREREQUISITE）
-- **问题**：customer 0/5, project 0/5, model 3/10, makeup 5/10
+- **问题**：当前 R2 权威状态为 project 1/5, makeup 9/10, 样片 Model 0/18, combined pairs 1 < 5
 - **影响**：MIGRATION_PILOT_001 MUST NOT start
 - **解决方案**：用户补录 V1 关联资源 ID 或手动选择合格 cohort
 - **当前缓解**：D-026 FAIL 保持，manifest `migration_pilot_status: NOT_APPROVED`
+- **历史参考**：R6 closeout 统计（customer 0/5, project 0/5, model 3/10, makeup 5/10, association 0/5）已标记为 HISTORICAL_R6_CLOSEOUT，不得作为当前候选池状态
 
 ### 4.5 CI pipeline 未建立（LOW）
 - **问题**：无 GitHub Actions 或其他 CI 配置（R6-DEBT-03）
@@ -155,7 +173,8 @@
 | `src/migration/pilot/cleanup.js` | 修改 | RF-06: created_record_allowlist 强制校验 + ALREADY_DELETED + deleteBatch already_deleted | `35239a72c63f0231fda3187d7194f97aadde4009` | `2A98020D2A87F4541DB2DD3C7745170F10A184F717CCCE9ADFFEA3E054A57329` | REPRODUCIBLE_FROM_PUBLIC_REPO |
 | `tests/pilot-vertical-slice.test.js` | 修改 | RF-06: 5 项新测试 + makeConfig 更新 + 运行时拼接合成 ID | `35239a72c63f0231fda3187d7194f97aadde4009` | `A8B19BAEEC58881F7D9B0863DEC6541444DC59B230318E9737C4242D5EC579BA` | REPRODUCIBLE_FROM_PUBLIC_REPO |
 | `config/public-execution-manifest.json` | 修改 | pilot_idempotency_ready + pilot_cleanup_allowlist_ready + revision_history 新条目 + SHA backfill | `35239a7` (main) + `669e815` (backfill) | `BA23D7C2E03C706A0FE3B0DE171002F34D1451BDD2AB5DC67FC6B94203669067` | REPRODUCIBLE_FROM_PUBLIC_REPO |
-| `reports/r6-quantity-threshold-judgement.json` | 修改 | D-026 evaluator 重跑生成，FAIL 不变 | `35239a72c63f0231fda3187d7194f97aadde4009` | `59EE6B1C78CABB9A37CB8D9E25C0205CD872254A3382AB0FDB9A563DA57B0D9D` | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `reports/r6-quantity-threshold-judgement.json` | 修改 | 已明确标记为 HISTORICAL_R6_CLOSEOUT；保留旧 R6 closeout 统计作为历史证据 | 本证据修正 commit | （重新生成后） | REPRODUCIBLE_FROM_PUBLIC_REPO |
+| `reports/d026-current-r2-threshold-judgement.json` | 新增 | 当前 R2 权威 D-026 快照（customer 8/5, project 1/5, model 10/10, makeup 9/10, 客片 1/1, 样片 Model 0/18, combined pairs 1, overall FAIL） | 本证据修正 commit | （生成后） | SELF_REPORTED_PRIVATE_EVIDENCE（数据源自私有 r1-rerun-result.private.json；报告文件本身公开，但底层私有输入不可公开重跑） |
 
 ### 未修改的关键文件（证据）
 
@@ -227,27 +246,35 @@ RESULT: PASS (8 warnings require review)
 
 **证据分级**：REPRODUCIBLE_FROM_PUBLIC_REPO
 
-### 6.4 D-026 评估器重跑（最终 HEAD 669e815）
+### 6.4 D-026 当前 R2 权威快照（本证据修正后）
 
 **命令**：
 ```bash
-node src/scripts/temp/r6_aggregations.js
+node src/scripts/temp/r2_d026_current_snapshot.js
 ```
 
 **退出码**：0
 
 **输出**：
 ```
-schema_version: r6-quantity-threshold-judgement-v1.3
-all thresholds met: false
-customer: required=5 actual=0 met=false
-project: required=5 actual=0 met=false
-model: required=10 actual=3 met=false
-makeup: required=10 actual=5 met=false
-project_association_check: required=5 actual=0 met=false
+r2_d026_current_snapshot: ok
+  output: .../reports/d026-current-r2-threshold-judgement.json
+  r2_result_sha256: 125B2A4672CEDB1DD55641B8C630DE926C668D838D924E862EE0CB62AEF91B43
+  input_sha256: 2B5DDC2581B85BE2AE990F0F04193D427B3B7197037F46A8FDE1BD7FCA89E83D
+  schema_version: r6-quantity-threshold-judgement-v1.3
+  all thresholds met: false
+  customer: required=5 actual=8 met=true
+  project: required=5 actual=1 met=false
+  model: required=10 actual=10 met=true
+  makeup: required=10 actual=9 met=false
+  project_association_check: required=5 combined_pairs=1 per_type_completeness_met=false
+  entity_type_correctness_check: checked=1 mismatches=0
 ```
 
-**证据分级**：REPRODUCIBLE_FROM_PUBLIC_REPO（evaluator 和 r6_aggregations.js 均已公开）
+**证据分级**：SELF_REPORTED_PRIVATE_EVIDENCE — 当前 R2 权威来源为私有 `backups/private/r1-rerun-result.private.json`；公开报告 `reports/d026-current-r2-threshold-judgement.json` 包含完整来源 SHA256 与输入 SHA256，但底层私有输入不可公开重跑。
+
+**历史 R6 closeout 重跑（已废弃，仅作对比）**：
+原审计包记录的 `node src/scripts/temp/r6_aggregations.js` 输出（customer 0/5, project 0/5, model 3/10, makeup 5/10）来自 R6 closeout 私有矩阵，已标记为 HISTORICAL_R6_CLOSEOUT。
 
 ### 6.5 Manifest 机器断言（最终 HEAD 669e815）
 
@@ -324,6 +351,17 @@ To https://github.com/Catcherog/feishu.git
 
 **证据分级**：INDEPENDENTLY_VERIFIED
 
+### 6.8 HEAD 区分（证据修正后）
+
+| HEAD | Commit | 说明 |
+|---|---|---|
+| Validated code head | `669e815d756d218a8ef8bf9247f100d820ea53e3` | Stage A audit-fix 01 代码修改（writer.js, cleanup.js, tests, manifest）已验证，220 项测试通过 |
+| Original audit documentation commit | `7ec1305` | 原始 Stage A audit-fix 01 审计包提交（docs-only） |
+| Evidence correction commit | 本证据修正 commit | 修正 D-026 报告/审计包/manifest 冲突，不修改 Stage A 代码 |
+| Final repository head | 本证据修正 commit | 仅文档/报告/控制字段变更 |
+
+**说明**：7ec1305 为 docs-only commit，本证据修正亦为 docs/report/control-only，不要求重跑全部 220 项代码测试；但已重新运行 `python scripts/verify_public_repo.py` 和 `python -m json.tool config/public-execution-manifest.json`。
+
 ---
 
 ## 7. 是否满足验收条件
@@ -343,10 +381,14 @@ To https://github.com/Catcherog/feishu.git
 - **证据**：197 Node tests + 23 Python tests = 220 PASS（超过 215 项要求）
 - **证据分级**：REPRODUCIBLE_FROM_PUBLIC_REPO
 
-### AC-FIX-04: D-026 在最终 HEAD 明确输出 FAIL
-- **状态**：满足
-- **证据**：`all_thresholds_met: false`，D-026 evaluator 未修改
-- **证据分级**：REPRODUCIBLE_FROM_PUBLIC_REPO
+### AC-FIX-04: D-026 在最终 HEAD 明确输出 FAIL，且当前 R2 统计不再与旧 R6 closeout 统计混淆
+- **状态**：满足（修正后）
+- **证据**：
+  - `reports/d026-current-r2-threshold-judgement.json` 中 `all_thresholds_met: false`
+  - 当前 R2 权威：project 1/5, makeup 9/10, 样片 Model 0/18, combined pairs 1, overall FAIL
+  - `reports/r6-quantity-threshold-judgement.json` 已标记 `HISTORICAL_R6_CLOSEOUT`
+  - D-026 evaluator 未修改
+- **证据分级**：SELF_REPORTED_PRIVATE_EVIDENCE（R2 数据源自私有文件；历史 R6 统计的公开重跑路径已不可用）
 
 ### AC-FIX-05: manifest 明确保持 MIGRATION_PILOT_001 = NOT_APPROVED
 - **状态**：满足
@@ -413,7 +455,7 @@ To https://github.com/Catcherog/feishu.git
 | AC-FIX-01 HEAD == origin/master | INDEPENDENTLY_VERIFIED | GPT 可独立查询 GitHub |
 | AC-FIX-02 Diff 范围 | REPRODUCIBLE_FROM_PUBLIC_REPO | 公开 commit 可克隆验证 |
 | AC-FIX-03 测试通过 | REPRODUCIBLE_FROM_PUBLIC_REPO | 公开 commit 可克隆重跑 |
-| AC-FIX-04 D-026 FAIL | REPRODUCIBLE_FROM_PUBLIC_REPO | 公开 evaluator 可重跑 |
+| AC-FIX-04 D-026 FAIL + 历史/当前统计区分 | SELF_REPORTED_PRIVATE_EVIDENCE | R2 数据源自私有文件；历史 R6 公开重跑路径已不可用 |
 | AC-FIX-05 manifest NOT_APPROVED | REPRODUCIBLE_FROM_PUBLIC_REPO | 公开 manifest 可断言 |
 | AC-FIX-06 Stage B 阻塞 | REPRODUCIBLE_FROM_PUBLIC_REPO | 公开代码可验证 |
 | AC-FIX-07 cleanup allowlist | REPRODUCIBLE_FROM_PUBLIC_REPO | 公开测试可重跑 |

@@ -1,9 +1,12 @@
 {
-  "schema_version": "r6-quantity-threshold-judgement-v1.3",
+  "schema_version": "r6-quantity-threshold-judgement-v1.1",
+  "snapshot_type": "HISTORICAL_R6_CLOSEOUT",
+  "superseded_by": "PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01_R2",
+  "current_authority_report": "reports/d026-current-r2-threshold-judgement.json",
   "decision_reference": "D-026 (DECISION_LOG.md)",
-  "description": "D-026 Phase 1B-3 启动前置条件（PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R2）：Customer >= 5 / Project >= 5 / Model >= 10 / Makeup >= 10 / 客片 Customer 完整率 100% / 样片 Model 完整率 100% / 合计正确关联对 >= 5 / 关联实体类型零错配 / 检测覆盖证据齐全。R2: 分母基于权威身份而非 final_classification；MATCH_NOT_FOUND 项目不进入分类型完整性分母。Migration pilot MUST NOT start until ALL thresholds are met.",
+  "description": "HISTORICAL SNAPSHOT — R6 closeout (2026-07-20). This file is retained for historical evidence only and is EXPLICITLY SUPERSEDED by reports/d026-current-r2-threshold-judgement.json. The numbers below reflect the R6 closeout candidate pool, not the current R2 authority state. Do not use this file for Stage B cohort decisions.",
   "all_thresholds_met": false,
-  "judgement": "FAIL — One or more D-026 thresholds not met. MIGRATION_PILOT_001 MUST NOT start. Possible causes: MIGRATABLE counts short, per-type association completeness < 100% (客片 Customer / 样片 Model), combined pair count < 5, or one or more linked keys point to the wrong entity_type / unresolved record.",
+  "judgement": "FAIL — One or more D-026 thresholds not met. MIGRATION_PILOT_001 MUST NOT start. Either MIGRATABLE counts are short, or fewer than 5 MIGRATABLE projects link to MIGRATABLE customers in this batch.",
   "thresholds": {
     "customer": {
       "required_migratable": 5,
@@ -30,33 +33,21 @@
       "shortfall": 5
     }
   },
-  "source_match_check": {
-    "matched_project_count": 47,
-    "match_not_found_project_count": 0,
-    "total_project_count": 47
-  },
   "project_association_check": {
-    "required_combined": 5,
-    "kepian_customer_pairs": 0,
-    "kepian_customer_total": 1,
-    "kepian_completeness_met": false,
-    "yangpian_model_pairs": 0,
-    "yangpian_model_total": 21,
-    "yangpian_completeness_met": false,
-    "combined_pairs": 0,
-    "combined_pairs_met": false,
-    "per_type_completeness_met": false,
-    "met": false,
-    "shortfall": 5,
     "required_migratable_with_migratable_customer": 5,
-    "actual_migratable_with_migratable_customer": 0
+    "actual_migratable_with_migratable_customer": 0,
+    "met": false,
+    "shortfall": 5
   },
-  "entity_type_correctness_check": {
-    "allowed_mismatches": 0,
-    "actual_mismatches": 0,
-    "checked_relation_count": 0,
-    "unresolved_relation_count": 0,
-    "type_mismatch_count": 0,
-    "met": true
+  "historical_context": {
+    "generated_for": "R6-CLOSEOUT-AND-PILOT-READINESS (2026-07-20)",
+    "retention_reason": "Preserve the exact R6 closeout threshold judgement for audit traceability. R6 audit loop remains CLOSED; this file is not reopened.",
+    "current_r2_authority": {
+      "project_migratable": "1/5",
+      "makeup_migratable": "9/10",
+      "yangpian_model_pairs": "0/18",
+      "combined_pairs": 1,
+      "overall": "FAIL"
+    }
   }
 }
