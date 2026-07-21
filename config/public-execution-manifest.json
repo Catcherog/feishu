@@ -612,7 +612,7 @@
       "action": "stage_a_audit_fix_01_submission",
       "task_packet": "MIGRATION-VERTICAL-SLICE-ACCELERATION-01-R1-STAGE-A-AUDIT-FIX-01",
       "baseline_head": "3089518d86f13a6d968de242164f26b6c4106e3f",
-      "main_commit": "PENDING_BACKFILL_AUDIT_FIX_01",
+      "main_commit": "35239a72c63f0231fda3187d7194f97aadde4009",
       "backfill_commit": "NOT_EMBEDDED",
       "final_head": "NOT_EMBEDDED",
       "audit_outcome": "PENDING_REVIEW",
@@ -645,8 +645,8 @@
         "AC-FIX-09_untracked_file_not_committed": "PASS - reports/pilot-readiness-data-supplement-summary.json remains untracked",
         "AC-FIX-10_no_unverified_public_repo_claim": "PASS - this audit package uses evidence levels correctly; REPRODUCIBLE_FROM_PUBLIC_REPO only after push verification"
       },
-      "non_self_reference_note": "main_commit is PENDING_BACKFILL_AUDIT_FIX_01 placeholder; backfill_commit and final_head marked NOT_EMBEDDED per non-self-reference convention. This audit-fix commit's own SHA is NOT_EMBEDDED; verify via git rev-parse HEAD after push.",
-      "parent_chain_verification": "Chain: fc3e910 (Stage A baseline) -> cc6b926 (Stage A main) -> 3089518 (Stage A backfill, =baseline_head for this audit-fix) -> <audit_fix_main_commit_TBD> (this commit, actual SHA to be backfilled) -> <audit_fix_backfill_commit_TBD> (NOT_EMBEDDED). Verify after push: git show -s --format=%P <audit_fix_main_commit> returns 3089518.",
+      "non_self_reference_note": "main_commit is 35239a72c63f0231fda3187d7194f97aadde4009 (backfilled in this commit). backfill_commit and final_head marked NOT_EMBEDDED per non-self-reference convention. This audit-fix backfill commit's own SHA is NOT_EMBEDDED; verify via git rev-parse HEAD after push.",
+      "parent_chain_verification": "Chain: fc3e910 (Stage A baseline) -> cc6b926 (Stage A main) -> 3089518 (Stage A backfill) -> 35239a7 (audit-fix main, backfilled in this commit) -> <audit_fix_backfill_commit_TBD> (this commit, NOT_EMBEDDED). Verified: git show -s --format=%P 35239a72c63f0231fda3187d7194f97aadde4009 returns 3089518... (parent = Stage A backfill = baseline_head for this audit-fix).",
       "notes": "Audit fix per MIGRATION-VERTICAL-SLICE-ACCELERATION-01-R1-STAGE-A-AUDIT-FIX-01 (GPT verdict FIX_REQUIRED_EVIDENCE_AND_PUBLISHING). RF-05 declares idempotency_scope=IN_PROCESS_ONLY and blocks Stage B via manifest pilot_idempotency_ready=false (does NOT implement remote idempotency - deferred to pre-Stage-B work). RF-06 implements cleanup current-run allowlist enforcement. No real Feishu API calls. No MIGRATION_PILOT_001 start. R6 audit loop remains CLOSED. D-026 threshold unchanged. Codex NOT_REQUIRED. Stage B NOT_AUTHORIZED."
     }
   ],
