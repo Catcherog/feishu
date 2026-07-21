@@ -559,7 +559,7 @@
       "action": "stage_a_code_and_synthetic_verification",
       "task_packet": "MIGRATION-VERTICAL-SLICE-ACCELERATION-01-R1",
       "baseline_head": "fc3e910",
-      "main_commit": "PENDING_BACKFILL_STAGE_A",
+      "main_commit": "cc6b926e40388b0a8d8f821fd529ece32a203c1b",
       "backfill_commit": "NOT_EMBEDDED",
       "final_head": "NOT_EMBEDDED",
       "audit_outcome": "PENDING_REVIEW",
@@ -601,7 +601,7 @@
         "A-10_migration_pilot_001_not_approved": "PASS - migration_pilot_status remains NOT_APPROVED; PILOT_VERTICAL_SLICE is separate gate"
       },
       "non_self_reference_note": "main_commit is PENDING_BACKFILL_STAGE_A placeholder; backfill_commit and final_head marked NOT_EMBEDDED per non-self-reference convention.",
-      "parent_chain_verification": "to be verified after commit - git show -s --format=%P <main_commit> should return fc3e910 (baseline).",
+      "parent_chain_verification": "git show -s --format=%P cc6b926 returns fc3e910... (parent = baseline HEAD at start of this batch). Chain: fc3e910 (baseline) -> cc6b926 (Stage A main commit, actual SHA backfilled in this commit) -> <backfill_commit_TBD> (Stage A backfill, NOT_EMBEDDED).",
       "notes": "Stage A completed per MIGRATION-VERTICAL-SLICE-ACCELERATION-01-R1 Required Correction 04. All 10 Stage A ACs satisfied. No real Feishu API calls. No MIGRATION_PILOT_001 start. R6 audit loop remains CLOSED. D-026 threshold unchanged. PILOT_READINESS_PACKET (R6 closeout) SUPERSEDED by PROJECT-TYPE-SOURCE-OF-TRUTH-CORRECTION-01-R2 results - minimal status sync, R6 not reopened. Next: Stage B requires explicit user approval + Pilot Base isolation proof."
     }
   ],
