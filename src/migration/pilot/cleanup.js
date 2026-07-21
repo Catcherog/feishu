@@ -12,6 +12,16 @@
 //   - Never delete by name or fuzzy condition
 //   - Partial failure MUST preserve a traceable execution log
 //
+// Per MIGRATION-VERTICAL-SLICE-ACCELERATION-01-R1-STAGE-A-AUDIT-FIX-01 RF-06:
+//   - deleteRecord MUST verify record_id is in the current-run
+//     created_record_allowlist before calling transport
+//   - Records not created in this run (manually-passed IDs, IDs from
+//     other runs, IDs from other tables, pre-existing Pilot records
+//     returned via DUPLICATE_SKIPPED) MUST be rejected
+//   - Repeated cleanup of an already-deleted-in-this-run record MUST
+//     return an explicit idempotent result (ALREADY_DELETED) instead
+//     of erroring or re-invoking transport
+//
 // Public surface:
 //   createPilotCleanup(config) -> cleanup
 //   cleanupRecord(cleanup, input) -> { record_id, status }
@@ -20,7 +30,7 @@
 //
 // I/O-bound: the transport function performs the actual Feishu delete.
 
-const PILOT_CLEANUP_VERSION = 'pilot-cleanup-v1.0';
+const PILOT_CLEANUP_VERSION = 'pilot-cleanup-v1.1';
 
 /**
  * Create a Pilot cleanup handle bound to a specific Pilot Base + transport.
@@ -31,6 +41,9 @@ const PILOT_CLEANUP_VERSION = 'pilot-cleanup-v1.0';
  * @param {string} config.pilot_base_alias
  * @param {function} config.transport - async (tableId, recordId) => { deleted: boolean }
  * @param {object} config.table_ids
+ * @param {Map<string, Set<string>>} config.created_record_allowlist -
+ *        Map<entity_type, Set<record_id>> of records created in THIS run.
+ *        Required (RF-06): cleanup will reject any record_id not in this allowlist.
  * @returns {object} cleanup
  */
 function createPilotCleanup(config) {
@@ -42,6 +55,7 @@ function createPilotCleanup(config) {
   const pilotBaseAlias = _str(config.pilot_base_alias);
   const transport = config.transport;
   const tableIds = config.table_ids;
+  const createdRecordAllowlist = config.created_record_allowlist;
 
   if (!_nonEmpty(pilotBaseToken)) {
     throw new Error('createPilotCleanup: pilot_base_token is required (fail closed)');
@@ -67,12 +81,34 @@ function createPilotCleanup(config) {
     throw new Error('createPilotCleanup: pilot_base_token MUST NOT equal production_v2_base_token (isolation violated)');
   }
 
+  // RF-06: created_record_allowlist MUST be a Map<entity_type, Set<record_id>>.
+  // This is the provenance guarantee that cleanup only deletes records
+  // created in THIS run. Stage B authorization requires this field.
+  if (!(createdRecordAllowlist instanceof Map)) {
+    throw new Error(
+      'createPilotCleanup: created_record_allowlist must be a Map<entity_type, Set<record_id>> (RF-06: cleanup provenance required)',
+    );
+  }
+
+  // Track records already deleted in this run for idempotent re-cleanup.
+  // A second cleanup call for the same record_id should return ALREADY_DELETED
+  // instead of erroring or re-invoking transport.
+  const deletedInRun = new Map();
+
   return Object.freeze({
     version: PILOT_CLEANUP_VERSION,
     pilot_base_alias: pilotBaseAlias,
 
     /**
      * Delete a single Pilot record by exact record_id.
+     *
+     * RF-06 provenance check: the record_id MUST be in the
+     * created_record_allowlist for the given target_entity_type. Records
+     * not in the allowlist (manually-passed IDs, IDs from other runs,
+     * IDs from other tables, pre-existing Pilot records returned via
+     * DUPLICATE_SKIPPED) are rejected with an error before any transport
+     * call. This is the fail-closed guarantee that cleanup cannot damage
+     * records outside the current run.
      *
      * @param {object} input
      * @param {string} input.record_id - exact target record ID (from writer output)
@@ -83,6 +119,31 @@ function createPilotCleanup(config) {
      */
     async deleteRecord(input) {
       _validateCleanupInput(input);
+
+      // RF-06: Provenance check - record_id MUST be in the current-run
+      // created_record_allowlist for the given target_entity_type.
+      const allowlistForType = createdRecordAllowlist.get(input.target_entity_type);
+      if (!(allowlistForType instanceof Set)
+          || !allowlistForType.has(input.record_id)) {
+        throw new Error(
+          `deleteRecord: record_id "${input.record_id}" is NOT in the current-run created_record_allowlist for entity_type "${input.target_entity_type}" (RF-06 provenance violation - cleanup refused)`,
+        );
+      }
+
+      // Idempotent re-cleanup: if this record was already deleted in
+      // this run, return ALREADY_DELETED without re-invoking transport.
+      // This allows the operator to safely retry a partially-failed
+      // cleanup batch without producing duplicate delete calls.
+      const deletedForType = deletedInRun.get(input.target_entity_type);
+      if (deletedForType instanceof Set && deletedForType.has(input.record_id)) {
+        return {
+          record_id: input.record_id,
+          status: 'ALREADY_DELETED',
+          idempotency_key: input.idempotency_key,
+          reason: input.reason,
+        };
+      }
+
       const tableId = tableIds[input.target_entity_type];
       const result = await transport(tableId, input.record_id);
 
@@ -94,6 +155,13 @@ function createPilotCleanup(config) {
           reason: input.reason,
         };
       }
+
+      // Mark as deleted in this run for idempotent re-cleanup.
+      if (!deletedInRun.has(input.target_entity_type)) {
+        deletedInRun.set(input.target_entity_type, new Set());
+      }
+      deletedInRun.get(input.target_entity_type).add(input.record_id);
+
       return {
         record_id: input.record_id,
         status: 'DELETED',
@@ -118,12 +186,15 @@ function createPilotCleanup(config) {
       const cleanupPending = [];
       let deleted = 0;
       let failed = 0;
+      let alreadyDeleted = 0;
 
       for (const input of inputs) {
         try {
           const result = await this.deleteRecord(input);
           if (result.status === 'DELETED') {
             deleted += 1;
+          } else if (result.status === 'ALREADY_DELETED') {
+            alreadyDeleted += 1;
           } else {
             failed += 1;
             cleanupPending.push({
@@ -159,6 +230,7 @@ function createPilotCleanup(config) {
         summary: {
           total: inputs.length,
           deleted,
+          already_deleted: alreadyDeleted,
           failed,
           pilot_base_alias: pilotBaseAlias,
         },

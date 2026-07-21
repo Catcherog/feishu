@@ -30,7 +30,29 @@ const {
   PILOT_RULE_VERSION,
 } = require('./idempotency');
 
-const PILOT_WRITER_VERSION = 'pilot-writer-v1.0';
+const PILOT_WRITER_VERSION = 'pilot-writer-v1.1';
+
+// A-05 idempotency scope declaration (per MIGRATION-VERTICAL-SLICE-ACCELERATION-01-R1-STAGE-A-AUDIT-FIX-01 RF-05).
+//
+// The current writer only deduplicates against an in-process Map passed via
+// `input.idempotencyIndex`. This Map is created fresh inside `writeBatch`
+// for each batch invocation and does NOT survive across:
+//   1. New writer instances (createPilotWriter returns a new frozen object)
+//   2. Node process restarts
+//   3. Stage B command re-execution
+//   4. Ambiguous transport responses (create succeeded but response lost)
+//   5. Records already present in Pilot Base from prior runs
+//
+// Per GPT audit RF-05, Stage B authorization requires EITHER:
+//   (A) Remote idempotency pre-check (query Pilot Base by idempotency_key
+//       before create) OR a persistent execution ledger
+//   (B) Stage B explicitly blocked until (A) is implemented
+//
+// This writer chooses Option B by emitting idempotency_scope=IN_PROCESS_ONLY
+// in every writeRecord / writeBatch result. The manifest field
+// `pilot_idempotency_ready=false` blocks Stage B until remote idempotency
+// is implemented in a future batch.
+const IDEMPOTENCY_SCOPE = 'IN_PROCESS_ONLY';
 
 // Tokens that are explicitly forbidden as Pilot Base targets. These are
 // stable aliases - the real tokens live in config/resource-map.local.json
@@ -177,6 +199,10 @@ function createPilotWriter(config) {
           idempotency_key: idem.key,
           composition: idem.composition,
           status: 'DUPLICATE_SKIPPED',
+          // RF-05: declare idempotency scope so callers / auditors know
+          // this dedup is in-process only and does not protect against
+          // cross-process or cross-run duplicates.
+          idempotency_scope: IDEMPOTENCY_SCOPE,
         };
       }
 
@@ -214,6 +240,10 @@ function createPilotWriter(config) {
         idempotency_key: idem.key,
         composition: idem.composition,
         status: 'CREATED',
+        // RF-05: declare idempotency scope so callers / auditors know
+        // this write only deduped against an in-process Map and does
+        // NOT constitute cross-process / cross-run idempotency.
+        idempotency_scope: IDEMPOTENCY_SCOPE,
       };
     },
 
@@ -254,6 +284,9 @@ function createPilotWriter(config) {
             status: result.status,
             record_id: result.record_id,
             idempotency_key: result.idempotency_key,
+            // RF-05: propagate idempotency scope to batch results so
+            // callers / auditors can see this dedup is in-process only.
+            idempotency_scope: result.idempotency_scope || IDEMPOTENCY_SCOPE,
           });
         } catch (err) {
           failed += 1;
@@ -264,6 +297,9 @@ function createPilotWriter(config) {
             entity_type: input.target_entity_type || '<unknown>',
             status: 'FAILED',
             error: err.message,
+            // RF-05: even failed attempts must declare scope so auditors
+            // know no cross-process dedup was attempted.
+            idempotency_scope: IDEMPOTENCY_SCOPE,
           });
         }
       }
@@ -349,4 +385,5 @@ module.exports = {
   createPilotWriter,
   PILOT_WRITER_VERSION,
   FORBIDDEN_TOKEN_ALIASES,
+  IDEMPOTENCY_SCOPE,
 };
