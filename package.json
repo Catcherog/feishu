@@ -1,0 +1,11 @@
+{
+  "name": "sop-feishu-v2-migration",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "SOP feishu-v2 迁移工具集（Pilot Writer / Reader / Cleanup）— CommonJS 模块岛",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "test:pilot": "node --test tests/pilot-vertical-slice.test.js tests/pilot-writer-v1.test.js"
+  }
+}
