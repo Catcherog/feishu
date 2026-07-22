@@ -268,3 +268,162 @@ describe('pilot-writer-v1 contract guard', () => {
     assert.equal(validResult.status, 'CREATED');
   });
 });
+
+// ===========================================================================
+// FAMP-CONTRACT-ADOPTION-GATE-01-R1-FIX / RF-03
+// writeBatch fail-closed 测试矩阵
+//
+// GPT 审查 RF-03 要求：
+//   1. writeBatch(inputs) → 拒绝，transport 0
+//   2. writeBatch(inputs, []) → 拒绝，transport 0
+//   3. 数量不一致 → 拒绝，transport 0
+//   4. 中间一条 v99 → 整批拒绝，transport 0
+//   5. 全部合法 → transport 才执行
+// ===========================================================================
+
+describe('pilot-writer-v1 writeBatch fail-closed (RF-03)', () => {
+
+  // -------------------------------------------------------------------------
+  // 测试 RF-03-1：writeBatch(inputs) 省略 candidateV1s → 拒绝，transport 0
+  // -------------------------------------------------------------------------
+  test('RF-03-1. writeBatch(inputs) without candidateV1s → rejects, transport 0', async () => {
+    const transport = makeFakeTransport();
+    const writer = createPilotWriterV1(makeConfig(transport.fn));
+
+    await assert.rejects(
+      () => writer.writeBatch([makeValidWriteInput()]),
+      (err) => {
+        assert.ok(err.message.includes('candidateV1s is required'), `错误消息应说明 candidateV1s 必填，实际: ${err.message}`);
+        return true;
+      }
+    );
+
+    // 关键：transport 调用次数为 0
+    assert.equal(transport.calls.length, 0, '省略 candidateV1s 时 transport 应为 0');
+  });
+
+  // -------------------------------------------------------------------------
+  // 测试 RF-03-2：writeBatch(inputs, []) 空数组 → 拒绝，transport 0
+  // -------------------------------------------------------------------------
+  test('RF-03-2. writeBatch(inputs, []) with empty candidates → rejects, transport 0', async () => {
+    const transport = makeFakeTransport();
+    const writer = createPilotWriterV1(makeConfig(transport.fn));
+
+    await assert.rejects(
+      () => writer.writeBatch([makeValidWriteInput()], []),
+      (err) => {
+        assert.ok(err.message.includes('must match inputs length'), `错误消息应说明长度不匹配，实际: ${err.message}`);
+        return true;
+      }
+    );
+
+    // 关键：transport 调用次数为 0
+    assert.equal(transport.calls.length, 0, '空 candidateV1s 时 transport 应为 0');
+  });
+
+  // -------------------------------------------------------------------------
+  // 测试 RF-03-3：candidateV1s.length !== inputs.length → 拒绝，transport 0
+  // -------------------------------------------------------------------------
+  test('RF-03-3. candidateV1s length mismatch → rejects, transport 0', async () => {
+    const transport = makeFakeTransport();
+    const writer = createPilotWriterV1(makeConfig(transport.fn));
+
+    // 2 inputs, 1 candidate
+    await assert.rejects(
+      () => writer.writeBatch(
+        [makeValidWriteInput(), makeValidWriteInput()],
+        [makeValidCandidateV1()]
+      ),
+      (err) => {
+        assert.ok(err.message.includes('must match inputs length'), `错误消息应说明长度不匹配，实际: ${err.message}`);
+        return true;
+      }
+    );
+
+    // 关键：transport 调用次数为 0
+    assert.equal(transport.calls.length, 0, '长度不匹配时 transport 应为 0');
+  });
+
+  // -------------------------------------------------------------------------
+  // 测试 RF-03-4：中间一条 v99 → 整批拒绝，transport 0
+  // 关键：fail-closed 必须"先全量校验、后写入"，任一失败则整批不执行
+  // -------------------------------------------------------------------------
+  test('RF-03-4. mid-batch v99 candidate → whole batch rejected, transport 0', async () => {
+    const transport = makeFakeTransport();
+    const writer = createPilotWriterV1(makeConfig(transport.fn));
+    const { CandidateValidationError, CandidateValidationErrorCodes } = await loadContracts();
+
+    // 2 inputs, 2 candidates: 第 1 个合法，第 2 个 v99 非法
+    const inputs = [makeValidWriteInput(), makeValidWriteInput()];
+    const candidates = [
+      makeValidCandidateV1(),
+      makeValidCandidateV1({ schema_version: 'v99' }),
+    ];
+
+    await assert.rejects(
+      () => writer.writeBatch(inputs, candidates),
+      (err) => {
+        assert.ok(err instanceof CandidateValidationError, '应为 CandidateValidationError');
+        assert.equal(err.code, CandidateValidationErrorCodes.UNKNOWN_SCHEMA_VERSION);
+        return true;
+      }
+    );
+
+    // 关键：整批 fail-closed — transport 调用次数为 0（即使第 1 个 candidate 合法，也不写入）
+    assert.equal(transport.calls.length, 0, '中间一条非法时整批应 fail-closed，transport 应为 0');
+  });
+
+  // -------------------------------------------------------------------------
+  // 测试 RF-03-5：全部合法 → transport 才执行
+  //
+  // 注意：innerWriter.writeBatch 基于 (legacy_source, legacy_record_id,
+  // target_entity_type) 派生 in-process idempotency key 并去重。
+  // 若两个 input 的 legacy_record_id 相同，第 2 个会被标记为
+  // DUPLICATE_SKIPPED，transport 只调用 1 次。为了让本测试验证「transport
+  // 被调用 2 次 = 门禁通过后两个 input 都真正写入」，必须使用不同的
+  // legacy_record_id（和对应的 record_key）以避开去重路径。
+  // -------------------------------------------------------------------------
+  test('RF-03-5. all legal candidates → transport executes for each input', async () => {
+    const transport = makeFakeTransport();
+    const writer = createPilotWriterV1(makeConfig(transport.fn));
+
+    const inputs = [
+      {
+        ...makeValidWriteInput(),
+        legacy_record_id: 'recLegacyDemo001',
+        record: { ...makeValidWriteInput().record, record_key: 'recLegacyDemo001' },
+        classified: { ...makeValidWriteInput().classified, record_key: 'recLegacyDemo001' },
+      },
+      {
+        ...makeValidWriteInput(),
+        legacy_record_id: 'recLegacyDemo002',
+        record: { ...makeValidWriteInput().record, record_key: 'recLegacyDemo002' },
+        classified: { ...makeValidWriteInput().classified, record_key: 'recLegacyDemo002' },
+      },
+    ];
+    const candidates = [
+      makeValidCandidateV1({
+        candidate_id: 'cand_demo_pilot_001',
+        idempotency_key: 'sha256_a1b2c3d4e5f60718293a4b5c6d7e8f90',
+      }),
+      makeValidCandidateV1({
+        candidate_id: 'cand_demo_pilot_002',
+        idempotency_key: 'sha256_b2c3d4e5f60718293a4b5c6d7e8f90a1',
+      }),
+    ];
+
+    const result = await writer.writeBatch(inputs, candidates);
+
+    // transport 被调用 2 次（每个 input 一次 — 无去重）
+    assert.equal(transport.calls.length, 2, '全部合法时 transport 应被调用 2 次');
+    // writeBatch 返回 results 数组
+    assert.ok(result.results, '应返回 results 数组');
+    assert.equal(result.results.length, 2, '应返回 2 个结果');
+    // 两条均为 CREATED（无 DUPLICATE_SKIPPED）
+    assert.equal(result.results[0].status, 'CREATED', '第 1 条应 CREATED');
+    assert.equal(result.results[1].status, 'CREATED', '第 2 条应 CREATED');
+    // summary 字段存在且 created=2
+    assert.ok(result.summary, '应返回 summary');
+    assert.equal(result.summary.created, 2, 'summary.created 应为 2');
+  });
+});

@@ -78,32 +78,51 @@ function createPilotWriterV1(config) {
   }
 
   /**
-   * 带合同门禁的 writeBatch
+   * 带合同门禁的 writeBatch（RF-03 fail-closed 修复）
+   *
+   * FAMP-CONTRACT-ADOPTION-GATE-01-R1-FIX / RF-03
+   *
    * 先校验全部 candidateV1s（fail-closed），任一失败则不写入；
    * 全部通过后委托原 writeBatch。
    *
-   * @param {Array} inputs - 与原 writeBatch 相同的输入数组
-   * @param {Array} [candidateV1s] - 对应的 Candidate V1 数组（可选）
+   * RF-03 修复（之前版本允许通过省略 candidateV1s 或传空数组绕过门禁）：
+   * - candidateV1s 现在是必填参数（不可省略）
+   * - candidateV1s.length 必须等于 inputs.length（不允许数量不一致）
+   * - inputs 非空时 candidateV1s 不得为空（不允许跳过门禁）
+   * - 全部校验通过后才调用 innerWriter.writeBatch
+   *
+   * @param {Array} inputs - 与原 writeBatch 相同的输入数组（非空）
+   * @param {Array} candidateV1s - 对应的 Candidate V1 数组（必填，长度与 inputs 一致）
    * @returns {Promise<object>} 原 writeBatch 的返回值
+   * @throws {Error} 当 inputs/candidateV1s 形状不合法时
    * @throws {CandidateValidationError} 当任一 candidateV1 校验失败时
    */
   async function writeBatchWithGuard(inputs, candidateV1s) {
+    // RF-03: inputs 必须是非空数组
     if (!Array.isArray(inputs)) {
       throw new Error('writeBatch: inputs must be an array');
     }
-    const candidates = Array.isArray(candidateV1s) ? candidateV1s : [];
-    if (candidates.length > 0 && candidates.length !== inputs.length) {
+    if (inputs.length === 0) {
+      throw new Error('writeBatch: inputs must not be empty (use writeRecord for single writes)');
+    }
+    // RF-03: candidateV1s 必填，必须是数组（不允许省略绕过门禁）
+    if (!Array.isArray(candidateV1s)) {
       throw new Error(
-        `writeBatch: candidateV1s length (${candidates.length}) must match inputs length (${inputs.length})`
+        'writeBatch: candidateV1s is required and must be an array (RF-03: no bypass allowed)'
       );
     }
-    if (candidates.length > 0) {
-      const { validateCandidateV1 } = await loadContracts();
-      // fail-closed：全部校验通过后才允许写入
-      for (let i = 0; i < candidates.length; i++) {
-        validateCandidateV1(candidates[i]);
-      }
+    // RF-03: candidateV1s 长度必须等于 inputs 长度（不允许空数组绕过门禁）
+    if (candidateV1s.length !== inputs.length) {
+      throw new Error(
+        `writeBatch: candidateV1s length (${candidateV1s.length}) must match inputs length (${inputs.length}) (RF-03: no bypass allowed)`
+      );
     }
+    // RF-03: fail-closed — 先校验全部 candidates，任一失败则不写入
+    const { validateCandidateV1 } = await loadContracts();
+    for (let i = 0; i < candidateV1s.length; i++) {
+      validateCandidateV1(candidateV1s[i]);
+    }
+    // 全部校验通过 → 委托原 writeBatch
     return innerWriter.writeBatch(inputs);
   }
 
