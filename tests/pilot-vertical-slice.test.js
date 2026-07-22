@@ -4,6 +4,10 @@
 // Criteria A-01 through A-10 using synthetic fixtures and fake transports.
 // No real Feishu API is called.
 //
+// FAMP-CONTRACT-ADOPTION-GATE-01-R1: createPilotWriter 已从公开导出移除
+// （AC-A06：迁移入口不得保留无合同门禁 fallback）。本测试直接 require 内部
+// writer 模块，用于测试底层 writer 逻辑；生产入口必须使用 createPilotWriterV1。
+//
 // Run:  node --test tests/pilot-vertical-slice.test.js
 
 const { describe, it, beforeEach } = require('node:test');
@@ -11,6 +15,8 @@ const assert = require('node:assert/strict');
 
 const {
   createPilotWriter,
+} = require('../src/migration/pilot/writer');
+const {
   createPilotReader,
   createPilotCleanup,
   buildIdempotencyKey,
